@@ -21,7 +21,7 @@ export default function App() {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [sim, setSim] = useState<SimOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>('bracket');
+  const [tab, setTab] = useState<Tab>('fixtures');
   const [selectedTeam, setSelectedTeam] = useState<number | null>(null);
   const [tabsStuck, setTabsStuck] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -159,9 +159,9 @@ export default function App() {
       <nav className={tabsStuck ? 'tabs stuck' : 'tabs'} role="tablist">
         {(
           [
-            ['bracket', 'Bracket'],
             ['fixtures', 'Fixtures'],
             ['ladder', 'Ladder'],
+            ['bracket', 'Bracket'],
             ['odds', 'Odds']
           ] as Array<[Tab, string]>
         ).map(([key, label]) => (
