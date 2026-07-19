@@ -1,0 +1,33 @@
+name: Update AFL data
+
+on:
+  schedule:
+    # daily at 20:00 UTC (≈ 6am AEST) — picks up results and ladder moves;
+    # effectively weekly-or-better freshness during the season and finals
+    - cron: '0 20 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Fetch Squiggle snapshot
+        run: node scripts/fetch-data.mjs
+      - name: Commit updated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/data
+          if git diff --cached --quiet; then
+            echo "No data changes"
+          else
+            git commit -m "chore: refresh AFL data snapshot"
+            git push
+          fi

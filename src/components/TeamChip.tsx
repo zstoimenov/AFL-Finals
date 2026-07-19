@@ -1,0 +1,50 @@
+import { TEAMS } from '../domain/teams';
+
+/**
+ * A club identity chip: colored monogram + name. Identity is always carried by
+ * the text label, never color alone.
+ */
+export default function TeamChip({
+  teamId,
+  seed,
+  compact = false
+}: {
+  teamId: number | null;
+  seed?: number | null;
+  compact?: boolean;
+}) {
+  const team = teamId != null ? TEAMS[teamId] : null;
+  if (!team) {
+    return (
+      <span className="teamchip tbd">
+        <span className="monogram" aria-hidden="true">
+          ?
+        </span>
+        <span className="teamname">TBD</span>
+      </span>
+    );
+  }
+  return (
+    <span className="teamchip">
+      <span
+        className="monogram"
+        style={{ background: team.color, color: pickInk(team.color) }}
+        aria-hidden="true"
+      >
+        {team.abbrev.slice(0, 2)}
+      </span>
+      <span className="teamname">{compact ? team.abbrev : team.name}</span>
+      {seed != null && <span className="seed">#{seed}</span>}
+    </span>
+  );
+}
+
+/** White or near-black ink depending on the chip color's luminance. */
+function pickInk(hex: string): string {
+  const n = parseInt(hex.slice(1), 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return lum > 150 ? '#101418' : '#ffffff';
+}
