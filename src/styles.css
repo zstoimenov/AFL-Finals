@@ -1254,6 +1254,16 @@ button.teamchip:focus-visible {
   }
 }
 
+/* small print, e.g. the unofficial-project disclaimer in the About panel */
+.disclaimer {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
 /* ---------- your club highlight (see domain/favourite) ---------- */
 
 /* star marker sits beside the club name on every chip */
