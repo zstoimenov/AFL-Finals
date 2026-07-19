@@ -81,6 +81,9 @@ for (let round = 1; round <= TOTAL_ROUNDS; round++) {
     // season runs Mar..Aug; spread rounds weekly from 2026-03-12
     const start = new Date(Date.UTC(2026, 2, 12));
     start.setUTCDate(start.getUTCDate() + (round - 1) * 7 + (gid % 3));
+    const [yy, mo2, dd] = start.toISOString().slice(0, 10).split('-').map(Number);
+    // unixtime for a 19:40 AWST (UTC+8) kickoff on that day
+    const unixtime = Math.floor(Date.UTC(yy, mo2 - 1, dd, 11, 40) / 1000);
     games.push({
       id: gid,
       round,
@@ -91,6 +94,7 @@ for (let round = 1; round <= TOTAL_ROUNDS; round++) {
       hscore,
       ascore,
       date: start.toISOString().slice(0, 10) + ' 19:40:00',
+      unixtime,
       venue: VENUES[gid % VENUES.length],
       is_final: 0,
       winnerteamid: winner

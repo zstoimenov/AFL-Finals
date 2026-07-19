@@ -34,7 +34,13 @@ export default function TeamDetail({
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    // lock background scroll while the sheet is open so only it moves
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [onClose]);
 
   const ratings = useMemo(
@@ -123,7 +129,7 @@ export default function TeamDetail({
                     </span>
                   </div>
                   <div className="runhome-meta">
-                    {formatGameDateTime(g.date)}
+                    {formatGameDateTime(g.date, g.unixtime)}
                     {g.venue ? ` · ${g.venue}` : ''}
                     {sqTeam != null && ` · Squiggle ${Math.round(sqTeam * 100)}%`}
                   </div>
@@ -132,9 +138,7 @@ export default function TeamDetail({
             })}
           </ol>
         )}
-        <p className="legendnote">
-          Win % from the in-app model; times as published in the AFL fixture (venue local).
-        </p>
+        <p className="legendnote">Win % = in-app model estimate · times AWST</p>
       </section>
     </div>
   );

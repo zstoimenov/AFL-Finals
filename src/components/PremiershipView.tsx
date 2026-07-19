@@ -3,6 +3,7 @@ import type { SimOutput } from '../domain/simulate';
 import { TEAMS } from '../domain/teams';
 import { sortedStandings } from '../domain/ladder';
 import TeamChip from './TeamChip';
+import InfoButton from './InfoButton';
 
 /**
  * Premiership projection: simulated P(premier) per team as labeled horizontal
@@ -35,7 +36,20 @@ export default function PremiershipView({
 
   return (
     <section className="oddsview">
-      <h2>Premiership odds</h2>
+      <div className="section-head">
+        <h2>Premiership odds</h2>
+        <InfoButton title="About premiership odds">
+          <p>
+            Each team&apos;s chance of winning the flag, from a {sim.iterations.toLocaleString()}
+            -run Monte Carlo simulation of the rest of the season and the entire finals series —
+            including the Wildcard Round and winner re-seeding.
+          </p>
+          <p>
+            Bars show P(premier); the smaller figures are the chances of reaching the Grand
+            Final and of playing finals at all.
+          </p>
+        </InfoButton>
+      </div>
       {favourite && TEAMS[favourite.teamId] && (
         <div className="hero-tile">
           <p className="hero-label">Projected premier</p>
@@ -73,10 +87,6 @@ export default function PremiershipView({
           );
         })}
       </div>
-      <p className="legendnote">
-        Simulated {sim.iterations.toLocaleString()} times from the current ladder, including
-        wildcard games and re-seeding.
-      </p>
     </section>
   );
 }

@@ -4,6 +4,7 @@ import { sortedStandings } from '../domain/ladder';
 import { lockLabel } from '../domain/locks';
 import TeamChip from './TeamChip';
 import LockBadge from './LockBadge';
+import InfoButton from './InfoButton';
 
 /**
  * The live ladder with the 2026 finals cut lines (top 6 bye, top 10 finals)
@@ -23,12 +24,20 @@ export default function LadderView({
 
   return (
     <section className="ladderview">
-      <h2>Ladder</h2>
-      <p className="sectionnote">
-        Top 6 skip the Wildcard Round; 7th–10th play sudden-death wildcards. Badges mark
-        mathematically settled fates; “Finals %” is the simulated chance of playing finals.
-        Tap a team for its run home and odds.
-      </p>
+      <div className="section-head">
+        <h2>Ladder</h2>
+        <InfoButton title="About the ladder">
+          <p>
+            Top 6 skip the Wildcard Round; 7th–10th play sudden-death wildcards to reach the
+            finals. The dashed gold line marks the wildcard-bye cut (6th); the solid line marks
+            the finals cut (10th).
+          </p>
+          <p>
+            Badges mark mathematically settled fates. “Finals %” is each team&apos;s simulated
+            chance of playing finals. Tap any team for its run home and odds.
+          </p>
+        </InfoButton>
+      </div>
       <div className="tablewrap">
         <table className="ladder">
           <thead>
@@ -78,8 +87,8 @@ export default function LadderView({
         </table>
       </div>
       <p className="legendnote">
-        <span className="cutkey bye" /> wildcard-bye line (6th) · <span className="cutkey fin" />{' '}
-        finals line (10th)
+        <span className="cutkey bye" /> bye line (6th) · <span className="cutkey fin" /> finals
+        line (10th)
       </p>
     </section>
   );

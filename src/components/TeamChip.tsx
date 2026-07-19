@@ -37,7 +37,13 @@ export default function TeamChip({
     <>
       <span
         className="monogram"
-        style={{ background: team.color, color: pickInk(team.color) }}
+        style={{
+          background: team.color,
+          color: pickInk(team.color),
+          // secondary club colour as a trim ring so two-tone identities read
+          // (e.g. West Coast's gold on navy, Hawthorn's gold on brown)
+          boxShadow: `inset 0 0 0 2px ${team.color2}`
+        }}
         aria-hidden="true"
       >
         {team.abbrev.slice(0, 2)}

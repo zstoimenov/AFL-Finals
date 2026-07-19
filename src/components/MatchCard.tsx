@@ -17,7 +17,7 @@ export default function MatchCard({ match }: { match: BracketMatch }) {
       {game && (
         <p className="gamewhen">
           {game.venue && <span>{game.venue} · </span>}
-          {formatGameDateTime(game.date)}
+          {formatGameDateTime(game.date, game.unixtime)}
         </p>
       )}
       <SideRow
