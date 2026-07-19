@@ -27,6 +27,7 @@ export default function LadderView({
       <p className="sectionnote">
         Top 6 skip the Wildcard Round; 7th–10th play sudden-death wildcards. Badges mark
         mathematically settled fates; “Finals %” is the simulated chance of playing finals.
+        Tap a team for its run home and odds.
       </p>
       <div className="tablewrap">
         <table className="ladder">

@@ -9,6 +9,8 @@ import BracketView from './components/BracketView';
 import FixturesView from './components/FixturesView';
 import LadderView from './components/LadderView';
 import PremiershipView from './components/PremiershipView';
+import TeamDetail from './components/TeamDetail';
+import { TeamSelectContext } from './teamSelect';
 
 type Tab = 'bracket' | 'fixtures' | 'ladder' | 'odds';
 
@@ -19,6 +21,7 @@ export default function App() {
   const [sim, setSim] = useState<SimOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('bracket');
+  const [selectedTeam, setSelectedTeam] = useState<number | null>(null);
 
   useEffect(() => {
     loadSnapshot().then(setSnapshot).catch((e) => setError(String(e)));
@@ -61,6 +64,7 @@ export default function App() {
   const asOf = new Date(snapshot.meta.fetchedAt);
 
   return (
+    <TeamSelectContext.Provider value={setSelectedTeam}>
     <div className="shell">
       <header className="topbar">
         <h1>
@@ -125,6 +129,17 @@ export default function App() {
           Consensus tips courtesy of <a href="https://squiggle.com.au">Squiggle</a>.
         </p>
       </footer>
+
+      {selectedTeam != null && (
+        <TeamDetail
+          teamId={selectedTeam}
+          snapshot={snapshot}
+          sim={sim}
+          locks={locks}
+          onClose={() => setSelectedTeam(null)}
+        />
+      )}
     </div>
+    </TeamSelectContext.Provider>
   );
 }

@@ -1,19 +1,27 @@
+import { useContext } from 'react';
 import { TEAMS } from '../domain/teams';
+import { TeamSelectContext } from '../teamSelect';
 
 /**
  * A club identity chip: colored monogram + name. Identity is always carried by
- * the text label, never color alone.
+ * the text label, never color alone. When a TeamSelect context is available
+ * the chip is a button that opens the team's detail sheet.
  */
 export default function TeamChip({
   teamId,
   seed,
-  compact = false
+  compact = false,
+  interactive = true
 }: {
   teamId: number | null;
   seed?: number | null;
   compact?: boolean;
+  /** set false to render a plain chip even inside the select context */
+  interactive?: boolean;
 }) {
+  const selectTeam = useContext(TeamSelectContext);
   const team = teamId != null ? TEAMS[teamId] : null;
+
   if (!team) {
     return (
       <span className="teamchip tbd">
@@ -24,8 +32,9 @@ export default function TeamChip({
       </span>
     );
   }
-  return (
-    <span className="teamchip">
+
+  const body = (
+    <>
       <span
         className="monogram"
         style={{ background: team.color, color: pickInk(team.color) }}
@@ -35,8 +44,25 @@ export default function TeamChip({
       </span>
       <span className="teamname">{compact ? team.abbrev : team.name}</span>
       {seed != null && <span className="seed">#{seed}</span>}
-    </span>
+    </>
   );
+
+  if (selectTeam && interactive) {
+    return (
+      <button
+        type="button"
+        className="teamchip clickable"
+        title={`${team.name} — remaining games & odds`}
+        onClick={(e) => {
+          e.stopPropagation();
+          selectTeam(team.id);
+        }}
+      >
+        {body}
+      </button>
+    );
+  }
+  return <span className="teamchip">{body}</span>;
 }
 
 /** White or near-black ink depending on the chip color's luminance. */

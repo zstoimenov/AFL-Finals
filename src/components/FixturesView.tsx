@@ -1,5 +1,6 @@
 import type { BracketMatch, Game, Snapshot } from '../domain/types';
 import { squiggleProb, computeRatings, winProb } from '../domain/predict';
+import { formatGameDateTime } from '../domain/format';
 import { teamName } from '../domain/teams';
 import TeamChip from './TeamChip';
 import ProbBar from './ProbBar';
@@ -77,7 +78,6 @@ function FixtureRow({
 }) {
   const p = winProb(ratings, game.hteamid, game.ateamid);
   const sq = squiggleProb(snapshot, game.hteamid, game.ateamid);
-  const when = new Date(game.date.replace(' ', 'T'));
   return (
     <article className="fixturerow">
       <div className="fixturehead">
@@ -86,8 +86,8 @@ function FixtureRow({
           <TeamChip teamId={game.ateamid} />
         </span>
         <span className="venue">
-          {game.venue} ·{' '}
-          {when.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}
+          {formatGameDateTime(game.date)}
+          {game.venue ? ` · ${game.venue}` : ''}
         </span>
       </div>
       <ProbBar homeId={game.hteamid} awayId={game.ateamid} homeProb={p} />
