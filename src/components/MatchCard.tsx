@@ -1,5 +1,6 @@
 import type { BracketMatch, BracketSide } from '../domain/types';
 import { TEAMS, teamAbbrev } from '../domain/teams';
+import { isFavourite } from '../domain/favourite';
 import { formatGameDateTime } from '../domain/format';
 import TeamChip from './TeamChip';
 
@@ -7,11 +8,21 @@ import TeamChip from './TeamChip';
 export default function MatchCard({ match }: { match: BracketMatch }) {
   const { game } = match;
   const decided = match.winnerTeamId != null;
+  // highlight a bracket card once the user's club is confirmed in it (either
+  // seeded side, or the projected favourite for a still-TBD slot)
+  const fav =
+    isFavourite(match.home.teamId) ||
+    isFavourite(match.away.teamId) ||
+    isFavourite(match.home.candidates[0]?.teamId) ||
+    isFavourite(match.away.candidates[0]?.teamId);
 
   return (
-    <article className={`matchcard${decided ? ' decided' : ''}`}>
+    <article
+      className={`matchcard${decided ? ' decided' : ''}${fav ? ' fav-game' : ''}`}
+    >
       <header>
         <span className="matchname">{match.name}</span>
+        {fav && <span className="fav-tag">Your club</span>}
         {match.locked && !decided && <span className="matchupset">Matchup set</span>}
       </header>
       {game && (

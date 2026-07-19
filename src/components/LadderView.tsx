@@ -2,6 +2,7 @@ import type { Snapshot, TeamLocks } from '../domain/types';
 import type { SimOutput } from '../domain/simulate';
 import { sortedStandings } from '../domain/ladder';
 import { lockLabel } from '../domain/locks';
+import { isFavourite } from '../domain/favourite';
 import TeamChip from './TeamChip';
 import LockBadge from './LockBadge';
 import InfoButton from './InfoButton';
@@ -62,9 +63,12 @@ export default function LadderView({
               return (
                 <tr
                   key={s.id}
-                  className={
-                    i === 5 ? 'cut bye-cut' : i === 9 ? 'cut finals-cut' : undefined
-                  }
+                  className={[
+                    i === 5 ? 'cut bye-cut' : i === 9 ? 'cut finals-cut' : '',
+                    isFavourite(s.id) ? 'fav-row' : ''
+                  ]
+                    .filter(Boolean)
+                    .join(' ') || undefined}
                 >
                   <td className="num rank">{i + 1}</td>
                   <td>
@@ -88,7 +92,7 @@ export default function LadderView({
       </div>
       <p className="legendnote">
         <span className="cutkey bye" /> bye line (6th) · <span className="cutkey fin" /> finals
-        line (10th)
+        line (10th) · <span className="fav-star" aria-hidden="true">★</span> your club
       </p>
     </section>
   );

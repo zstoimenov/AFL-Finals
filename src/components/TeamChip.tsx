@@ -1,11 +1,14 @@
 import { useContext } from 'react';
 import { TEAMS } from '../domain/teams';
+import { isFavourite } from '../domain/favourite';
 import { TeamSelectContext } from '../teamSelect';
 
 /**
  * A club identity chip: colored monogram + name. Identity is always carried by
  * the text label, never color alone. When a TeamSelect context is available
- * the chip is a button that opens the team's detail sheet.
+ * the chip is a button that opens the team's detail sheet. The user's own club
+ * (see domain/favourite) is marked with a star and a `fav` class so it can be
+ * spotted anywhere a team appears.
  */
 export default function TeamChip({
   teamId,
@@ -21,6 +24,7 @@ export default function TeamChip({
 }) {
   const selectTeam = useContext(TeamSelectContext);
   const team = teamId != null ? TEAMS[teamId] : null;
+  const fav = isFavourite(teamId);
 
   if (!team) {
     return (
@@ -49,6 +53,11 @@ export default function TeamChip({
         {team.abbrev.slice(0, 2)}
       </span>
       <span className="teamname">{compact ? team.abbrev : team.name}</span>
+      {fav && (
+        <span className="fav-star" title="Your club" aria-label="Your club">
+          ★
+        </span>
+      )}
       {seed != null && <span className="seed">#{seed}</span>}
     </>
   );
@@ -57,8 +66,8 @@ export default function TeamChip({
     return (
       <button
         type="button"
-        className="teamchip clickable"
-        title={`${team.name} — remaining games & odds`}
+        className={fav ? 'teamchip clickable fav' : 'teamchip clickable'}
+        title={fav ? `${team.name} (your club) — remaining games & odds` : `${team.name} — remaining games & odds`}
         onClick={(e) => {
           e.stopPropagation();
           selectTeam(team.id);
@@ -68,7 +77,7 @@ export default function TeamChip({
       </button>
     );
   }
-  return <span className="teamchip">{body}</span>;
+  return <span className={fav ? 'teamchip fav' : 'teamchip'}>{body}</span>;
 }
 
 /** White or near-black ink depending on the chip color's luminance. */
