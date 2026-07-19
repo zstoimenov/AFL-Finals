@@ -11,7 +11,8 @@
   "date": "2026-03-05 19:30:00",
   "venue": "S.C.G.",
   "is_final": 0,
-  "winnerteamid": 16
+  "winnerteamid": 16,
+  "unixtime": 1772699400
  },
  {
   "id": 38495,
@@ -25,7 +26,8 @@
   "date": "2026-03-06 20:05:00",
   "venue": "Carrara",
   "is_final": 0,
-  "winnerteamid": 8
+  "winnerteamid": 8,
+  "unixtime": 1772791500
  },
  {
   "id": 38496,
@@ -39,7 +41,8 @@
   "date": "2026-03-07 16:15:00",
   "venue": "Sydney Showground",
   "is_final": 0,
-  "winnerteamid": 9
+  "winnerteamid": 9,
+  "unixtime": 1772860500
  },
  {
   "id": 38497,
@@ -53,7 +56,8 @@
   "date": "2026-03-07 19:35:00",
   "venue": "Gabba",
   "is_final": 0,
-  "winnerteamid": 18
+  "winnerteamid": 18,
+  "unixtime": 1772876100
  },
  {
   "id": 38498,
@@ -67,7 +71,8 @@
   "date": "2026-03-08 19:20:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 4
+  "winnerteamid": 4,
+  "unixtime": 1772958000
  },
  {
   "id": 38499,
@@ -81,7 +86,8 @@
   "date": "2026-03-12 19:30:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 3
+  "winnerteamid": 3,
+  "unixtime": 1773304200
  },
  {
   "id": 38500,
@@ -95,7 +101,8 @@
   "date": "2026-03-13 19:40:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 10
+  "winnerteamid": 10,
+  "unixtime": 1773391200
  },
  {
   "id": 38501,
@@ -109,7 +116,8 @@
   "date": "2026-03-14 13:15:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 18
+  "winnerteamid": 18,
+  "unixtime": 1773454500
  },
  {
   "id": 38502,
@@ -123,7 +131,8 @@
   "date": "2026-03-14 16:15:00",
   "venue": "Kardinia Park",
   "is_final": 0,
-  "winnerteamid": 7
+  "winnerteamid": 7,
+  "unixtime": 1773465300
  },
  {
   "id": 38503,
@@ -137,7 +146,8 @@
   "date": "2026-03-14 19:10:00",
   "venue": "S.C.G.",
   "is_final": 0,
-  "winnerteamid": 16
+  "winnerteamid": 16,
+  "unixtime": 1773475800
  },
  {
   "id": 38504,
@@ -151,7 +161,8 @@
   "date": "2026-03-14 19:35:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 1
+  "winnerteamid": 1,
+  "unixtime": 1773477300
  },
  {
   "id": 38505,
@@ -165,7 +176,8 @@
   "date": "2026-03-15 13:10:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 12
+  "winnerteamid": 12,
+  "unixtime": 1773540600
  },
  {
   "id": 38506,
@@ -179,7 +191,8 @@
   "date": "2026-03-15 15:15:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 11
+  "winnerteamid": 11,
+  "unixtime": 1773548100
  },
  {
   "id": 38507,
@@ -193,7 +206,8 @@
   "date": "2026-03-15 18:10:00",
   "venue": "Carrara",
   "is_final": 0,
-  "winnerteamid": 8
+  "winnerteamid": 8,
+  "unixtime": 1773562200
  },
  {
   "id": 38508,
@@ -207,7 +221,8 @@
   "date": "2026-03-19 19:30:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 10
+  "winnerteamid": 10,
+  "unixtime": 1773909000
  },
  {
   "id": 38509,
@@ -221,7 +236,8 @@
   "date": "2026-03-20 19:40:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 18
+  "winnerteamid": 18,
+  "unixtime": 1773997800
  },
  {
   "id": 38510,
@@ -235,7 +251,8 @@
   "date": "2026-03-21 13:15:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 8
+  "winnerteamid": 8,
+  "unixtime": 1774059300
  },
  {
   "id": 38511,
@@ -249,7 +266,8 @@
   "date": "2026-03-21 16:15:00",
   "venue": "Sydney Showground",
   "is_final": 0,
-  "winnerteamid": 15
+  "winnerteamid": 15,
+  "unixtime": 1774070100
  },
  {
   "id": 38512,
@@ -263,7 +281,8 @@
   "date": "2026-03-21 19:35:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 6
+  "winnerteamid": 6,
+  "unixtime": 1774092900
  },
  {
   "id": 38513,
@@ -277,7 +296,8 @@
   "date": "2026-03-22 15:15:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 13
+  "winnerteamid": 13,
+  "unixtime": 1774154700
  },
  {
   "id": 38514,
@@ -291,7 +311,8 @@
   "date": "2026-03-22 18:10:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 17
+  "winnerteamid": 17,
+  "unixtime": 1774174200
  },
  {
   "id": 38515,
@@ -305,7 +326,8 @@
   "date": "2026-03-26 19:30:00",
   "venue": "Kardinia Park",
   "is_final": 0,
-  "winnerteamid": 7
+  "winnerteamid": 7,
+  "unixtime": 1774513800
  },
  {
   "id": 38516,
@@ -319,7 +341,8 @@
   "date": "2026-03-27 19:40:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 4
+  "winnerteamid": 4,
+  "unixtime": 1774600800
  },
  {
   "id": 38517,
@@ -333,7 +356,8 @@
   "date": "2026-03-28 12:35:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 2
+  "winnerteamid": 2,
+  "unixtime": 1774661700
  },
  {
   "id": 38518,
@@ -347,7 +371,8 @@
   "date": "2026-03-28 16:15:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 6
+  "winnerteamid": 6,
+  "unixtime": 1774685700
  },
  {
   "id": 38519,
@@ -361,7 +386,8 @@
   "date": "2026-03-28 19:35:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 12
+  "winnerteamid": 12,
+  "unixtime": 1774686900
  },
  {
   "id": 38520,
@@ -375,7 +401,8 @@
   "date": "2026-03-29 12:30:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 17
+  "winnerteamid": 17,
+  "unixtime": 1774749600
  },
  {
   "id": 38521,
@@ -389,7 +416,8 @@
   "date": "2026-03-29 15:15:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 11
+  "winnerteamid": 11,
+  "unixtime": 1774757700
  },
  {
   "id": 38522,
@@ -403,7 +431,8 @@
   "date": "2026-04-02 19:30:00",
   "venue": "Gabba",
   "is_final": 0,
-  "winnerteamid": 2
+  "winnerteamid": 2,
+  "unixtime": 1775122200
  },
  {
   "id": 38523,
@@ -417,7 +446,8 @@
   "date": "2026-04-03 15:15:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 12
+  "winnerteamid": 12,
+  "unixtime": 1775189700
  },
  {
   "id": 38524,
@@ -431,7 +461,8 @@
   "date": "2026-04-03 19:15:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 6
+  "winnerteamid": 6,
+  "unixtime": 1775205900
  },
  {
   "id": 38525,
@@ -445,7 +476,8 @@
   "date": "2026-04-04 16:15:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 13
+  "winnerteamid": 13,
+  "unixtime": 1775283300
  },
  {
   "id": 38526,
@@ -459,7 +491,8 @@
   "date": "2026-04-04 19:35:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 16
+  "winnerteamid": 16,
+  "unixtime": 1775302500
  },
  {
   "id": 38527,
@@ -473,7 +506,8 @@
   "date": "2026-04-05 15:15:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 11
+  "winnerteamid": 11,
+  "unixtime": 1775366100
  },
  {
   "id": 38528,
@@ -487,7 +521,8 @@
   "date": "2026-04-05 19:20:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 18
+  "winnerteamid": 18,
+  "unixtime": 1775380800
  },
  {
   "id": 38529,
@@ -501,7 +536,8 @@
   "date": "2026-04-06 15:15:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 10
+  "winnerteamid": 10,
+  "unixtime": 1775452500
  },
  {
   "id": 38530,
@@ -515,7 +551,8 @@
   "date": "2026-04-09 19:40:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 1
+  "winnerteamid": 1,
+  "unixtime": 1775729400
  },
  {
   "id": 38531,
@@ -529,7 +566,8 @@
   "date": "2026-04-10 19:40:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 6
+  "winnerteamid": 6,
+  "unixtime": 1775815800
  },
  {
   "id": 38532,
@@ -543,7 +581,8 @@
   "date": "2026-04-11 12:35:00",
   "venue": "Barossa Park",
   "is_final": 0,
-  "winnerteamid": 2
+  "winnerteamid": 2,
+  "unixtime": 1775876700
  },
  {
   "id": 38533,
@@ -557,7 +596,8 @@
   "date": "2026-04-11 13:15:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 5
+  "winnerteamid": 5,
+  "unixtime": 1775879100
  },
  {
   "id": 38534,
@@ -571,7 +611,8 @@
   "date": "2026-04-11 16:15:00",
   "venue": "Norwood Oval",
   "is_final": 0,
-  "winnerteamid": 16
+  "winnerteamid": 16,
+  "unixtime": 1775889900
  },
  {
   "id": 38535,
@@ -585,7 +626,8 @@
   "date": "2026-04-11 19:35:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 10
+  "winnerteamid": 10,
+  "unixtime": 1775901900
  },
  {
   "id": 38536,
@@ -599,7 +641,8 @@
   "date": "2026-04-12 12:30:00",
   "venue": "Norwood Oval",
   "is_final": 0,
-  "winnerteamid": 7
+  "winnerteamid": 7,
+  "unixtime": 1775962800
  },
  {
   "id": 38537,
@@ -613,7 +656,8 @@
   "date": "2026-04-12 15:15:00",
   "venue": "Barossa Park",
   "is_final": 0,
-  "winnerteamid": 9
+  "winnerteamid": 9,
+  "unixtime": 1775972700
  },
  {
   "id": 38538,
@@ -627,7 +671,8 @@
   "date": "2026-04-12 19:15:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 15
+  "winnerteamid": 15,
+  "unixtime": 1775987100
  },
  {
   "id": 38539,
@@ -641,7 +686,8 @@
   "date": "2026-04-16 19:30:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 4
+  "winnerteamid": 4,
+  "unixtime": 1776331800
  },
  {
   "id": 38540,
@@ -655,7 +701,8 @@
   "date": "2026-04-17 19:20:00",
   "venue": "Kardinia Park",
   "is_final": 0,
-  "winnerteamid": 7
+  "winnerteamid": 7,
+  "unixtime": 1776417600
  },
  {
   "id": 38541,
@@ -669,7 +716,8 @@
   "date": "2026-04-17 19:50:00",
   "venue": "S.C.G.",
   "is_final": 0,
-  "winnerteamid": 16
+  "winnerteamid": 16,
+  "unixtime": 1776419400
  },
  {
   "id": 38542,
@@ -683,7 +731,8 @@
   "date": "2026-04-18 13:15:00",
   "venue": "Carrara",
   "is_final": 0,
-  "winnerteamid": 8
+  "winnerteamid": 8,
+  "unixtime": 1776482100
  },
  {
   "id": 38543,
@@ -697,7 +746,8 @@
   "date": "2026-04-18 16:15:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 10
+  "winnerteamid": 10,
+  "unixtime": 1776492900
  },
  {
   "id": 38544,
@@ -711,7 +761,8 @@
   "date": "2026-04-18 19:35:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 1
+  "winnerteamid": 1,
+  "unixtime": 1776506700
  },
  {
   "id": 38545,
@@ -725,7 +776,8 @@
   "date": "2026-04-19 13:10:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 12
+  "winnerteamid": 12,
+  "unixtime": 1776568200
  },
  {
   "id": 38546,
@@ -739,7 +791,8 @@
   "date": "2026-04-19 15:15:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 11
+  "winnerteamid": 11,
+  "unixtime": 1776575700
  },
  {
   "id": 38547,
@@ -753,7 +806,8 @@
   "date": "2026-04-19 17:10:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 6
+  "winnerteamid": 6,
+  "unixtime": 1776589800
  },
  {
   "id": 38548,
@@ -767,7 +821,8 @@
   "date": "2026-04-23 19:30:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 16
+  "winnerteamid": 16,
+  "unixtime": 1776936600
  },
  {
   "id": 38549,
@@ -781,7 +836,8 @@
   "date": "2026-04-24 19:40:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 11
+  "winnerteamid": 11,
+  "unixtime": 1777023600
  },
  {
   "id": 38550,
@@ -795,7 +851,8 @@
   "date": "2026-04-25 12:30:00",
   "venue": "York Park",
   "is_final": 0,
-  "winnerteamid": 10
+  "winnerteamid": 10,
+  "unixtime": 1777084200
  },
  {
   "id": 38551,
@@ -809,7 +866,8 @@
   "date": "2026-04-25 15:20:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 4
+  "winnerteamid": 4,
+  "unixtime": 1777094400
  },
  {
   "id": 38552,
@@ -823,7 +881,8 @@
   "date": "2026-04-25 18:35:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 13
+  "winnerteamid": 13,
+  "unixtime": 1777107900
  },
  {
   "id": 38553,
@@ -837,7 +896,8 @@
   "date": "2026-04-25 20:15:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 6
+  "winnerteamid": 6,
+  "unixtime": 1777119300
  },
  {
   "id": 38554,
@@ -851,7 +911,8 @@
   "date": "2026-04-26 13:10:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 15
+  "winnerteamid": 15,
+  "unixtime": 1777173000
  },
  {
   "id": 38555,
@@ -865,7 +926,8 @@
   "date": "2026-04-26 15:15:00",
   "venue": "Gabba",
   "is_final": 0,
-  "winnerteamid": 2
+  "winnerteamid": 2,
+  "unixtime": 1777180500
  },
  {
   "id": 38556,
@@ -879,7 +941,8 @@
   "date": "2026-04-26 16:40:00",
   "venue": "Manuka Oval",
   "is_final": 0,
-  "winnerteamid": 9
+  "winnerteamid": 9,
+  "unixtime": 1777185600
  },
  {
   "id": 38557,
@@ -893,7 +956,8 @@
   "date": "2026-04-30 19:30:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1777541400
  },
  {
   "id": 38558,
@@ -907,7 +971,8 @@
   "date": "2026-05-01 19:30:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 6
+  "winnerteamid": 6,
+  "unixtime": 1777627800
  },
  {
   "id": 38559,
@@ -921,7 +986,8 @@
   "date": "2026-05-01 20:10:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 1
+  "winnerteamid": 1,
+  "unixtime": 1777632000
  },
  {
   "id": 38560,
@@ -935,7 +1001,8 @@
   "date": "2026-05-02 12:35:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 2
+  "winnerteamid": 2,
+  "unixtime": 1777689300
  },
  {
   "id": 38561,
@@ -949,7 +1016,8 @@
   "date": "2026-05-02 16:15:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 14
+  "winnerteamid": 14,
+  "unixtime": 1777709700
  },
  {
   "id": 38562,
@@ -963,7 +1031,8 @@
   "date": "2026-05-02 16:35:00",
   "venue": "Kardinia Park",
   "is_final": 0,
-  "winnerteamid": 7
+  "winnerteamid": 7,
+  "unixtime": 1777703700
  },
  {
   "id": 38563,
@@ -977,7 +1046,8 @@
   "date": "2026-05-02 19:35:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 15
+  "winnerteamid": 15,
+  "unixtime": 1777714500
  },
  {
   "id": 38564,
@@ -991,7 +1061,8 @@
   "date": "2026-05-03 15:15:00",
   "venue": "S.C.G.",
   "is_final": 0,
-  "winnerteamid": 16
+  "winnerteamid": 16,
+  "unixtime": 1777785300
  },
  {
   "id": 38565,
@@ -1005,7 +1076,8 @@
   "date": "2026-05-03 19:20:00",
   "venue": "Carrara",
   "is_final": 0,
-  "winnerteamid": 8
+  "winnerteamid": 8,
+  "unixtime": 1777800000
  },
  {
   "id": 38566,
@@ -1019,7 +1091,8 @@
   "date": "2026-05-07 20:10:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 6
+  "winnerteamid": 6,
+  "unixtime": 1778155800
  },
  {
   "id": 38567,
@@ -1033,7 +1106,8 @@
   "date": "2026-05-08 19:30:00",
   "venue": "Gabba",
   "is_final": 0,
-  "winnerteamid": 2
+  "winnerteamid": 2,
+  "unixtime": 1778232600
  },
  {
   "id": 38568,
@@ -1047,7 +1121,8 @@
   "date": "2026-05-08 20:10:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 18
+  "winnerteamid": 18,
+  "unixtime": 1778236800
  },
  {
   "id": 38569,
@@ -1061,7 +1136,8 @@
   "date": "2026-05-09 13:15:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 16
+  "winnerteamid": 16,
+  "unixtime": 1778296500
  },
  {
   "id": 38570,
@@ -1075,7 +1151,8 @@
   "date": "2026-05-09 16:15:00",
   "venue": "Sydney Showground",
   "is_final": 0,
-  "winnerteamid": 9
+  "winnerteamid": 9,
+  "unixtime": 1778307300
  },
  {
   "id": 38571,
@@ -1089,7 +1166,8 @@
   "date": "2026-05-09 19:10:00",
   "venue": "Marrara Oval",
   "is_final": 0,
-  "winnerteamid": 8
+  "winnerteamid": 8,
+  "unixtime": 1778319600
  },
  {
   "id": 38572,
@@ -1103,7 +1181,8 @@
   "date": "2026-05-09 19:35:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 7
+  "winnerteamid": 7,
+  "unixtime": 1778319300
  },
  {
   "id": 38573,
@@ -1117,7 +1196,8 @@
   "date": "2026-05-10 13:10:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 11
+  "winnerteamid": 11,
+  "unixtime": 1778382600
  },
  {
   "id": 38574,
@@ -1131,7 +1211,8 @@
   "date": "2026-05-10 15:15:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 1
+  "winnerteamid": 1,
+  "unixtime": 1778390100
  },
  {
   "id": 38575,
@@ -1145,7 +1226,8 @@
   "date": "2026-05-14 19:30:00",
   "venue": "Gabba",
   "is_final": 0,
-  "winnerteamid": 7
+  "winnerteamid": 7,
+  "unixtime": 1778751000
  },
  {
   "id": 38576,
@@ -1159,7 +1241,8 @@
   "date": "2026-05-15 19:30:00",
   "venue": "S.C.G.",
   "is_final": 0,
-  "winnerteamid": 16
+  "winnerteamid": 16,
+  "unixtime": 1778837400
  },
  {
   "id": 38577,
@@ -1173,7 +1256,8 @@
   "date": "2026-05-15 20:10:00",
   "venue": "Marrara Oval",
   "is_final": 0,
-  "winnerteamid": 8
+  "winnerteamid": 8,
+  "unixtime": 1778841600
  },
  {
   "id": 38578,
@@ -1187,7 +1271,8 @@
   "date": "2026-05-16 13:15:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 1
+  "winnerteamid": 1,
+  "unixtime": 1778903100
  },
  {
   "id": 38579,
@@ -1201,7 +1286,8 @@
   "date": "2026-05-16 16:15:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 11
+  "winnerteamid": 11,
+  "unixtime": 1778912100
  },
  {
   "id": 38580,
@@ -1215,7 +1301,8 @@
   "date": "2026-05-16 19:35:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 3
+  "winnerteamid": 3,
+  "unixtime": 1778924100
  },
  {
   "id": 38581,
@@ -1229,7 +1316,8 @@
   "date": "2026-05-17 13:10:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 6
+  "winnerteamid": 6,
+  "unixtime": 1778987400
  },
  {
   "id": 38582,
@@ -1243,7 +1331,8 @@
   "date": "2026-05-17 15:15:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 15
+  "winnerteamid": 15,
+  "unixtime": 1778994900
  },
  {
   "id": 38583,
@@ -1257,7 +1346,8 @@
   "date": "2026-05-17 18:15:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 17
+  "winnerteamid": 17,
+  "unixtime": 1779012900
  },
  {
   "id": 38584,
@@ -1271,7 +1361,8 @@
   "date": "2026-05-21 19:30:00",
   "venue": "York Park",
   "is_final": 0,
-  "winnerteamid": 10
+  "winnerteamid": 10,
+  "unixtime": 1779355800
  },
  {
   "id": 38585,
@@ -1285,7 +1376,8 @@
   "date": "2026-05-22 19:40:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 14
+  "winnerteamid": 14,
+  "unixtime": 1779442800
  },
  {
   "id": 38586,
@@ -1299,7 +1391,8 @@
   "date": "2026-05-22 20:30:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 6
+  "winnerteamid": 6,
+  "unixtime": 1779453000
  },
  {
   "id": 38587,
@@ -1313,7 +1406,8 @@
   "date": "2026-05-23 13:15:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 12
+  "winnerteamid": 12,
+  "unixtime": 1779506100
  },
  {
   "id": 38588,
@@ -1327,7 +1421,8 @@
   "date": "2026-05-23 16:15:00",
   "venue": "Kardinia Park",
   "is_final": 0,
-  "winnerteamid": 7
+  "winnerteamid": 7,
+  "unixtime": 1779516900
  },
  {
   "id": 38589,
@@ -1341,7 +1436,8 @@
   "date": "2026-05-23 16:35:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 4
+  "winnerteamid": 4,
+  "unixtime": 1779518100
  },
  {
   "id": 38590,
@@ -1355,7 +1451,8 @@
   "date": "2026-05-23 19:35:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 3
+  "winnerteamid": 3,
+  "unixtime": 1779530700
  },
  {
   "id": 38591,
@@ -1369,7 +1466,8 @@
   "date": "2026-05-24 12:30:00",
   "venue": "Sydney Showground",
   "is_final": 0,
-  "winnerteamid": 9
+  "winnerteamid": 9,
+  "unixtime": 1779589800
  },
  {
   "id": 38592,
@@ -1383,7 +1481,8 @@
   "date": "2026-05-24 15:15:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 18
+  "winnerteamid": 18,
+  "unixtime": 1779599700
  },
  {
   "id": 38593,
@@ -1397,7 +1496,8 @@
   "date": "2026-05-28 19:30:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 10
+  "winnerteamid": 10,
+  "unixtime": 1779960600
  },
  {
   "id": 38594,
@@ -1411,7 +1511,8 @@
   "date": "2026-05-29 19:40:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 3
+  "winnerteamid": 3,
+  "unixtime": 1780047600
  },
  {
   "id": 38595,
@@ -1425,7 +1526,8 @@
   "date": "2026-05-30 13:15:00",
   "venue": "S.C.G.",
   "is_final": 0,
-  "winnerteamid": 16
+  "winnerteamid": 16,
+  "unixtime": 1780110900
  },
  {
   "id": 38596,
@@ -1439,7 +1541,8 @@
   "date": "2026-05-30 16:15:00",
   "venue": "Gabba",
   "is_final": 0,
-  "winnerteamid": 6
+  "winnerteamid": 6,
+  "unixtime": 1780121700
  },
  {
   "id": 38597,
@@ -1453,7 +1556,8 @@
   "date": "2026-05-30 19:35:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 18
+  "winnerteamid": 18,
+  "unixtime": 1780133700
  },
  {
   "id": 38598,
@@ -1467,7 +1571,8 @@
   "date": "2026-05-31 15:15:00",
   "venue": "Traeger Park",
   "is_final": 0,
-  "winnerteamid": 9
+  "winnerteamid": 9,
+  "unixtime": 1780206300
  },
  {
   "id": 38599,
@@ -1481,7 +1586,8 @@
   "date": "2026-05-31 19:20:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 17
+  "winnerteamid": 17,
+  "unixtime": 1780226400
  },
  {
   "id": 38600,
@@ -1495,7 +1601,8 @@
   "date": "2026-06-04 19:30:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 1
+  "winnerteamid": 1,
+  "unixtime": 1780567200
  },
  {
   "id": 38601,
@@ -1509,7 +1616,8 @@
   "date": "2026-06-05 19:40:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 18
+  "winnerteamid": 18,
+  "unixtime": 1780652400
  },
  {
   "id": 38602,
@@ -1523,7 +1631,8 @@
   "date": "2026-06-06 14:15:00",
   "venue": "Hands Oval",
   "is_final": 0,
-  "winnerteamid": 6
+  "winnerteamid": 6,
+  "unixtime": 1780726500
  },
  {
   "id": 38603,
@@ -1537,7 +1646,8 @@
   "date": "2026-06-06 17:15:00",
   "venue": "Carrara",
   "is_final": 0,
-  "winnerteamid": 2
+  "winnerteamid": 2,
+  "unixtime": 1780730100
  },
  {
   "id": 38604,
@@ -1551,7 +1661,8 @@
   "date": "2026-06-06 20:15:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 13
+  "winnerteamid": 13,
+  "unixtime": 1780748100
  },
  {
   "id": 38605,
@@ -1565,7 +1676,8 @@
   "date": "2026-06-07 15:15:00",
   "venue": "S.C.G.",
   "is_final": 0,
-  "winnerteamid": 16
+  "winnerteamid": 16,
+  "unixtime": 1780809300
  },
  {
   "id": 38606,
@@ -1579,7 +1691,8 @@
   "date": "2026-06-07 19:20:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 3
+  "winnerteamid": 3,
+  "unixtime": 1780824000
  },
  {
   "id": 38607,
@@ -1593,7 +1706,8 @@
   "date": "2026-06-08 15:15:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 11
+  "winnerteamid": 11,
+  "unixtime": 1780895700
  },
  {
   "id": 38608,
@@ -1607,7 +1721,8 @@
   "date": "2026-06-11 19:30:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 1
+  "winnerteamid": 1,
+  "unixtime": 1781170200
  },
  {
   "id": 38609,
@@ -1621,7 +1736,8 @@
   "date": "2026-06-12 19:40:00",
   "venue": "Kardinia Park",
   "is_final": 0,
-  "winnerteamid": 7
+  "winnerteamid": 7,
+  "unixtime": 1781257200
  },
  {
   "id": 38610,
@@ -1635,7 +1751,8 @@
   "date": "2026-06-13 13:15:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 11
+  "winnerteamid": 11,
+  "unixtime": 1781320500
  },
  {
   "id": 38611,
@@ -1649,7 +1766,8 @@
   "date": "2026-06-13 16:15:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 12
+  "winnerteamid": 12,
+  "unixtime": 1781338500
  },
  {
   "id": 38612,
@@ -1663,7 +1781,8 @@
   "date": "2026-06-13 19:35:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 16
+  "winnerteamid": 16,
+  "unixtime": 1781345100
  },
  {
   "id": 38613,
@@ -1677,7 +1796,8 @@
   "date": "2026-06-14 13:10:00",
   "venue": "Bellerive Oval",
   "is_final": 0,
-  "winnerteamid": 2
+  "winnerteamid": 2,
+  "unixtime": 1781406600
  },
  {
   "id": 38614,
@@ -1691,7 +1811,8 @@
   "date": "2026-06-14 15:15:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 15
+  "winnerteamid": 15,
+  "unixtime": 1781414100
  },
  {
   "id": 38615,
@@ -1705,7 +1826,8 @@
   "date": "2026-06-18 20:10:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 6
+  "winnerteamid": 6,
+  "unixtime": 1781784600
  },
  {
   "id": 38616,
@@ -1719,7 +1841,8 @@
   "date": "2026-06-19 19:40:00",
   "venue": "Carrara",
   "is_final": 0,
-  "winnerteamid": 10
+  "winnerteamid": 10,
+  "unixtime": 1781862000
  },
  {
   "id": 38617,
@@ -1733,7 +1856,8 @@
   "date": "2026-06-20 13:15:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 1
+  "winnerteamid": 1,
+  "unixtime": 1781927100
  },
  {
   "id": 38618,
@@ -1747,7 +1871,8 @@
   "date": "2026-06-20 16:15:00",
   "venue": "Sydney Showground",
   "is_final": 0,
-  "winnerteamid": 3
+  "winnerteamid": 3,
+  "unixtime": 1781936100
  },
  {
   "id": 38619,
@@ -1761,7 +1886,8 @@
   "date": "2026-06-20 19:35:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 4
+  "winnerteamid": 4,
+  "unixtime": 1781948100
  },
  {
   "id": 38620,
@@ -1775,7 +1901,8 @@
   "date": "2026-06-21 13:10:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 12
+  "winnerteamid": 12,
+  "unixtime": 1782011400
  },
  {
   "id": 38621,
@@ -1789,7 +1916,8 @@
   "date": "2026-06-21 15:15:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 18
+  "winnerteamid": 18,
+  "unixtime": 1782018900
  },
  {
   "id": 38622,
@@ -1803,7 +1931,8 @@
   "date": "2026-06-25 19:30:00",
   "venue": "Gabba",
   "is_final": 0,
-  "winnerteamid": 2
+  "winnerteamid": 2,
+  "unixtime": 1782379800
  },
  {
   "id": 38625,
@@ -1817,7 +1946,8 @@
   "date": "2026-06-26 19:40:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 10
+  "winnerteamid": 10,
+  "unixtime": 1782466800
  },
  {
   "id": 38623,
@@ -1831,7 +1961,8 @@
   "date": "2026-06-27 13:15:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 3
+  "winnerteamid": 3,
+  "unixtime": 1782530100
  },
  {
   "id": 38624,
@@ -1845,7 +1976,8 @@
   "date": "2026-06-27 16:15:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 4
+  "winnerteamid": 4,
+  "unixtime": 1782540900
  },
  {
   "id": 38627,
@@ -1859,7 +1991,8 @@
   "date": "2026-06-27 19:35:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 13
+  "winnerteamid": 13,
+  "unixtime": 1782554700
  },
  {
   "id": 38626,
@@ -1873,7 +2006,8 @@
   "date": "2026-06-28 15:15:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 12
+  "winnerteamid": 12,
+  "unixtime": 1782623700
  },
  {
   "id": 38628,
@@ -1887,7 +2021,8 @@
   "date": "2026-06-28 17:10:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 6
+  "winnerteamid": 6,
+  "unixtime": 1782637800
  },
  {
   "id": 38630,
@@ -1901,7 +2036,8 @@
   "date": "2026-07-02 19:30:00",
   "venue": "Kardinia Park",
   "is_final": 0,
-  "winnerteamid": 2
+  "winnerteamid": 2,
+  "unixtime": 1782984600
  },
  {
   "id": 38635,
@@ -1915,7 +2051,8 @@
   "date": "2026-07-03 19:40:00",
   "venue": "S.C.G.",
   "is_final": 0,
-  "winnerteamid": 16
+  "winnerteamid": 16,
+  "unixtime": 1783071600
  },
  {
   "id": 38637,
@@ -1929,7 +2066,8 @@
   "date": "2026-07-03 20:10:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 1
+  "winnerteamid": 1,
+  "unixtime": 1783080600
  },
  {
   "id": 38633,
@@ -1943,7 +2081,8 @@
   "date": "2026-07-04 13:15:00",
   "venue": "York Park",
   "is_final": 0,
-  "winnerteamid": 11
+  "winnerteamid": 11,
+  "unixtime": 1783134900
  },
  {
   "id": 38632,
@@ -1957,7 +2096,8 @@
   "date": "2026-07-04 13:35:00",
   "venue": "Manuka Oval",
   "is_final": 0,
-  "winnerteamid": 9
+  "winnerteamid": 9,
+  "unixtime": 1783136100
  },
  {
   "id": 38631,
@@ -1971,7 +2111,8 @@
   "date": "2026-07-04 16:15:00",
   "venue": "Carrara",
   "is_final": 0,
-  "winnerteamid": 4
+  "winnerteamid": 4,
+  "unixtime": 1783145700
  },
  {
   "id": 38634,
@@ -1985,7 +2126,8 @@
   "date": "2026-07-04 19:35:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 3
+  "winnerteamid": 3,
+  "unixtime": 1783157700
  },
  {
   "id": 38629,
@@ -1999,7 +2141,8 @@
   "date": "2026-07-05 15:15:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 15
+  "winnerteamid": 15,
+  "unixtime": 1783228500
  },
  {
   "id": 38636,
@@ -2013,7 +2156,8 @@
   "date": "2026-07-05 16:40:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 13
+  "winnerteamid": 13,
+  "unixtime": 1783235400
  },
  {
   "id": 38646,
@@ -2027,7 +2171,8 @@
   "date": "2026-07-09 20:10:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 6
+  "winnerteamid": 6,
+  "unixtime": 1783599000
  },
  {
   "id": 38640,
@@ -2041,7 +2186,8 @@
   "date": "2026-07-10 19:40:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 4
+  "winnerteamid": 4,
+  "unixtime": 1783676400
  },
  {
   "id": 38643,
@@ -2055,7 +2201,8 @@
   "date": "2026-07-11 13:15:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 15
+  "winnerteamid": 15,
+  "unixtime": 1783739700
  },
  {
   "id": 38641,
@@ -2069,7 +2216,8 @@
   "date": "2026-07-11 16:15:00",
   "venue": "Sydney Showground",
   "is_final": 0,
-  "winnerteamid": 9
+  "winnerteamid": 9,
+  "unixtime": 1783750500
  },
  {
   "id": 38639,
@@ -2083,7 +2231,8 @@
   "date": "2026-07-11 19:35:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 10
+  "winnerteamid": 10,
+  "unixtime": 1783762500
  },
  {
   "id": 38645,
@@ -2097,7 +2246,8 @@
   "date": "2026-07-11 20:10:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 1
+  "winnerteamid": 1,
+  "unixtime": 1783766400
  },
  {
   "id": 38644,
@@ -2111,7 +2261,8 @@
   "date": "2026-07-12 13:10:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 18
+  "winnerteamid": 18,
+  "unixtime": 1783825800
  },
  {
   "id": 38642,
@@ -2125,7 +2276,8 @@
   "date": "2026-07-12 15:15:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 11
+  "winnerteamid": 11,
+  "unixtime": 1783833300
  },
  {
   "id": 38638,
@@ -2139,7 +2291,8 @@
   "date": "2026-07-12 16:40:00",
   "venue": "Gabba",
   "is_final": 0,
-  "winnerteamid": 2
+  "winnerteamid": 2,
+  "unixtime": 1783838400
  },
  {
   "id": 38649,
@@ -2153,7 +2306,8 @@
   "date": "2026-07-16 19:30:00",
   "venue": "Kardinia Park",
   "is_final": 0,
-  "winnerteamid": 7
+  "winnerteamid": 7,
+  "unixtime": 1784194200
  },
  {
   "id": 38653,
@@ -2167,7 +2321,8 @@
   "date": "2026-07-17 19:40:00",
   "venue": "S.C.G.",
   "is_final": 0,
-  "winnerteamid": 1
+  "winnerteamid": 1,
+  "unixtime": 1784281200
  },
  {
   "id": 38654,
@@ -2181,7 +2336,8 @@
   "date": "2026-07-18 13:15:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": 6
+  "winnerteamid": 6,
+  "unixtime": 1784346300
  },
  {
   "id": 38651,
@@ -2195,7 +2351,8 @@
   "date": "2026-07-18 16:15:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": 11
+  "winnerteamid": 11,
+  "unixtime": 1784355300
  },
  {
   "id": 38647,
@@ -2209,7 +2366,8 @@
   "date": "2026-07-18 19:35:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": 4
+  "winnerteamid": 4,
+  "unixtime": 1784367300
  },
  {
   "id": 38655,
@@ -2223,7 +2381,8 @@
   "date": "2026-07-18 20:10:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": 2
+  "winnerteamid": 2,
+  "unixtime": 1784376600
  },
  {
   "id": 38652,
@@ -2237,7 +2396,8 @@
   "date": "2026-07-19 13:10:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1784430600
  },
  {
   "id": 38650,
@@ -2251,7 +2411,8 @@
   "date": "2026-07-19 15:15:00",
   "venue": "Carrara",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1784438100
  },
  {
   "id": 38648,
@@ -2265,7 +2426,8 @@
   "date": "2026-07-19 16:40:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1784443200
  },
  {
   "id": 38663,
@@ -2279,7 +2441,8 @@
   "date": "2026-07-23 19:30:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1784800800
  },
  {
   "id": 38661,
@@ -2293,7 +2456,8 @@
   "date": "2026-07-24 19:40:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1784886000
  },
  {
   "id": 38664,
@@ -2307,7 +2471,8 @@
   "date": "2026-07-24 20:10:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1784895000
  },
  {
   "id": 38657,
@@ -2321,7 +2486,8 @@
   "date": "2026-07-25 13:05:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1784948700
  },
  {
   "id": 38659,
@@ -2335,7 +2501,8 @@
   "date": "2026-07-25 16:15:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1784960100
  },
  {
   "id": 38658,
@@ -2349,7 +2516,8 @@
   "date": "2026-07-25 16:35:00",
   "venue": "Sydney Showground",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1784961300
  },
  {
   "id": 38662,
@@ -2363,7 +2531,8 @@
   "date": "2026-07-25 19:40:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1784972400
  },
  {
   "id": 38656,
@@ -2377,7 +2546,8 @@
   "date": "2026-07-26 13:10:00",
   "venue": "Gabba",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1785035400
  },
  {
   "id": 38660,
@@ -2391,7 +2561,8 @@
   "date": "2026-07-26 15:15:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1785042900
  },
  {
   "id": 38666,
@@ -2405,7 +2576,8 @@
   "date": "2026-07-30 19:30:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1785403800
  },
  {
   "id": 38673,
@@ -2419,7 +2591,8 @@
   "date": "2026-07-31 20:10:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1785499800
  },
  {
   "id": 38671,
@@ -2433,7 +2606,8 @@
   "date": "2026-08-01 13:05:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1785553500
  },
  {
   "id": 38669,
@@ -2447,7 +2621,8 @@
   "date": "2026-08-01 13:35:00",
   "venue": "York Park",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1785555300
  },
  {
   "id": 38672,
@@ -2461,7 +2636,8 @@
   "date": "2026-08-01 18:35:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1785575100
  },
  {
   "id": 38665,
@@ -2475,7 +2651,8 @@
   "date": "2026-08-01 19:40:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1785577200
  },
  {
   "id": 38670,
@@ -2489,7 +2666,8 @@
   "date": "2026-08-02 13:10:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1785640200
  },
  {
   "id": 38668,
@@ -2503,7 +2681,8 @@
   "date": "2026-08-02 15:15:00",
   "venue": "Carrara",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1785647700
  },
  {
   "id": 38667,
@@ -2517,7 +2696,8 @@
   "date": "2026-08-02 16:40:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1785652800
  },
  {
   "id": 38680,
@@ -2531,7 +2711,8 @@
   "date": "2026-08-06 19:30:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786008600
  },
  {
   "id": 38674,
@@ -2545,7 +2726,8 @@
   "date": "2026-08-07 19:40:00",
   "venue": "Gabba",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786095600
  },
  {
   "id": 38677,
@@ -2559,7 +2741,8 @@
   "date": "2026-08-08 13:15:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786158900
  },
  {
   "id": 38679,
@@ -2573,7 +2756,8 @@
   "date": "2026-08-08 16:15:00",
   "venue": "S.C.G.",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786169700
  },
  {
   "id": 38675,
@@ -2587,7 +2771,8 @@
   "date": "2026-08-08 16:35:00",
   "venue": "Kardinia Park",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786170900
  },
  {
   "id": 38681,
@@ -2601,7 +2786,8 @@
   "date": "2026-08-08 19:35:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786183500
  },
  {
   "id": 38676,
@@ -2615,7 +2801,8 @@
   "date": "2026-08-09 13:10:00",
   "venue": "Manuka Oval",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786245000
  },
  {
   "id": 38682,
@@ -2629,7 +2816,8 @@
   "date": "2026-08-09 16:10:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786263000
  },
  {
   "id": 38678,
@@ -2643,7 +2831,8 @@
   "date": "2026-08-09 19:20:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786267200
  },
  {
   "id": 38683,
@@ -2657,7 +2846,8 @@
   "date": "2026-08-10 12:00:00",
   "venue": "Gabba",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786327200
  },
  {
   "id": 38684,
@@ -2671,7 +2861,8 @@
   "date": "2026-08-10 12:00:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786327200
  },
  {
   "id": 38685,
@@ -2685,7 +2876,8 @@
   "date": "2026-08-10 12:00:00",
   "venue": "Sydney Showground",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786327200
  },
  {
   "id": 38686,
@@ -2699,7 +2891,8 @@
   "date": "2026-08-10 12:00:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786327200
  },
  {
   "id": 38687,
@@ -2713,7 +2906,8 @@
   "date": "2026-08-10 12:00:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786327200
  },
  {
   "id": 38688,
@@ -2727,7 +2921,8 @@
   "date": "2026-08-10 12:00:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786327200
  },
  {
   "id": 38689,
@@ -2741,7 +2936,8 @@
   "date": "2026-08-10 12:00:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786327200
  },
  {
   "id": 38690,
@@ -2755,7 +2951,8 @@
   "date": "2026-08-10 12:30:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786330800
  },
  {
   "id": 38691,
@@ -2769,7 +2966,8 @@
   "date": "2026-08-10 14:00:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786341600
  },
  {
   "id": 38693,
@@ -2783,7 +2981,8 @@
   "date": "2026-08-17 12:00:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786932000
  },
  {
   "id": 38692,
@@ -2797,7 +2996,8 @@
   "date": "2026-08-17 12:00:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786932000
  },
  {
   "id": 38694,
@@ -2811,7 +3011,8 @@
   "date": "2026-08-17 12:00:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786932000
  },
  {
   "id": 38695,
@@ -2825,7 +3026,8 @@
   "date": "2026-08-17 12:00:00",
   "venue": "Kardinia Park",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786932000
  },
  {
   "id": 38696,
@@ -2839,7 +3041,8 @@
   "date": "2026-08-17 12:00:00",
   "venue": "M.C.G.",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786932000
  },
  {
   "id": 38697,
@@ -2853,7 +3056,8 @@
   "date": "2026-08-17 12:00:00",
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786932000
  },
  {
   "id": 38698,
@@ -2867,7 +3071,8 @@
   "date": "2026-08-17 12:00:00",
   "venue": "S.C.G.",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786932000
  },
  {
   "id": 38699,
@@ -2881,7 +3086,8 @@
   "date": "2026-08-17 12:30:00",
   "venue": "Adelaide Oval",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786935600
  },
  {
   "id": 38700,
@@ -2895,6 +3101,7 @@
   "date": "2026-08-17 14:00:00",
   "venue": "Perth Stadium",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": null,
+  "unixtime": 1786946400
  }
 ]

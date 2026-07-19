@@ -9,8 +9,10 @@ export interface Game {
   ateamid: number;
   hscore: number | null;
   ascore: number | null;
-  /** ISO-ish local start time, e.g. "2026-09-11 19:40:00" */
+  /** ISO-ish venue-local start time, e.g. "2026-09-11 19:40:00" */
   date: string;
+  /** absolute kickoff instant (epoch seconds) — used to render AWST */
+  unixtime?: number | null;
   venue: string | null;
   /** 0 = home & away; >0 = finals week number (Squiggle marks finals rounds after the last H&A round) */
   is_final: number;

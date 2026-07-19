@@ -101,6 +101,12 @@ body {
   margin-right: 2px;
 }
 
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .datastamp {
   margin: 0;
   color: var(--muted);
@@ -116,18 +122,52 @@ body {
   font-size: 0.82rem;
   color: var(--muted);
   margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .banner.subtle {
   border-left-color: var(--accent);
 }
 
+.banner-close {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 4px;
+  margin-left: auto;
+  border-radius: 6px;
+  flex: none;
+}
+
+.banner-close:hover {
+  color: var(--text);
+  background: var(--surface);
+}
+
 .tabs {
   display: flex;
   gap: 6px;
-  margin: 12px 0 18px;
   overflow-x: auto;
   scrollbar-width: none;
+  /* stay pinned to the top of the viewport while the page scrolls */
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--bg);
+  margin: 0 -16px;
+  padding: 10px 16px 12px;
+  border-bottom: 1px solid transparent;
+}
+
+.tabs.stuck {
+  border-bottom-color: var(--border);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 18%);
 }
 
 .tab {
@@ -158,6 +198,116 @@ body {
 h2 {
   font-size: 1.05rem;
   margin: 18px 0 6px;
+}
+
+.tabs-sentinel {
+  height: 1px;
+  margin-bottom: -1px;
+}
+
+/* section title + info popup trigger */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 10px;
+}
+
+.section-head h2 {
+  margin: 0;
+}
+
+.infobtn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 999px;
+  cursor: pointer;
+  padding: 2px;
+  font: inherit;
+}
+
+.infobtn.labelled {
+  padding: 3px 10px 3px 4px;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.infoicon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-style: italic;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  flex: none;
+}
+
+.infobtn:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.info-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 55%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 18px;
+  animation: fadein 0.15s ease;
+}
+
+.info-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  width: min(460px, 100%);
+  max-height: 80vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 18px 18px;
+}
+
+.info-modal-head {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 0 8px;
+}
+
+.info-modal-head h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.info-modal-body {
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.info-modal-body p {
+  margin: 0 0 10px;
+}
+
+.info-modal-body a {
+  color: var(--accent);
 }
 
 .sectionnote,
@@ -412,6 +562,136 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+/* completed game: distinct from upcoming */
+.fixturerow.done {
+  border-left: 3px solid var(--good);
+  background: color-mix(in srgb, var(--good) 6%, var(--surface));
+}
+
+.final-tag {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--good);
+  background: color-mix(in srgb, var(--good) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--good) 45%, transparent);
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.scoreline {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scoreside {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: var(--surface2);
+}
+
+.scoreside.won {
+  background: color-mix(in srgb, var(--good) 14%, var(--surface2));
+}
+
+.scoreside:not(.won) {
+  opacity: 0.68;
+}
+
+.scoreside-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.wintick {
+  font-weight: 900;
+  font-size: 0.8rem;
+}
+
+.scoreside-score {
+  font-weight: 800;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.scoreside.won .scoreside-score {
+  color: var(--text);
+}
+
+/* round stepper */
+.round-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 0 0 14px;
+}
+
+.round-step {
+  appearance: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  flex: none;
+}
+
+.round-step:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.round-step:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.round-label {
+  font-weight: 700;
+  font-size: 1rem;
+  min-width: 140px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.round-current,
+.round-done {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.round-current {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.round-done {
+  color: var(--good);
+  background: color-mix(in srgb, var(--good) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--good) 45%, transparent);
 }
 
 .fixturehead {
@@ -688,6 +968,7 @@ button.teamchip:focus-visible {
   width: min(680px, 100%);
   max-height: 86vh;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 0 18px calc(18px + env(safe-area-inset-bottom));
   animation: slideup 0.2s ease;
 }

@@ -46,6 +46,7 @@ function normaliseGames(raw) {
       hscore: g.hscore != null ? Number(g.hscore) : null,
       ascore: g.ascore != null ? Number(g.ascore) : null,
       date: String(g.date ?? ''),
+      unixtime: g.unixtime != null ? Number(g.unixtime) : null,
       venue: g.venue ?? null,
       is_final: g.is_final ? Math.max(1, Number(g.round) - lastHomeAwayRound) : 0,
       winnerteamid: g.winnerteamid != null ? Number(g.winnerteamid) : null

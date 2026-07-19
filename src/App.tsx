@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { loadSnapshot } from './api/loadData';
 import type { Snapshot } from './domain/types';
 import type { SimOutput } from './domain/simulate';
@@ -10,6 +10,7 @@ import FixturesView from './components/FixturesView';
 import LadderView from './components/LadderView';
 import PremiershipView from './components/PremiershipView';
 import TeamDetail from './components/TeamDetail';
+import InfoButton from './components/InfoButton';
 import { TeamSelectContext } from './teamSelect';
 
 type Tab = 'bracket' | 'fixtures' | 'ladder' | 'odds';
@@ -22,10 +23,40 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('bracket');
   const [selectedTeam, setSelectedTeam] = useState<number | null>(null);
+  const [tabsStuck, setTabsStuck] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const [dismissed, setDismissed] = useState<Set<string>>(() => {
+    try {
+      return new Set<string>(JSON.parse(localStorage.getItem('afl-dismissed') ?? '[]'));
+    } catch {
+      return new Set<string>();
+    }
+  });
+  const dismiss = (key: string) =>
+    setDismissed((prev) => {
+      const next = new Set(prev).add(key);
+      try {
+        localStorage.setItem('afl-dismissed', JSON.stringify([...next]));
+      } catch {
+        /* storage unavailable — dismissal lasts the session only */
+      }
+      return next;
+    });
 
   useEffect(() => {
     loadSnapshot().then(setSnapshot).catch((e) => setError(String(e)));
   }, []);
+
+  // shadow under the nav pills only once they've stuck to the top
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setTabsStuck(!e.isIntersecting), {
+      threshold: 0
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [snapshot]);
 
   useEffect(() => {
     if (!snapshot) return;
@@ -70,27 +101,62 @@ export default function App() {
         <h1>
           <span className="logo" aria-hidden="true">🏉</span> AFL Finals Tracker
         </h1>
-        <p className="datastamp">
-          {snapshot.meta.source === 'seed' ? 'Sample data · ' : ''}
-          {finalsStarted ? 'Finals series' : `After round ${snapshot.meta.currentRound}`} ·
-          updated {asOf.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
-        </p>
+        <div className="topbar-right">
+          <p className="datastamp">
+            {snapshot.meta.source === 'seed' ? 'Sample data · ' : ''}
+            {finalsStarted ? 'Finals series' : `After round ${snapshot.meta.currentRound}`} ·
+            updated {asOf.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+          </p>
+          <InfoButton title="About this app" label="About">
+            <p>
+              A tracker for the 2026 AFL finals (the new top-ten Wildcard format). It projects
+              the bracket from the live ladder and estimates each match and the premiership.
+            </p>
+            <p>
+              Projections come from an in-app model (ladder, percentage, form, home advantage)
+              plus a {SIM_ITERATIONS.toLocaleString()}-run Monte Carlo of the finals series.
+              Ladder, fixtures, results and consensus tips are from{' '}
+              <a href="https://squiggle.com.au">Squiggle</a>. All times are AWST.
+            </p>
+          </InfoButton>
+        </div>
       </header>
 
-      {snapshot.meta.source === 'seed' && (
+      {snapshot.meta.source === 'seed' && !dismissed.has('seed') && (
         <div className="banner" role="note">
-          Showing generated sample data — live Squiggle data replaces this after the first
-          scheduled update run.
+          <span>
+            Showing generated sample data — live Squiggle data replaces this after the first
+            scheduled update run.
+          </span>
+          <button
+            type="button"
+            className="banner-close"
+            aria-label="Dismiss"
+            onClick={() => dismiss('seed')}
+          >
+            ✕
+          </button>
         </div>
       )}
-      {!finalsStarted && (
+      {!finalsStarted && !dismissed.has('prefinals') && (
         <div className="banner subtle" role="note">
-          Finals haven&apos;t started yet — the bracket below is projected from the current
-          ladder and updates automatically as results come in.
+          <span>
+            Finals haven&apos;t started yet — the bracket below is projected from the current
+            ladder and updates automatically as results come in.
+          </span>
+          <button
+            type="button"
+            className="banner-close"
+            aria-label="Dismiss"
+            onClick={() => dismiss('prefinals')}
+          >
+            ✕
+          </button>
         </div>
       )}
 
-      <nav className="tabs" role="tablist">
+      <div ref={sentinelRef} className="tabs-sentinel" aria-hidden="true" />
+      <nav className={tabsStuck ? 'tabs stuck' : 'tabs'} role="tablist">
         {(
           [
             ['bracket', 'Bracket'],
@@ -121,14 +187,6 @@ export default function App() {
         {tab === 'ladder' && <LadderView snapshot={snapshot} locks={locks} sim={sim} />}
         {tab === 'odds' && <PremiershipView snapshot={snapshot} sim={sim} />}
       </main>
-
-      <footer className="footer">
-        <p>
-          Projections: in-app model (ladder, percentage, form, home advantage) + {''}
-          {SIM_ITERATIONS.toLocaleString()}-run Monte Carlo of the 2026 top-ten finals.
-          Consensus tips courtesy of <a href="https://squiggle.com.au">Squiggle</a>.
-        </p>
-      </footer>
 
       {selectedTeam != null && (
         <TeamDetail
