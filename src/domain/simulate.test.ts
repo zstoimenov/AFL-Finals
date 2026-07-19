@@ -50,10 +50,14 @@ describe('simulateSeason', () => {
     expect(finalsSum).toBeCloseTo(10, 5);
   });
 
-  it('ladder leaders are premiership favourites over bottom teams', () => {
-    // seed ladder top two are teams 8 and 2; team 17 is near the bottom
-    expect(sim.teams[2].premier).toBeGreaterThan(sim.teams[17].premier);
-    expect(sim.teams[17].premier).toBeLessThan(0.02);
+  it('the ladder leader is a stronger premiership chance than the last-placed team', () => {
+    // data-agnostic: works for any committed snapshot, seed or live
+    const ladder = [...snap.standings].sort((a, b) => b.pts - a.pts || b.percentage - a.percentage);
+    const top = ladder[0].id;
+    const bottom = ladder[ladder.length - 1].id;
+    expect(sim.teams[top].premier).toBeGreaterThan(sim.teams[bottom].premier);
+    expect(sim.teams[bottom].premier).toBeLessThan(0.05);
+    expect(sim.teams[top].makeFinals).toBeGreaterThan(0.9);
   });
 
   it('is deterministic for a fixed seed', () => {

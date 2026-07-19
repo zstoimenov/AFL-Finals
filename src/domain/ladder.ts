@@ -6,7 +6,9 @@ export function remainingHomeAwayGames(games: Game[]): Game[] {
 }
 
 export function finalsGames(games: Game[]): Game[] {
-  return games.filter((g) => g.is_final > 0);
+  // a real finals game needs actual participants — guards against upstream
+  // placeholder fixtures (TBD v TBD) sneaking into a snapshot
+  return games.filter((g) => g.is_final > 0 && g.hteamid > 0 && g.ateamid > 0);
 }
 
 export function remainingGamesByTeam(games: Game[]): Map<number, Game[]> {
