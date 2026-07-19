@@ -157,6 +157,12 @@ export default function App() {
               published here. <strong>Refresh</strong> re-checks for the latest published data
               without reinstalling — it won&apos;t appear until that daily update has run.
             </p>
+            <p className="disclaimer">
+              Unofficial fan project — not affiliated with, authorised or endorsed by the
+              Australian Football League (AFL) or any of its clubs. AFL, club names and marks
+              belong to their respective owners and are used here only to refer to the teams and
+              competition.
+            </p>
           </InfoButton>
         </div>
       </header>

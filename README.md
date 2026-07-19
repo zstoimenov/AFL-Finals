@@ -53,3 +53,12 @@ npm run fetch-data # pull a live Squiggle snapshot into public/data/
 Pushes to `main` deploy to GitHub Pages via `.github/workflows/deploy.yml`.
 One-time setup: repository **Settings → Pages → Source: GitHub Actions**.
 The app is served at `https://<user>.github.io/AFL-Finals/`.
+
+## Disclaimer
+
+This is an **unofficial, non-commercial fan project**. It is **not affiliated with,
+authorised or endorsed by the Australian Football League (AFL) or any of its clubs**.
+"AFL", the club names and any related marks are the property of their respective owners
+and are used here purely descriptively, to refer to the real teams and competition the
+app tracks. No club logos or crests are used. Match data comes from
+[Squiggle](https://squiggle.com.au) under its usage policy.
