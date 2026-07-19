@@ -1,7 +1,7 @@
 import type { BracketMatch, BracketSide } from '../domain/types';
 import { TEAMS, teamAbbrev } from '../domain/teams';
+import { formatGameDateTime } from '../domain/format';
 import TeamChip from './TeamChip';
-import LockBadge from './LockBadge';
 
 /** One bracket slot: matchup name, both sides, result or probabilities. */
 export default function MatchCard({ match }: { match: BracketMatch }) {
@@ -9,12 +9,17 @@ export default function MatchCard({ match }: { match: BracketMatch }) {
   const decided = match.winnerTeamId != null;
 
   return (
-    <article className={`matchcard${decided ? ' decided' : ''}${match.locked ? ' locked' : ''}`}>
+    <article className={`matchcard${decided ? ' decided' : ''}`}>
       <header>
         <span className="matchname">{match.name}</span>
-        {match.locked && !decided && <LockBadge label="Locked in" />}
-        {game?.venue && <span className="venue">{game.venue}</span>}
+        {match.locked && !decided && <span className="matchupset">Matchup set</span>}
       </header>
+      {game && (
+        <p className="gamewhen">
+          {game.venue && <span>{game.venue} · </span>}
+          {formatGameDateTime(game.date)}
+        </p>
+      )}
       <SideRow
         side={match.home}
         score={game?.complete ? game.hscore : null}
@@ -36,6 +41,18 @@ export default function MatchCard({ match }: { match: BracketMatch }) {
         </footer>
       )}
     </article>
+  );
+}
+
+/** Tiny padlock shown only when a side is a true mathematical certainty. */
+export function SideLockIcon() {
+  return (
+    <span className="sidelock" title="Mathematically locked to this position">
+      <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true" fill="currentColor">
+        <path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 1 1 6 0v3H9Z" />
+      </svg>
+      <span className="visually-hidden">Mathematically locked to this position</span>
+    </span>
   );
 }
 
@@ -65,7 +82,10 @@ function SideRow({
   }
   return (
     <div className={winner ? 'siderow winner' : 'siderow'}>
-      <TeamChip teamId={side.teamId} seed={side.seed} compact />
+      <span className="sidechip">
+        <TeamChip teamId={side.teamId} seed={side.seed} compact />
+        {side.locked && <SideLockIcon />}
+      </span>
       {score != null ? (
         <span className="score">{score}</span>
       ) : (

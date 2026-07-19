@@ -89,6 +89,9 @@ export interface BracketSide {
   placeholder: string | null;
   /** simulated probability that the eventual occupant is this team's most likely candidate */
   candidates: Array<{ teamId: number; prob: number }>;
+  /** this specific side can no longer change: the team is mathematically
+   * pinned to this seed pre-finals, or fixed by results once finals begin */
+  locked: boolean;
 }
 
 export interface BracketMatch {
@@ -104,7 +107,7 @@ export interface BracketMatch {
   /** Squiggle consensus probability home side wins, if available */
   squiggleHomeProb: number | null;
   winnerTeamId: number | null;
-  /** true when both participants are mathematically settled */
+  /** true only once finals have begun and both participants are fixed */
   locked: boolean;
 }
 

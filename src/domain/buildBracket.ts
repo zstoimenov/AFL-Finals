@@ -61,25 +61,24 @@ export function buildBracket(
             .sort((a, b) => b.prob - a.prob)
             .slice(0, 3)
         : [];
+      // a side is locked only when THIS team can no longer leave the slot:
+      // once finals begin the ladder (and any decided results) fix it; before
+      // that only a mathematically pinned ladder position counts
+      const locked =
+        teamId != null &&
+        (finalsStarted ? true : (lockByTeam.get(teamId)?.lockedExact ?? false));
       return {
         teamId,
         seed: teamId != null ? (seedOf.get(teamId) ?? null) : null,
         placeholder: teamId == null ? (PLACEHOLDERS[key]?.[which] ?? 'TBD') : null,
-        candidates
+        candidates,
+        locked
       };
     };
 
     const bothKnown = home != null && away != null;
     const decided = results[key] != null;
-    // a slot is locked when its participants can no longer change: once finals
-    // have begun the ladder is final so any known matchup is fixed; before
-    // that, both teams must be mathematically locked to their ladder spots
-    const locked =
-      bothKnown &&
-      (finalsStarted
-        ? true
-        : (lockByTeam.get(home)?.lockedExact ?? false) &&
-          (lockByTeam.get(away)?.lockedExact ?? false));
+    const locked = bothKnown && finalsStarted;
 
     return {
       key,
