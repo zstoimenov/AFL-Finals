@@ -1,6 +1,7 @@
 import type { Snapshot } from '../domain/types';
 import type { SimOutput } from '../domain/simulate';
 import { TEAMS } from '../domain/teams';
+import { isFavourite } from '../domain/favourite';
 import { sortedStandings } from '../domain/ladder';
 import TeamChip from './TeamChip';
 import InfoButton from './InfoButton';
@@ -69,7 +70,7 @@ export default function PremiershipView({
           if (!team) return null;
           const pct = r.premier * 100;
           return (
-            <div className="oddsrow" role="row" key={r.teamId} title={`${team.name}: premier ${pct.toFixed(1)}%, reach GF ${Math.round(r.reachGF * 100)}%, finals ${Math.round(r.makeFinals * 100)}%`}>
+            <div className={isFavourite(r.teamId) ? 'oddsrow fav-row' : 'oddsrow'} role="row" key={r.teamId} title={`${team.name}: premier ${pct.toFixed(1)}%, reach GF ${Math.round(r.reachGF * 100)}%, finals ${Math.round(r.makeFinals * 100)}%`}>
               <span className="oddsteam" role="cell">
                 <TeamChip teamId={r.teamId} compact />
               </span>

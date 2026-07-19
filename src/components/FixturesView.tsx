@@ -4,6 +4,7 @@ import { squiggleProb, computeRatings, winProb } from '../domain/predict';
 import { formatGameDateTime } from '../domain/format';
 import { currentHomeAwayRound, homeAwayRounds } from '../domain/ladder';
 import { TEAMS, teamName } from '../domain/teams';
+import { gameHasFavourite } from '../domain/favourite';
 import TeamChip from './TeamChip';
 import ProbBar from './ProbBar';
 import MatchCard from './MatchCard';
@@ -137,10 +138,12 @@ function GameMeta({ game }: { game: Game }) {
 function ResultRow({ game }: { game: Game }) {
   const homeWon = (game.hscore ?? 0) > (game.ascore ?? 0);
   const awayWon = (game.ascore ?? 0) > (game.hscore ?? 0);
+  const fav = gameHasFavourite(game);
   return (
-    <article className="fixturerow done">
+    <article className={fav ? 'fixturerow done fav-game' : 'fixturerow done'}>
       <div className="fixturehead">
         <span className="final-tag">Final</span>
+        {fav && <span className="fav-tag">Your club</span>}
         <GameMeta game={game} />
       </div>
       <div className="scoreline">
@@ -187,9 +190,11 @@ function FixtureRow({
 }) {
   const p = winProb(ratings, game.hteamid, game.ateamid);
   const sq = squiggleProb(snapshot, game.hteamid, game.ateamid);
+  const fav = gameHasFavourite(game);
   return (
-    <article className="fixturerow">
+    <article className={fav ? 'fixturerow fav-game' : 'fixturerow'}>
       <div className="fixturehead">
+        {fav && <span className="fav-tag">Your club</span>}
         <span className="fixture-teams">
           <TeamChip teamId={game.hteamid} /> <span className="vs">v</span>{' '}
           <TeamChip teamId={game.ateamid} />

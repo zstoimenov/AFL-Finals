@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import type { Snapshot, TeamLocks } from '../domain/types';
 import type { SimOutput } from '../domain/simulate';
 import { TEAMS } from '../domain/teams';
+import { isFavourite } from '../domain/favourite';
 import { sortedStandings } from '../domain/ladder';
 import { computeRatings, squiggleProb, winProb } from '../domain/predict';
 import { lockLabel } from '../domain/locks';
@@ -71,9 +72,13 @@ export default function TeamDetail({
         aria-label={`${team.name} details`}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="sheet-head" style={{ borderTopColor: team.color }}>
+        <header
+          className={isFavourite(teamId) ? 'sheet-head fav' : 'sheet-head'}
+          style={{ borderTopColor: team.color }}
+        >
           <div className="sheet-title">
             <TeamChip teamId={teamId} interactive={false} />
+            {isFavourite(teamId) && <span className="fav-tag">Your club</span>}
             <button type="button" className="sheet-close" aria-label="Close" onClick={onClose}>
               ✕
             </button>

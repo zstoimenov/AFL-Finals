@@ -9,6 +9,9 @@
   --gold: #f5c542;
   --good: #3fb970;
   --danger: #e5534b;
+  /* the user's club highlight (Fremantle purple, brightened to read on dark) */
+  --fav: #9d7bff;
+  --fav-ink: #2a0d54;
   color-scheme: dark;
 }
 
@@ -22,6 +25,8 @@
     --muted: #5b6875;
     --accent: #0b66c3;
     --gold: #b8860b;
+    --fav: #6d28d9;
+    --fav-ink: #ffffff;
     color-scheme: light;
   }
 }
@@ -1247,4 +1252,83 @@ button.teamchip:focus-visible {
   .topbar h1 {
     font-size: 1.15rem;
   }
+}
+
+/* ---------- your club highlight (see domain/favourite) ---------- */
+
+/* star marker sits beside the club name on every chip */
+.fav-star {
+  color: var(--fav);
+  font-size: 0.78rem;
+  line-height: 1;
+  flex: none;
+  text-shadow: 0 0 6px color-mix(in srgb, var(--fav) 55%, transparent);
+}
+
+/* the club name reads a touch stronger wherever the chip appears */
+.teamchip.fav .teamname {
+  color: var(--fav);
+  font-weight: 800;
+}
+
+/* and its monogram gets a purple halo so it pops out of a list */
+.teamchip.fav .monogram {
+  box-shadow:
+    inset 0 0 0 2px var(--fav),
+    0 0 0 2px color-mix(in srgb, var(--fav) 35%, transparent);
+}
+
+/* small pill used on fixture / bracket / detail headers */
+.fav-tag {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fav);
+  background: color-mix(in srgb, var(--fav) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fav) 45%, transparent);
+  padding: 2px 7px;
+  border-radius: 999px;
+  flex: none;
+  white-space: nowrap;
+}
+
+/* ladder + odds rows for the club: tinted band with a purple edge */
+.ladder tbody tr.fav-row td {
+  background: color-mix(in srgb, var(--fav) 12%, var(--surface));
+}
+.ladder tbody tr.fav-row td:first-child {
+  box-shadow: inset 3px 0 0 var(--fav);
+}
+.ladder tbody tr.fav-row:hover td {
+  background: color-mix(in srgb, var(--fav) 18%, var(--surface));
+}
+
+.oddsrow.fav-row {
+  border-radius: 10px;
+  padding: 6px 8px;
+  margin: 0 -8px;
+  background: color-mix(in srgb, var(--fav) 12%, transparent);
+  box-shadow: inset 3px 0 0 var(--fav);
+}
+
+/* fixture rows and bracket / finals cards involving the club */
+.fixturerow.fav-game,
+.matchcard.fav-game {
+  border-color: color-mix(in srgb, var(--fav) 55%, var(--border));
+  border-left: 3px solid var(--fav);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--fav) 22%, transparent);
+}
+
+/* keep the completed-game green edge but layer the club purple over it */
+.fixturerow.done.fav-game {
+  background: color-mix(in srgb, var(--fav) 7%, var(--surface));
+}
+
+/* detail sheet header for the club */
+.sheet-head.fav {
+  background: color-mix(in srgb, var(--fav) 8%, var(--surface));
+}
+.sheet-title .fav-tag {
+  margin-right: auto;
 }
