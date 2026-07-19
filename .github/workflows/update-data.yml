@@ -2,9 +2,9 @@ name: Update AFL data
 
 on:
   schedule:
-    # daily at 20:00 UTC (≈ 6am AEST) — picks up results and ladder moves;
-    # effectively weekly-or-better freshness during the season and finals
-    - cron: '0 20 * * *'
+    # daily at 21:00 AWST (13:00 UTC; AWST has no daylight saving) — picks up
+    # results and ladder moves through the season and finals
+    - cron: '0 13 * * *'
   workflow_dispatch:
 
 permissions:
