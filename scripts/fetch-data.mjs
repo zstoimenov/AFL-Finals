@@ -24,7 +24,11 @@ async function squiggle(query) {
 }
 
 function normaliseGames(raw) {
-  const games = raw.games ?? [];
+  // Squiggle publishes placeholder finals fixtures before the matchups are
+  // known (team ids 0, "TBD v TBD" at the MCG). Drop them — the app derives
+  // future finals matchups itself, and a placeholder would make it think the
+  // finals series has already started.
+  const games = (raw.games ?? []).filter((g) => Number(g.hteamid) > 0 && Number(g.ateamid) > 0);
   // finals week = rounds past the last home & away round
   const lastHomeAwayRound = Math.max(
     0,
