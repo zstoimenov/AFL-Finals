@@ -1,0 +1,622 @@
+:root {
+  --bg: #0b0f14;
+  --surface: #131a23;
+  --surface2: #1a2330;
+  --border: #263242;
+  --text: #e6edf3;
+  --muted: #93a1b0;
+  --accent: #4da3ff;
+  --gold: #f5c542;
+  --good: #3fb970;
+  --danger: #e5534b;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f4f6f9;
+    --surface: #ffffff;
+    --surface2: #eef2f7;
+    --border: #d7dee7;
+    --text: #17212b;
+    --muted: #5b6875;
+    --accent: #0b66c3;
+    --gold: #b8860b;
+    color-scheme: light;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 16px calc(24px + env(safe-area-inset-bottom));
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  color: var(--muted);
+}
+
+.spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error {
+  color: var(--danger);
+  padding: 24px 0;
+}
+
+/* ---------- header & tabs ---------- */
+
+.topbar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 18px 0 6px;
+}
+
+.topbar h1 {
+  font-size: 1.35rem;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.logo {
+  margin-right: 2px;
+}
+
+.datastamp {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.banner {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 8px 0;
+}
+
+.banner.subtle {
+  border-left-color: var(--accent);
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin: 12px 0 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tab {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.tab:not(.active):hover {
+  color: var(--text);
+}
+
+h2 {
+  font-size: 1.05rem;
+  margin: 18px 0 6px;
+}
+
+.sectionnote,
+.legendnote,
+.simnote {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin: 4px 0 14px;
+}
+
+/* ---------- bracket ---------- */
+
+.bracket-scroll {
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin: 0 -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.bracket {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(215px, 1fr));
+  gap: 14px;
+  min-width: 1120px;
+  align-items: stretch;
+}
+
+.bracket-col h2 {
+  margin: 6px 0 0;
+  font-size: 0.95rem;
+}
+
+.colsub {
+  color: var(--muted);
+  font-size: 0.72rem;
+  margin: 2px 0 10px;
+}
+
+.bracket-col-matches {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 12px;
+  height: calc(100% - 46px);
+}
+
+/* ---------- match card ---------- */
+
+.matchcard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+}
+
+.matchcard.locked {
+  border-color: color-mix(in srgb, var(--gold) 45%, var(--border));
+}
+
+.matchcard header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.matchname {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.venue {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.siderow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  background: var(--surface2);
+}
+
+.siderow.winner {
+  outline: 1.5px solid var(--good);
+}
+
+.siderow.tbd {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.placeholder {
+  font-style: italic;
+}
+
+.candidate {
+  font-size: 0.75rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+
+.score {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.sideprob {
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.consensus {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.premier-callout {
+  margin: 14px 0 0;
+  font-weight: 700;
+}
+
+/* ---------- team chip ---------- */
+
+.teamchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.monogram {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 800;
+  flex: none;
+  border: 1px solid rgb(255 255 255 / 18%);
+}
+
+.teamname {
+  font-weight: 600;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seed {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.teamchip.tbd .monogram {
+  background: var(--surface2);
+  color: var(--muted);
+}
+
+/* ---------- lock badge ---------- */
+
+.lockbadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: color-mix(in srgb, var(--gold) 16%, transparent);
+  color: var(--gold);
+  border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.lockbadge.out {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+}
+
+/* ---------- prob bar ---------- */
+
+.probbar-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.probbar {
+  display: flex;
+  gap: 2px; /* surface gap between fills */
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.probseg {
+  height: 100%;
+  border-radius: 3px;
+  min-width: 4px;
+}
+
+.probnums {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.probnums strong {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- fixtures ---------- */
+
+.fixturelist,
+.cardgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.fixturerow {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fixturehead {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fixture-teams {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.vs {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+/* ---------- ladder ---------- */
+
+.tablewrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+table.ladder {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.85rem;
+  min-width: 640px;
+}
+
+.ladder th,
+.ladder td {
+  padding: 8px 10px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.ladder thead th {
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+}
+
+.ladder .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ladder td.pts {
+  font-weight: 700;
+}
+
+.ladder td.rank {
+  color: var(--muted);
+}
+
+.ladder tbody tr:hover {
+  background: var(--surface2);
+}
+
+.ladder tr.cut td {
+  border-bottom: 2px solid var(--accent);
+}
+
+.ladder tr.bye-cut td {
+  border-bottom: 2px dashed var(--gold);
+}
+
+.cutkey {
+  display: inline-block;
+  width: 22px;
+  height: 0;
+  vertical-align: middle;
+  margin: 0 4px;
+}
+
+.cutkey.bye {
+  border-bottom: 2px dashed var(--gold);
+}
+
+.cutkey.fin {
+  border-bottom: 2px solid var(--accent);
+}
+
+/* ---------- odds ---------- */
+
+.hero-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+
+.hero-label {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.hero-team {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.hero-team .teamname {
+  font-size: 1.15rem;
+}
+
+.hero-num {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-sub {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.oddslist {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.oddsrow {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 4px 12px;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+.oddsbar {
+  position: relative;
+  height: 14px;
+  background: var(--surface2);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.oddsfill {
+  height: 8px;
+  margin-left: 2px;
+  border-radius: 4px;
+  min-width: 3px;
+  transition: width 0.4s ease;
+}
+
+.oddsval {
+  margin-left: 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.oddsminor {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+/* ---------- footer ---------- */
+
+.footer {
+  margin-top: 30px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.footer a {
+  color: var(--accent);
+}
+
+@media (max-width: 640px) {
+  .oddsrow {
+    grid-template-columns: 96px 1fr;
+  }
+
+  .topbar h1 {
+    font-size: 1.15rem;
+  }
+}
