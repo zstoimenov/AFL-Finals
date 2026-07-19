@@ -5,6 +5,7 @@ import type { SimOutput } from './domain/simulate';
 import { computeLocks } from './domain/locks';
 import { buildBracket } from './domain/buildBracket';
 import { finalsGames } from './domain/ladder';
+import { formatUpdatedAt } from './domain/format';
 import BracketView from './components/BracketView';
 import FixturesView from './components/FixturesView';
 import LadderView from './components/LadderView';
@@ -25,6 +26,8 @@ export default function App() {
   const [selectedTeam, setSelectedTeam] = useState<number | null>(null);
   const [tabsStuck, setTabsStuck] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshMsg, setRefreshMsg] = useState<string | null>(null);
   const [dismissed, setDismissed] = useState<Set<string>>(() => {
     try {
       return new Set<string>(JSON.parse(localStorage.getItem('afl-dismissed') ?? '[]'));
@@ -66,6 +69,25 @@ export default function App() {
     return () => worker.terminate();
   }, [snapshot]);
 
+  const refresh = async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    setRefreshMsg(null);
+    const prev = snapshot?.meta.fetchedAt;
+    try {
+      const fresh = await loadSnapshot(true);
+      setSnapshot(fresh);
+      setRefreshMsg(
+        fresh.meta.fetchedAt !== prev ? 'Updated to the latest data' : 'Already up to date'
+      );
+    } catch {
+      setRefreshMsg('Could not refresh — check your connection');
+    } finally {
+      setRefreshing(false);
+      window.setTimeout(() => setRefreshMsg(null), 4000);
+    }
+  };
+
   const locks = useMemo(
     () => (snapshot ? computeLocks(snapshot.standings, snapshot.games) : []),
     [snapshot]
@@ -92,7 +114,6 @@ export default function App() {
   }
 
   const finalsStarted = finalsGames(snapshot.games).length > 0;
-  const asOf = new Date(snapshot.meta.fetchedAt);
 
   return (
     <TeamSelectContext.Provider value={setSelectedTeam}>
@@ -105,8 +126,21 @@ export default function App() {
           <p className="datastamp">
             {snapshot.meta.source === 'seed' ? 'Sample data · ' : ''}
             {finalsStarted ? 'Finals series' : `After round ${snapshot.meta.currentRound}`} ·
-            updated {asOf.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+            updated {formatUpdatedAt(snapshot.meta.fetchedAt)}
           </p>
+          <button
+            type="button"
+            className="refreshbtn"
+            onClick={refresh}
+            disabled={refreshing}
+            aria-label="Refresh data"
+            title="Check for the latest published data"
+          >
+            <span className={refreshing ? 'refreshicon spinning' : 'refreshicon'} aria-hidden="true">
+              ⟳
+            </span>
+            <span className="refreshlabel">{refreshing ? 'Refreshing…' : 'Refresh'}</span>
+          </button>
           <InfoButton title="About this app" label="About">
             <p>
               A tracker for the 2026 AFL finals (the new top-ten Wildcard format). It projects
@@ -118,9 +152,19 @@ export default function App() {
               Ladder, fixtures, results and consensus tips are from{' '}
               <a href="https://squiggle.com.au">Squiggle</a>. All times are AWST.
             </p>
+            <p>
+              New results are fetched from Squiggle automatically every day at 9:00 PM AWST and
+              published here. <strong>Refresh</strong> re-checks for the latest published data
+              without reinstalling — it won&apos;t appear until that daily update has run.
+            </p>
           </InfoButton>
         </div>
       </header>
+      {refreshMsg && (
+        <div className="refresh-toast" role="status">
+          {refreshMsg}
+        </div>
+      )}
 
       {snapshot.meta.source === 'seed' && !dismissed.has('seed') && (
         <div className="banner" role="note">

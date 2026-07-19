@@ -113,6 +113,63 @@ body {
   font-size: 0.8rem;
 }
 
+.refreshbtn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 4px 12px 4px 9px;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.refreshbtn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.refreshbtn:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.refreshicon {
+  font-size: 0.95rem;
+  line-height: 1;
+  display: inline-block;
+}
+
+.refreshicon.spinning {
+  animation: spin 0.8s linear infinite;
+}
+
+.refresh-toast {
+  margin: 8px 0 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+
+@media (max-width: 560px) {
+  .refreshlabel {
+    display: none;
+  }
+
+  .refreshbtn {
+    padding: 5px 9px;
+  }
+}
+
 .banner {
   background: var(--surface2);
   border: 1px solid var(--border);
