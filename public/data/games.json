@@ -2418,16 +2418,16 @@
   "id": 38648,
   "round": 19,
   "year": 2026,
-  "complete": 0,
+  "complete": 100,
   "hteamid": 5,
   "ateamid": 9,
-  "hscore": 48,
-  "ascore": 42,
+  "hscore": 67,
+  "ascore": 64,
   "date": "2026-07-19 16:40:00",
   "unixtime": 1784443200,
   "venue": "Docklands",
   "is_final": 0,
-  "winnerteamid": null
+  "winnerteamid": 5
  },
  {
   "id": 38663,
