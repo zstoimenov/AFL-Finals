@@ -12,6 +12,28 @@ const AWST = new Intl.DateTimeFormat('en-AU', {
   hour12: true
 });
 
+const AWST_STAMP = new Intl.DateTimeFormat('en-AU', {
+  timeZone: 'Australia/Perth',
+  day: 'numeric',
+  month: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+  hour12: true
+});
+
+/**
+ * Formats an ISO instant (e.g. the snapshot's fetchedAt) as an AWST date + time,
+ * like "19 Jul, 4:39 PM AWST", for the "last updated" stamp.
+ */
+export function formatUpdatedAt(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const p = Object.fromEntries(AWST_STAMP.formatToParts(d).map((x) => [x.type, x.value]));
+  const month = MONTHS[Number(p.month) - 1] ?? p.month;
+  const period = (p.dayPeriod ?? '').toUpperCase();
+  return `${p.day} ${month}, ${p.hour}:${p.minute} ${period} AWST`;
+}
+
 /**
  * Formats a game's kickoff in AWST, e.g. "Sat 25 Jul · 7:40 PM AWST".
  *

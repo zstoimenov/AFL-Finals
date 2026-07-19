@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { formatGameDateTime } from './format';
+import { formatGameDateTime, formatUpdatedAt } from './format';
+
+describe('formatUpdatedAt', () => {
+  it('renders an ISO instant as an AWST date + time', () => {
+    // 08:39 UTC → 16:39 (4:39 PM) in Perth
+    expect(formatUpdatedAt('2026-07-19T08:39:57.424Z')).toBe('19 Jul, 4:39 PM AWST');
+  });
+  it('passes through unparseable input', () => {
+    expect(formatUpdatedAt('nope')).toBe('nope');
+  });
+});
 
 describe('formatGameDateTime', () => {
   it('renders unixtime in AWST (Australia/Perth, UTC+8)', () => {
