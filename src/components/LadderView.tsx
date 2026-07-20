@@ -43,15 +43,15 @@ export default function LadderView({
         <table className="ladder">
           <thead>
             <tr>
-              <th className="num">#</th>
-              <th>Team</th>
-              <th className="num">P</th>
-              <th className="num">W</th>
-              <th className="num">L</th>
-              <th className="num">D</th>
+              <th className="num rank">#</th>
+              <th className="teamcell">Team</th>
+              <th className="num sec">P</th>
+              <th className="num sec">W</th>
+              <th className="num sec">L</th>
+              <th className="num sec">D</th>
               <th className="num">Pts</th>
               <th className="num">%</th>
-              <th className="num">Finals %</th>
+              <th className="num finalspct">Finals %</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -71,16 +71,16 @@ export default function LadderView({
                     .join(' ') || undefined}
                 >
                   <td className="num rank">{i + 1}</td>
-                  <td>
+                  <td className="teamcell">
                     <TeamChip teamId={s.id} />
                   </td>
-                  <td className="num">{s.played}</td>
-                  <td className="num">{s.wins}</td>
-                  <td className="num">{s.losses}</td>
-                  <td className="num">{s.draws}</td>
+                  <td className="num sec">{s.played}</td>
+                  <td className="num sec">{s.wins}</td>
+                  <td className="num sec">{s.losses}</td>
+                  <td className="num sec">{s.draws}</td>
                   <td className="num pts">{s.pts}</td>
                   <td className="num">{s.percentage.toFixed(1)}</td>
-                  <td className="num">
+                  <td className="num finalspct">
                     {finalsPct != null ? `${Math.round(finalsPct * 100)}%` : '…'}
                   </td>
                   <td>{label && <LockBadge label={label} />}</td>

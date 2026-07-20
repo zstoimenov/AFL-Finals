@@ -1,5 +1,6 @@
+import type { CSSProperties } from 'react';
 import type { BracketMatch, BracketSide } from '../domain/types';
-import { TEAMS, teamAbbrev } from '../domain/teams';
+import { TEAMS, teamAbbrev, teamAccent } from '../domain/teams';
 import { isFavourite } from '../domain/favourite';
 import { formatGameDateTime } from '../domain/format';
 import TeamChip from './TeamChip';
@@ -16,9 +17,25 @@ export default function MatchCard({ match }: { match: BracketMatch }) {
     isFavourite(match.home.candidates[0]?.teamId) ||
     isFavourite(match.away.candidates[0]?.teamId);
 
+  // for an undecided matchup with both teams known, tint the card with the
+  // projected winner's colour — a quieter echo of the club highlight above
+  const favouredId =
+    !fav && !decided && match.homeWinProb != null && match.home.teamId != null && match.away.teamId != null
+      ? match.homeWinProb >= 0.5
+        ? match.home.teamId
+        : match.away.teamId
+      : null;
+  const winStyle =
+    favouredId != null
+      ? ({ '--win': teamAccent(favouredId) } as CSSProperties)
+      : undefined;
+
   return (
     <article
-      className={`matchcard${decided ? ' decided' : ''}${fav ? ' fav-game' : ''}`}
+      className={`matchcard${decided ? ' decided' : ''}${fav ? ' fav-game' : ''}${
+        favouredId != null ? ' win-edge' : ''
+      }`}
+      style={winStyle}
     >
       <header>
         <span className="matchname">{match.name}</span>

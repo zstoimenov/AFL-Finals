@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
+import type { CSSProperties } from 'react';
 import type { BracketMatch, Game, Snapshot } from '../domain/types';
 import { squiggleProb, computeRatings, winProb } from '../domain/predict';
 import { formatGameDateTime } from '../domain/format';
 import { currentHomeAwayRound, homeAwayRounds } from '../domain/ladder';
-import { TEAMS, teamName } from '../domain/teams';
+import { TEAMS, teamName, teamAccent } from '../domain/teams';
 import { gameHasFavourite } from '../domain/favourite';
 import TeamChip from './TeamChip';
 import ProbBar from './ProbBar';
@@ -191,8 +192,16 @@ function FixtureRow({
   const p = winProb(ratings, game.hteamid, game.ateamid);
   const sq = squiggleProb(snapshot, game.hteamid, game.ateamid);
   const fav = gameHasFavourite(game);
+  // tint an upcoming game with the projected winner's colour (unless it's the
+  // user's club, which already gets the brighter highlight)
+  const favouredId = fav ? null : p >= 0.5 ? game.hteamid : game.ateamid;
+  const winStyle =
+    favouredId != null ? ({ '--win': teamAccent(favouredId) } as CSSProperties) : undefined;
   return (
-    <article className={fav ? 'fixturerow fav-game' : 'fixturerow'}>
+    <article
+      className={fav ? 'fixturerow fav-game' : 'fixturerow win-edge'}
+      style={winStyle}
+    >
       <div className="fixturehead">
         {fav && <span className="fav-tag">Your club</span>}
         <span className="fixture-teams">
