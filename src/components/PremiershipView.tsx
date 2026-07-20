@@ -69,8 +69,18 @@ export default function PremiershipView({
           const team = TEAMS[r.teamId];
           if (!team) return null;
           const pct = r.premier * 100;
+          // teams with a negligible flag chance are dimmed so the genuine
+          // contenders at the top read clearly
+          const longshot = r.premier < 0.01 && !isFavourite(r.teamId);
+          const cls = [
+            'oddsrow',
+            isFavourite(r.teamId) ? 'fav-row' : '',
+            longshot ? 'longshot' : ''
+          ]
+            .filter(Boolean)
+            .join(' ');
           return (
-            <div className={isFavourite(r.teamId) ? 'oddsrow fav-row' : 'oddsrow'} role="row" key={r.teamId} title={`${team.name}: premier ${pct.toFixed(1)}%, reach GF ${Math.round(r.reachGF * 100)}%, finals ${Math.round(r.makeFinals * 100)}%`}>
+            <div className={cls} role="row" key={r.teamId} title={`${team.name}: premier ${pct.toFixed(1)}%, reach GF ${Math.round(r.reachGF * 100)}%, finals ${Math.round(r.makeFinals * 100)}%`}>
               <span className="oddsteam" role="cell">
                 <TeamChip teamId={r.teamId} compact />
               </span>

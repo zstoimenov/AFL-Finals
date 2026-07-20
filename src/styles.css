@@ -12,6 +12,15 @@
   /* the user's club highlight (Fremantle purple, brightened to read on dark) */
   --fav: #9d7bff;
   --fav-ink: #2a0d54;
+  /* soft mix used to darken the predicted-winner edge on cards */
+  --edge-dim: #0c0f14;
+
+  /* shape & elevation */
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 22%);
+  --shadow-2: 0 6px 22px -10px rgb(0 0 0 / 45%);
+
   color-scheme: dark;
 }
 
@@ -27,6 +36,8 @@
     --gold: #b8860b;
     --fav: #6d28d9;
     --fav-ink: #ffffff;
+    --shadow-1: 0 1px 2px rgb(16 33 51 / 8%);
+    --shadow-2: 0 8px 24px -12px rgb(16 33 51 / 22%);
     color-scheme: light;
   }
 }
@@ -97,9 +108,10 @@ body {
 }
 
 .topbar h1 {
-  font-size: 1.35rem;
+  font-size: 1.4rem;
+  font-weight: 800;
   margin: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.025em;
 }
 
 .logo {
@@ -115,7 +127,9 @@ body {
 .datastamp {
   margin: 0;
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+  text-align: right;
+  line-height: 1.35;
 }
 
 .refreshbtn {
@@ -258,7 +272,9 @@ body {
 }
 
 h2 {
-  font-size: 1.05rem;
+  font-size: 1.3rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
   margin: 18px 0 6px;
 }
 
@@ -422,12 +438,12 @@ h2 {
 .matchcard {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 10px 12px;
+  border-radius: var(--radius);
+  padding: 11px 13px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+  box-shadow: var(--shadow-1);
 }
 
 .matchcard.locked {
@@ -619,11 +635,12 @@ h2 {
 .fixturerow {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius);
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  box-shadow: var(--shadow-1);
 }
 
 /* completed game: distinct from upcoming */
@@ -779,12 +796,14 @@ h2 {
 .tablewrap {
   overflow-x: auto;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius);
   background: var(--surface);
+  box-shadow: var(--shadow-1);
 }
 
 table.ladder {
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   width: 100%;
   font-size: 0.85rem;
   min-width: 640px;
@@ -792,20 +811,26 @@ table.ladder {
 
 .ladder th,
 .ladder td {
-  padding: 8px 10px;
+  padding: 9px 10px;
   text-align: left;
   white-space: nowrap;
 }
 
 .ladder thead th {
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.68rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
+  z-index: 2;
   background: var(--surface);
+}
+
+.ladder tbody td {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
 }
 
 .ladder .num {
@@ -813,15 +838,66 @@ table.ladder {
   font-variant-numeric: tabular-nums;
 }
 
+/* primary numbers read strongest; the running P/W/L/D count is context */
 .ladder td.pts {
+  font-weight: 800;
+  color: var(--text);
+}
+
+.ladder td.finalspct {
   font-weight: 700;
+  color: var(--text);
+}
+
+.ladder td.sec {
+  color: var(--muted);
+  font-weight: 500;
 }
 
 .ladder td.rank {
   color: var(--muted);
+  font-weight: 700;
 }
 
-.ladder tbody tr:hover {
+/* frozen identity columns: rank + team stay put while the stats scroll */
+.ladder .rank,
+.ladder .teamcell {
+  position: sticky;
+  z-index: 1;
+  background: var(--surface);
+}
+
+.ladder .rank {
+  left: 0;
+  width: 46px;
+}
+
+.ladder .teamcell {
+  left: 46px;
+  box-shadow: 1px 0 0 var(--border);
+}
+
+.ladder thead .rank,
+.ladder thead .teamcell {
+  z-index: 3;
+}
+
+.ladder tbody tr:hover .rank,
+.ladder tbody tr:hover .teamcell {
+  background: var(--surface2);
+}
+
+.ladder tbody tr.fav-row .rank,
+.ladder tbody tr.fav-row .teamcell {
+  background: color-mix(in srgb, var(--fav) 12%, var(--surface));
+}
+
+.ladder tbody tr.fav-row:hover .rank,
+.ladder tbody tr.fav-row:hover .teamcell {
+  background: color-mix(in srgb, var(--fav) 18%, var(--surface));
+}
+
+.ladder tbody tr:hover td {
   background: var(--surface2);
 }
 
@@ -854,9 +930,10 @@ table.ladder {
 .hero-tile {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius);
   padding: 16px 18px;
   margin-bottom: 16px;
+  box-shadow: var(--shadow-2);
 }
 
 .hero-label {
@@ -905,8 +982,20 @@ table.ladder {
   align-items: center;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 8px 12px;
+  box-shadow: var(--shadow-1);
+  transition: opacity 0.15s;
+}
+
+/* teams with a negligible flag chance recede so the contenders lead the eye */
+.oddsrow.longshot {
+  opacity: 0.5;
+  box-shadow: none;
+}
+
+.oddsrow.longshot:hover {
+  opacity: 1;
 }
 
 .oddsbar {
@@ -1322,12 +1411,25 @@ button.teamchip:focus-visible {
   box-shadow: inset 3px 0 0 var(--fav);
 }
 
-/* fixture rows and bracket / finals cards involving the club */
+/* fixture rows and bracket / finals cards involving the club — the brightest
+   highlight in the app: a purple ring with a soft outer glow */
 .fixturerow.fav-game,
 .matchcard.fav-game {
   border-color: color-mix(in srgb, var(--fav) 55%, var(--border));
   border-left: 3px solid var(--fav);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--fav) 22%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--fav) 28%, transparent),
+    0 6px 22px -8px color-mix(in srgb, var(--fav) 45%, transparent);
+}
+
+/* every other match card echoes that highlight for the projected winner, but
+   quieter — a darkened band in that team's own colours, and no outer glow, so
+   it stays clearly subordinate to the club highlight above */
+.fixturerow.win-edge,
+.matchcard.win-edge {
+  border-color: color-mix(in srgb, var(--win) 34%, var(--border));
+  border-left: 3px solid color-mix(in srgb, var(--win) 72%, #000);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--win) 12%, transparent);
 }
 
 /* keep the completed-game green edge but layer the club purple over it */

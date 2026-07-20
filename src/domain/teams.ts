@@ -41,3 +41,29 @@ export function teamName(id: number | null | undefined): string {
 export function teamAbbrev(id: number | null | undefined): string {
   return id != null && TEAMS[id] ? TEAMS[id].abbrev : 'TBD';
 }
+
+/** Relative luminance of a #rrggbb colour (0–255 scale). */
+function luminance(hex: string): number {
+  const n = parseInt(hex.slice(1), 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/**
+ * A display-friendly highlight colour for a club: its most vivid identity colour
+ * that still reads against the app surface (skips near-white and near-black so
+ * black-and-white clubs fall back to a neutral). Used for the predicted-winner
+ * edge on match cards.
+ */
+export function teamAccent(id: number | null | undefined): string {
+  const t = id != null ? TEAMS[id] : null;
+  if (!t) return '#8b98a5';
+  const usable = [t.color, t.color2].filter((c) => {
+    const l = luminance(c);
+    return l > 30 && l < 220;
+  });
+  if (usable.length === 0) return '#aeb8c4';
+  return usable.sort((a, b) => luminance(b) - luminance(a))[0];
+}
