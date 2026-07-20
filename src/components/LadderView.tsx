@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Snapshot, TeamLocks } from '../domain/types';
 import type { SimOutput } from '../domain/simulate';
 import { sortedStandings } from '../domain/ladder';
@@ -22,6 +23,8 @@ export default function LadderView({
 }) {
   const ladder = sortedStandings(snapshot.standings);
   const lockByTeam = new Map(locks.map((l) => [l.teamId, l]));
+  // a soft edge on the pinned crest column, shown only once scrolled sideways
+  const [scrolled, setScrolled] = useState(false);
 
   return (
     <section className="ladderview">
@@ -39,12 +42,17 @@ export default function LadderView({
           </p>
         </InfoButton>
       </div>
-      <div className="tablewrap">
+      <div
+        className={scrolled ? 'tablewrap scrolled' : 'tablewrap'}
+        onScroll={(e) => setScrolled(e.currentTarget.scrollLeft > 0)}
+      >
         <table className="ladder">
           <thead>
             <tr>
-              <th className="num rank">#</th>
-              <th className="teamcell">Team</th>
+              <th className="idcell">
+                <span className="rank">#</span>
+              </th>
+              <th className="namecell">Team</th>
               <th className="num sec">P</th>
               <th className="num sec">W</th>
               <th className="num sec">L</th>
@@ -70,9 +78,12 @@ export default function LadderView({
                     .filter(Boolean)
                     .join(' ') || undefined}
                 >
-                  <td className="num rank">{i + 1}</td>
-                  <td className="teamcell">
-                    <TeamChip teamId={s.id} />
+                  <td className="idcell">
+                    <span className="rank">{i + 1}</span>
+                    <TeamChip teamId={s.id} part="icon" />
+                  </td>
+                  <td className="namecell">
+                    <TeamChip teamId={s.id} part="name" />
                   </td>
                   <td className="num sec">{s.played}</td>
                   <td className="num sec">{s.wins}</td>

@@ -517,8 +517,8 @@ h2 {
 
 .consensus {
   margin: 0;
-  font-size: 0.72rem;
-  color: var(--muted);
+  font-size: 0.68rem;
+  color: color-mix(in srgb, var(--text) 82%, var(--muted));
 }
 
 .premier-callout {
@@ -854,47 +854,63 @@ table.ladder {
   font-weight: 500;
 }
 
-.ladder td.rank {
-  color: var(--muted);
-  font-weight: 700;
-}
-
-/* frozen identity columns: rank + team stay put while the stats scroll */
-.ladder .rank,
-.ladder .teamcell {
+/* frozen identity: only the rank number + club crest stay put; the name and
+   every stat scroll, so the pinned block stays narrow on small screens. Rank
+   and crest live in one cell so there's never a seam for the name to leak
+   through as it scrolls underneath. */
+.ladder .idcell {
   position: sticky;
+  left: 0;
   z-index: 1;
   background: var(--surface);
+  white-space: nowrap;
 }
 
-.ladder .rank {
-  left: 0;
-  width: 46px;
+.ladder .idcell .rank {
+  display: inline-block;
+  width: 20px;
+  margin-right: 9px;
+  text-align: right;
+  color: var(--muted);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  vertical-align: middle;
 }
 
-.ladder .teamcell {
-  left: 46px;
-  box-shadow: 1px 0 0 var(--border);
+.ladder .idcell .teamchip {
+  vertical-align: middle;
 }
 
-.ladder thead .rank,
-.ladder thead .teamcell {
+/* the name column scrolls; it sits close to the crest when nothing is scrolled */
+.ladder .namecell {
+  padding-left: 4px;
+}
+
+.ladder thead .idcell {
   z-index: 3;
 }
 
-.ladder tbody tr:hover .rank,
-.ladder tbody tr:hover .teamcell {
+.ladder tbody tr:hover .idcell {
   background: var(--surface2);
 }
 
-.ladder tbody tr.fav-row .rank,
-.ladder tbody tr.fav-row .teamcell {
+.ladder tbody tr.fav-row .idcell {
   background: color-mix(in srgb, var(--fav) 12%, var(--surface));
 }
 
-.ladder tbody tr.fav-row:hover .rank,
-.ladder tbody tr.fav-row:hover .teamcell {
+.ladder tbody tr.fav-row:hover .idcell {
   background: color-mix(in srgb, var(--fav) 18%, var(--surface));
+}
+
+/* a soft edge appears on the pinned column only once the row is scrolled */
+.tablewrap.scrolled .idcell {
+  box-shadow: 8px 0 10px -8px rgb(0 0 0 / 45%);
+}
+
+.tablewrap.scrolled tbody tr.fav-row .idcell {
+  box-shadow:
+    inset 3px 0 0 var(--fav),
+    8px 0 10px -8px rgb(0 0 0 / 45%);
 }
 
 .ladder tbody tr:hover td {
