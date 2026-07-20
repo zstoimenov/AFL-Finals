@@ -518,7 +518,8 @@ h2 {
 .consensus {
   margin: 0;
   font-size: 0.68rem;
-  color: color-mix(in srgb, var(--text) 82%, var(--muted));
+  /* one small step stronger than the muted date/time line above it */
+  color: color-mix(in srgb, var(--text) 32%, var(--muted));
 }
 
 .premier-callout {
