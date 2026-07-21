@@ -1137,127 +1137,127 @@
   "gameid": 38663,
   "hteamid": 1,
   "ateamid": 4,
-  "hconfidence": 0.669,
-  "models": 27
+  "hconfidence": 0.67,
+  "models": 28
  },
  {
   "gameid": 38656,
   "hteamid": 2,
   "ateamid": 13,
-  "hconfidence": 0.81,
-  "models": 26
+  "hconfidence": 0.809,
+  "models": 27
  },
  {
   "gameid": 38657,
   "hteamid": 3,
   "ateamid": 8,
-  "hconfidence": 0.594,
-  "models": 26
+  "hconfidence": 0.592,
+  "models": 27
  },
  {
   "gameid": 38664,
   "hteamid": 6,
   "ateamid": 17,
-  "hconfidence": 0.904,
-  "models": 26
+  "hconfidence": 0.906,
+  "models": 27
  },
  {
   "gameid": 38658,
   "hteamid": 9,
   "ateamid": 16,
   "hconfidence": 0.435,
-  "models": 26
+  "models": 27
  },
  {
   "gameid": 38659,
   "hteamid": 10,
   "ateamid": 5,
-  "hconfidence": 0.904,
-  "models": 26
+  "hconfidence": 0.906,
+  "models": 27
  },
  {
   "gameid": 38661,
   "hteamid": 11,
   "ateamid": 7,
-  "hconfidence": 0.433,
-  "models": 26
+  "hconfidence": 0.432,
+  "models": 27
  },
  {
   "gameid": 38660,
   "hteamid": 12,
   "ateamid": 15,
-  "hconfidence": 0.346,
-  "models": 26
+  "hconfidence": 0.345,
+  "models": 27
  },
  {
   "gameid": 38662,
   "hteamid": 18,
   "ateamid": 14,
-  "hconfidence": 0.846,
-  "models": 26
+  "hconfidence": 0.85,
+  "models": 27
  },
  {
   "gameid": 38665,
   "hteamid": 3,
   "ateamid": 2,
-  "hconfidence": 0.352,
-  "models": 22
+  "hconfidence": 0.35,
+  "models": 23
  },
  {
   "gameid": 38666,
   "hteamid": 4,
   "ateamid": 7,
-  "hconfidence": 0.397,
-  "models": 22
+  "hconfidence": 0.4,
+  "models": 23
  },
  {
   "gameid": 38667,
   "hteamid": 5,
   "ateamid": 1,
-  "hconfidence": 0.174,
-  "models": 22
+  "hconfidence": 0.171,
+  "models": 23
  },
  {
   "gameid": 38673,
   "hteamid": 6,
   "ateamid": 18,
-  "hconfidence": 0.78,
-  "models": 22
+  "hconfidence": 0.783,
+  "models": 23
  },
  {
   "gameid": 38668,
   "hteamid": 8,
   "ateamid": 11,
   "hconfidence": 0.458,
-  "models": 22
+  "models": 23
  },
  {
   "gameid": 38669,
   "hteamid": 10,
   "ateamid": 12,
-  "hconfidence": 0.813,
-  "models": 22
+  "hconfidence": 0.814,
+  "models": 23
  },
  {
   "gameid": 38672,
   "hteamid": 13,
   "ateamid": 9,
-  "hconfidence": 0.472,
-  "models": 22
+  "hconfidence": 0.473,
+  "models": 23
  },
  {
   "gameid": 38670,
   "hteamid": 14,
   "ateamid": 17,
   "hconfidence": 0.495,
-  "models": 22
+  "models": 23
  },
  {
   "gameid": 38671,
   "hteamid": 15,
   "ateamid": 16,
   "hconfidence": 0.441,
-  "models": 22
+  "models": 23
  },
  {
   "gameid": 38681,
@@ -1270,7 +1270,7 @@
   "gameid": 38674,
   "hteamid": 2,
   "ateamid": 10,
-  "hconfidence": 0.611,
+  "hconfidence": 0.612,
   "models": 22
  },
  {
@@ -1284,14 +1284,14 @@
   "gameid": 38676,
   "hteamid": 9,
   "ateamid": 8,
-  "hconfidence": 0.641,
+  "hconfidence": 0.64,
   "models": 22
  },
  {
   "gameid": 38677,
   "hteamid": 11,
   "ateamid": 6,
-  "hconfidence": 0.416,
+  "hconfidence": 0.415,
   "models": 22
  },
  {
@@ -1347,21 +1347,21 @@
   "gameid": 38685,
   "hteamid": 9,
   "ateamid": 17,
-  "hconfidence": 0.839,
+  "hconfidence": 0.838,
   "models": 22
  },
  {
   "gameid": 38686,
   "hteamid": 10,
   "ateamid": 4,
-  "hconfidence": 0.637,
+  "hconfidence": 0.636,
   "models": 22
  },
  {
   "gameid": 38687,
   "hteamid": 12,
   "ateamid": 7,
-  "hconfidence": 0.248,
+  "hconfidence": 0.249,
   "models": 22
  },
  {
@@ -1375,28 +1375,28 @@
   "gameid": 38688,
   "hteamid": 14,
   "ateamid": 15,
-  "hconfidence": 0.197,
+  "hconfidence": 0.198,
   "models": 22
  },
  {
   "gameid": 38689,
   "hteamid": 18,
   "ateamid": 3,
-  "hconfidence": 0.544,
+  "hconfidence": 0.543,
   "models": 22
  },
  {
   "gameid": 38699,
   "hteamid": 1,
   "ateamid": 9,
-  "hconfidence": 0.64,
+  "hconfidence": 0.642,
   "models": 22
  },
  {
   "gameid": 38693,
   "hteamid": 3,
   "ateamid": 6,
-  "hconfidence": 0.315,
+  "hconfidence": 0.314,
   "models": 22
  },
  {
@@ -1410,7 +1410,7 @@
   "gameid": 38694,
   "hteamid": 5,
   "ateamid": 13,
-  "hconfidence": 0.31,
+  "hconfidence": 0.309,
   "models": 22
  },
  {
@@ -1445,7 +1445,7 @@
   "gameid": 38700,
   "hteamid": 17,
   "ateamid": 10,
-  "hconfidence": 0.19,
+  "hconfidence": 0.189,
   "models": 22
  }
 ]
