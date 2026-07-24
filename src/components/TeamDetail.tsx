@@ -4,7 +4,7 @@ import type { SimOutput } from '../domain/simulate';
 import { TEAMS } from '../domain/teams';
 import { isFavourite } from '../domain/favourite';
 import { sortedStandings } from '../domain/ladder';
-import { computeRatings, squiggleProb, winProb } from '../domain/predict';
+import { computeRatings, squiggleProb, fixtureHomeProb } from '../domain/predict';
 import { lockLabel } from '../domain/locks';
 import { formatGameDateTime } from '../domain/format';
 import TeamChip from './TeamChip';
@@ -111,7 +111,7 @@ export default function TeamDetail({
             {runHome.map((g) => {
               const isHome = g.hteamid === teamId;
               const oppId = isHome ? g.ateamid : g.hteamid;
-              const pHome = winProb(ratings, g.hteamid, g.ateamid);
+              const pHome = fixtureHomeProb(ratings, snapshot.games, g);
               const p = isHome ? pHome : 1 - pHome;
               const sq = squiggleProb(snapshot, g.hteamid, g.ateamid);
               const sqTeam = sq != null ? (isHome ? sq : 1 - sq) : null;

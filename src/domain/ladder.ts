@@ -48,24 +48,3 @@ export function sortedStandings(standings: Standing[]): Standing[] {
     (a, b) => b.pts - a.pts || b.percentage - a.percentage || a.id - b.id
   );
 }
-
-/**
- * Win/loss form over a team's last `n` completed games, most recent first.
- * Returns values in [0,1]: 1 = won all recent games. Draws count half.
- */
-export function recentForm(games: Game[], teamId: number, n = 5): number {
-  const played = games
-    .filter(
-      (g) => g.complete && (g.hteamid === teamId || g.ateamid === teamId) && g.hscore != null
-    )
-    .sort((a, b) => (a.date < b.date ? 1 : -1))
-    .slice(0, n);
-  if (played.length === 0) return 0.5;
-  let score = 0;
-  for (const g of played) {
-    if (g.hscore === g.ascore) score += 0.5;
-    else if ((g.winnerteamid ?? (g.hscore! > g.ascore! ? g.hteamid : g.ateamid)) === teamId)
-      score += 1;
-  }
-  return score / played.length;
-}

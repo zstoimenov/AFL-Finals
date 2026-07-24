@@ -31,12 +31,30 @@ run of the update workflow replaces it with live data.
 
 ## Prediction model
 
-Transparent and self-contained (`src/domain/predict.ts`):
-rating = ladder win ratio + log-scaled percentage + last-5 form; a logistic on the
-rating gap (plus a home-ground bump, disabled for the Grand Final) gives each match
-probability. `src/domain/simulate.ts` Monte-Carlos the rest of the season in a Web
-Worker to produce finals, top-6, top-4, Grand-Final and premiership probabilities.
-Squiggle's aggregated model tips are displayed alongside for comparison.
+Transparent and self-contained (`src/domain/predict.ts`), and driven only by the
+game history we already fetch — no new data source. Each team gets a rating that
+blends ladder win ratio, log-scaled percentage, **recency-weighted form**, and an
+**opponent-adjusted margin** term that folds in strength of schedule (`features.ts`).
+A logistic on the rating gap gives each match probability, plus a home-ground bump
+(disabled for the Grand Final) and a per-fixture **interstate-travel** adjustment
+derived from each club's home grounds (`venues.ts`). `src/domain/simulate.ts`
+Monte-Carlos the rest of the season in a Web Worker to produce finals, top-6,
+top-4, Grand-Final and premiership probabilities. Squiggle's aggregated model tips
+are displayed alongside for comparison.
+
+Every signal earns its place through the **backtest harness** (`src/domain/backtest.ts`,
+run by `npm test`), which replays completed games and scores each model's
+pre-kickoff probabilities — with no hindsight — by hit-rate, Brier score and
+log-loss. On the current season the enriched model beats the original on all three
+(Brier 0.203 → 0.198, log-loss 0.595 → 0.582, hit-rate 69.7% → 70.5%). Head-to-head,
+rest-day and neutral-host terms are implemented and unit-tested but ship disabled
+(`CONTEXT` weights of 0) because they did not improve single-season accuracy;
+`scripts/backtest-years.mjs` builds a multi-season corpus to re-evaluate them:
+
+```bash
+node scripts/backtest-years.mjs 2022 2023 2024 2025 2026
+BACKTEST_GAMES=scratch/backtest-games.json npx vitest run src/domain/backtest.test.ts
+```
 
 ## Development
 
