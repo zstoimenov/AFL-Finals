@@ -239,11 +239,10 @@ function ResultRow({ game, snapshot }: { game: Game; snapshot: Snapshot }) {
           won={awayWon}
         />
       </div>
-      <div className="fx-tips">
+      <CardFoot venue={game.venue}>
         {model && <Verdict source="Model" v={model} />}
         {squiggle && <Verdict source="Squiggle" v={squiggle} />}
-        {game.venue && <span className="fx-tips-venue">{game.venue}</span>}
-      </div>
+      </CardFoot>
     </article>
   );
 }

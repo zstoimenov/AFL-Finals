@@ -756,28 +756,9 @@ h2 {
   border-radius: 4px;
 }
 
-/* post-game tip check: did the model / Squiggle pick the actual winner? sits at
-   the card's baseline, with the venue riding along on the right when it fits */
-.fx-tips {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 8px;
-  margin-top: auto;
-}
-
-.fx-tips-venue {
-  margin-left: auto;
-  min-width: 0;
-  flex: 0 1 auto;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-align: right;
-  font-size: 0.7rem;
-  color: var(--muted);
-}
-
+/* post-game tip check: did the model / Squiggle pick the actual winner? the
+   pills ride on the shared card footer (right side), matching where upcoming
+   games show the Squiggle consensus, so the venue stays on the left either way */
 .verdict {
   display: inline-flex;
   align-items: center;
@@ -831,7 +812,7 @@ h2 {
 .fx-foot {
   margin-top: auto;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   font-size: 0.7rem;
@@ -847,6 +828,9 @@ h2 {
 
 .fx-foot-end {
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   white-space: nowrap;
 }
 
