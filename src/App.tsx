@@ -242,9 +242,13 @@ export default function App() {
           <InfoButton title="About this app" label="About">
             <p>
               A tracker for the AFL finals (the 2026 top-ten Wildcard format). It projects the
-              live bracket from the ladder, estimates each match and the premiership, and —
-              across {historyIndex.length > 0 ? `${historyIndex.length}+ ` : ''}seasons — grades
-              how the model actually tips.
+              live bracket from the ladder, estimates each match and the premiership
+              {historyIndex.length > 0
+                ? `, and across ${historyIndex.length} archived season${
+                    historyIndex.length === 1 ? '' : 's'
+                  } grades how the model actually tips`
+                : ''}
+              .
             </p>
             <p>
               Projections come from an in-app model (ladder, percentage, form, home advantage,

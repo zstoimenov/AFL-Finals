@@ -39,13 +39,14 @@ run of the update workflow replaces it with live data.
 Past seasons live in `public/data/history/`: one frozen snapshot per year
 (`<year>.json`), a compact cross-season corpus of every completed game
 (`games.json`, which feeds the model's carry-over prior), and a manifest
-(`index.json`) for the season switcher and hub. The **Update AFL history** workflow
-(`.github/workflows/fetch-history.yml`) builds these from Squiggle — on demand
-(`workflow_dispatch`) and yearly (each January it folds the just-finished season
-in). `scripts/generate-seed.mjs` also emits a small seed archive so the hub renders
-before the first history fetch. History is normalised through the same shared module
-(`scripts/squiggle.mjs`) as the live season, so a 2023 game and a 2026 game are the
-exact same shape the model expects.
+(`index.json`) for the season switcher and hub. **The archive ships empty and is
+filled only with real data** — no fake past seasons — by the **Update AFL history**
+workflow (`.github/workflows/fetch-history.yml`), which builds it from Squiggle on
+demand (`workflow_dispatch`) and yearly (each January it folds the just-finished
+season in). Until it runs, the hub shows an empty state and the app behaves exactly
+as a single-season tracker (fail-soft loaders, no carry-over prior). History is
+normalised through the same shared module (`scripts/squiggle.mjs`) as the live
+season, so a 2023 game and a 2026 game are the exact same shape the model expects.
 
 ## Prediction model
 
@@ -97,8 +98,8 @@ BACKTEST_GAMES=scratch/backtest-games.json npx vitest run src/domain/backtest.te
 
 The exact prior weight and the still-disabled context terms are set from these real
 multi-season numbers, not by feel — the same discipline as every other signal in the
-model. (On the shipped seed archive the prior already improves Brier and log-loss, which
-is what the multi-season backtest test guards against regressing.)
+model. The prior ships enabled but conservative; a multi-season backtest test asserts
+it never regresses calibration, so it can only help once real history is collected.
 
 ## Development
 
