@@ -1,4 +1,4 @@
-import type { SimResult, Snapshot } from './types';
+import type { Game, SimResult, Snapshot } from './types';
 import { remainingHomeAwayGames, sortedStandings, finalsGames } from './ladder';
 import { computeRatings, winProb, blendedHomeProb } from './predict';
 import { MATCH_ORDER, matchParticipants, type MatchKey } from './bracket';
@@ -28,9 +28,16 @@ export interface SimOutput extends SimResult {
  * double-chance weeks) — thousands of times. Completed real games (H&A and
  * finals) always use their actual result.
  */
-export function simulateSeason(snapshot: Snapshot, iterations = 10000, seed = 20260919): SimOutput {
+export function simulateSeason(
+  snapshot: Snapshot,
+  iterations = 10000,
+  seed = 20260919,
+  history: Game[] = []
+): SimOutput {
   const rng = makeRng(seed);
-  const ratings = computeRatings(snapshot.standings, snapshot.games);
+  // Only prior seasons feed the carry-over prior — never this season's own games.
+  const priorHistory = history.filter((g) => g.year < snapshot.meta.year);
+  const ratings = computeRatings(snapshot.standings, snapshot.games, { history: priorHistory });
   const remaining = remainingHomeAwayGames(snapshot.games);
   const base = sortedStandings(snapshot.standings);
 

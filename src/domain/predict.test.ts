@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import type { Game, Snapshot, Tip } from './types';
+import type { Standing } from './types';
 import {
   computeRatings,
+  carryoverPrior,
   squiggleMargin,
   squiggleConsensusProb,
   blendedHomeProb,
@@ -59,6 +61,84 @@ describe('squiggleConsensusProb', () => {
 
   it('returns null for an untipped game', () => {
     expect(squiggleConsensusProb(snap([game], []), 1, 2)).toBeNull();
+  });
+});
+
+describe('carry-over prior', () => {
+  // A prior season (2025) where team 1 beats a spread of opponents and team 2
+  // loses to them — enough variety that opponent adjustment leaves team 1 strong
+  // and team 2 weak.
+  const priorGame = (id: number, h: number, a: number, hs: number, as: number): Game => ({
+    id,
+    round: id,
+    year: 2025,
+    complete: 100,
+    hteamid: h,
+    ateamid: a,
+    hscore: hs,
+    ascore: as,
+    date: '2025-06-01 19:00:00',
+    unixtime: 1_770_000_000 + id * 86_400,
+    venue: 'V',
+    is_final: 0,
+    winnerteamid: hs > as ? h : a
+  });
+  const history: Game[] = [
+    priorGame(1, 1, 3, 110, 60),
+    priorGame(2, 4, 1, 70, 100),
+    priorGame(3, 1, 5, 95, 80),
+    priorGame(4, 3, 2, 90, 70),
+    priorGame(5, 2, 4, 60, 85),
+    priorGame(6, 5, 2, 88, 72)
+  ];
+  const standing = (id: number, played: number, pts: number): Standing => ({
+    id,
+    rank: 0,
+    played,
+    wins: pts / 4,
+    losses: played - pts / 4,
+    draws: 0,
+    pts,
+    percentage: 100,
+    for: 0,
+    against: 0
+  });
+
+  it('leaves ratings byte-for-byte unchanged when no history is supplied', () => {
+    const standings = [standing(1, 6, 12), standing(2, 6, 8)];
+    const withoutOpts = computeRatings(standings, []);
+    const withEmpty = computeRatings(standings, [], { history: [] });
+    expect([...withEmpty]).toEqual([...withoutOpts]);
+  });
+
+  it('rates a team with no games this season at exactly its carry-over prior', () => {
+    const prior = carryoverPrior(history);
+    const standings = [standing(1, 0, 0), standing(2, 0, 0)];
+    const ratings = computeRatings(standings, [], { history });
+    expect(ratings.get(1)).toBeCloseTo(prior.get(1)!, 10);
+    expect(ratings.get(2)).toBeCloseTo(prior.get(2)!, 10);
+    // team 1 dominated the prior season, team 2 struggled
+    expect(prior.get(1)!).toBeGreaterThan(prior.get(2)!);
+  });
+
+  it('gives a team absent from history no prior (neutral 0)', () => {
+    const prior = carryoverPrior(history);
+    expect(prior.has(99)).toBe(false);
+    const ratings = computeRatings([standing(99, 0, 0)], [], { history });
+    expect(ratings.get(99)).toBe(0);
+  });
+
+  it('fades the prior as the season accumulates games', () => {
+    const seasonRating = computeRatings([standing(1, 6, 12)], [])!.get(1)!;
+    const early = computeRatings([standing(1, 2, 4)], [], { history }).get(1)!;
+    const late = computeRatings([standing(1, 20, 40)], [], { history }).get(1)!;
+    const seasonRatingEarly = computeRatings([standing(1, 2, 4)], []).get(1)!;
+    const seasonRatingLate = computeRatings([standing(1, 20, 40)], []).get(1)!;
+    // winRatio is 0.5 in every case, so the season rating is identical; the only
+    // mover is how far the prior pulls it — and that pull must shrink with games.
+    expect(seasonRatingEarly).toBeCloseTo(seasonRating, 10);
+    expect(seasonRatingLate).toBeCloseTo(seasonRating, 10);
+    expect(Math.abs(late - seasonRating)).toBeLessThan(Math.abs(early - seasonRating));
   });
 });
 

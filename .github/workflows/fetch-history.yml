@@ -1,0 +1,50 @@
+name: Update AFL history
+
+on:
+  schedule:
+    # once a year, early January (after the previous season is fully archived by
+    # Squiggle) — folds the just-finished season into the multi-season archive
+    - cron: '0 13 15 1 *'
+  workflow_dispatch:
+    inputs:
+      years:
+        description: 'Seasons to (re)archive, space-separated (blank = 2022..last completed)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Fetch Squiggle history archive
+        run: node scripts/fetch-history.mjs ${{ github.event.inputs.years }}
+      - name: Commit updated history
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/data/history
+          if git diff --cached --quiet; then
+            echo "No history changes"
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "chore: refresh AFL history archive"
+            git push
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
+          fi
+      # Pushes made with GITHUB_TOKEN never fire on:push workflows (GitHub's
+      # recursion guard), so chain the Pages deploy explicitly. Only from the
+      # default branch — a history refresh on a feature branch must not publish.
+      - name: Trigger site deploy
+        if: steps.commit.outputs.pushed == 'true' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --ref "$GITHUB_REF_NAME" -R "$GITHUB_REPOSITORY"

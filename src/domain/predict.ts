@@ -24,8 +24,54 @@ export const RATING_WEIGHTS = {
 /** Points of opponent-adjusted margin per 1.0 of rating. */
 export const MARGIN_SCALE = 26;
 
-export function computeRatings(standings: Standing[], games: Game[]): Map<number, number> {
+/**
+ * Cross-season carry-over prior. Football strength is sticky year to year, so a
+ * team's *previous* seasons are the best guess for its strength before this
+ * season has produced any games — the exact gap the single-season model left
+ * open (it started every year cold and the backtest skipped the noisy opening
+ * rounds). `PRIOR_HALF_LIFE_DAYS` makes the prior lean on the most recent season
+ * without ignoring the one before; `CARRYOVER_REGRESSION` regresses it toward the
+ * mean because teams partially reset each year (list changes, injuries, draft).
+ */
+export const PRIOR_HALF_LIFE_DAYS = 180;
+export const CARRYOVER_REGRESSION = 0.75;
+/**
+ * How many games of *this* season the prior is worth. The season rating shrinks
+ * toward the prior by `played / (played + PRIOR_EQUIV_GAMES)`: round 1 leans on
+ * the prior almost entirely, and by mid-season the live results dominate. Small
+ * enough that the prior fades quickly once real evidence arrives.
+ */
+export const PRIOR_EQUIV_GAMES = 5;
+
+/**
+ * Each team's preseason rating derived from prior-season games (rating units, the
+ * same scale `computeRatings` produces). Teams with no history — expansion clubs,
+ * or the earliest archived season — get 0 (neutral), so nothing breaks when a
+ * new club (e.g. Tasmania in 2028) appears.
+ */
+export function carryoverPrior(history: Game[]): Map<number, number> {
+  const strength = opponentAdjustedMargins(history, { halfLifeDays: PRIOR_HALF_LIFE_DAYS });
+  const prior = new Map<number, number>();
+  for (const [team, margin] of strength) {
+    prior.set(team, CARRYOVER_REGRESSION * clamp(margin / MARGIN_SCALE, -1.5, 1.5));
+  }
+  return prior;
+}
+
+/**
+ * Transparent team ratings. With `opts.history` (completed games from prior
+ * seasons) each team's season rating is shrunk toward its carry-over prior by how
+ * many games it has played this season — fixing the cold start. Without history
+ * the result is byte-for-byte the single-season rating, so every existing caller
+ * is unaffected until it opts in.
+ */
+export function computeRatings(
+  standings: Standing[],
+  games: Game[],
+  opts: { history?: Game[] } = {}
+): Map<number, number> {
   const strength = opponentAdjustedMargins(games);
+  const prior = opts.history && opts.history.length > 0 ? carryoverPrior(opts.history) : null;
   const ratings = new Map<number, number>();
   for (const s of standings) {
     const maxPts = s.played > 0 ? s.played * 4 : 1;
@@ -33,12 +79,19 @@ export function computeRatings(standings: Standing[], games: Game[]): Map<number
     const pctTerm = Math.log(Math.max(s.percentage, 40) / 100);
     const form = recencyForm(games, s.id);
     const margin = clamp((strength.get(s.id) ?? 0) / MARGIN_SCALE, -1.5, 1.5);
-    const rating =
+    const seasonRating =
       RATING_WEIGHTS.winRatio * (winRatio - 0.5) +
       RATING_WEIGHTS.percentage * pctTerm +
       RATING_WEIGHTS.form * (form - 0.5) +
       RATING_WEIGHTS.margin * margin;
-    ratings.set(s.id, rating);
+    if (!prior) {
+      ratings.set(s.id, seasonRating);
+      continue;
+    }
+    // Bayesian shrinkage toward the preseason prior, fading as games accumulate.
+    const blend = s.played / (s.played + PRIOR_EQUIV_GAMES);
+    const priorRating = prior.get(s.id) ?? 0;
+    ratings.set(s.id, blend * seasonRating + (1 - blend) * priorRating);
   }
   return ratings;
 }
@@ -236,10 +289,13 @@ function standingsBefore(games: Game[], cutoff: number): Standing[] {
  * completed fixture show whether the model's pre-game tip actually came off,
  * without hindsight leaking this game's result into its own prediction.
  */
-export function preGameHomeProb(snapshot: Snapshot, game: Game): number {
+export function preGameHomeProb(snapshot: Snapshot, game: Game, history: Game[] = []): number {
   const cutoff = gameStart(game);
   const prior = snapshot.games.filter((g) => gameStart(g) < cutoff);
-  const ratings = computeRatings(standingsBefore(prior, cutoff), prior);
+  // Carry-over prior uses only seasons before this game's, so a retro verdict is
+  // graded on the same enriched rating the app would have shown pre-kickoff.
+  const priorHistory = history.filter((g) => g.year < game.year && gameStart(g) < cutoff);
+  const ratings = computeRatings(standingsBefore(prior, cutoff), prior, { history: priorHistory });
   // Pure in-app model (no Squiggle blend): the completed-game verdict compares
   // the two independent tipsters, so this stays the model's own call.
   return winProb(ratings, game.hteamid, game.ateamid, false, fixtureAdjustment(prior, game));

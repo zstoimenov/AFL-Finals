@@ -55,6 +55,16 @@ export interface Tip {
   models: number;
 }
 
+/**
+ * The finals system a season was played under. The AFL used the top-eight
+ * McIntyre / current system through 2025 and introduced the ten-team wildcard
+ * format in 2026. Kept as an open string union so a future change (e.g. 2028,
+ * when the Tasmania Devils make it 19 clubs) is a single additive edit rather
+ * than a refactor. `supportsProjectedBracket` is the one seam that decides which
+ * seasons get the live bracket/odds versus a plain finals-results view.
+ */
+export type FinalsFormat = 'top8' | 'top10-wildcard' | (string & {});
+
 export interface Meta {
   fetchedAt: string;
   year: number;
@@ -63,6 +73,19 @@ export interface Meta {
   currentRound: number;
   /** total H&A rounds in the season */
   totalRounds: number;
+  /** premiership-winning team id, set on archived (completed) seasons */
+  premier?: number | null;
+  /** the finals system this season used; defaults to the current format */
+  format?: FinalsFormat;
+}
+
+/** One row of the history manifest (`public/data/history/index.json`). */
+export interface HistoryIndexEntry {
+  year: number;
+  premier: number | null;
+  format: FinalsFormat;
+  teams: number;
+  games: number;
 }
 
 export interface Snapshot {

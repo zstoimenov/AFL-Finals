@@ -1,14 +1,24 @@
 #!/usr/bin/env node
 /**
- * Generates a self-consistent placeholder season snapshot into public/data/.
- * Used only until the update-data workflow fetches real Squiggle data — the
- * output is marked meta.source = "seed" and the UI shows a banner for it.
+ * Generates self-consistent placeholder data into public/data/. Used only until
+ * the fetch workflows pull real Squiggle data — output is marked
+ * meta.source = "seed" and the UI shows a banner for it.
  *
- * Deterministic: same output every run (seeded RNG).
+ * Emits two things:
+ *   - the live current season (2026), partially played, at public/data/*.json
+ *   - a small history archive (2024, 2025), fully played incl. a top-eight finals
+ *     series, at public/data/history/ — so the multi-season hub and the model's
+ *     carry-over prior have data before the first real fetch.
+ *
+ * Deterministic: seeded RNG, same output every run. The live-2026 block is kept
+ * byte-for-byte stable (its own module-global RNG stream, untouched by the
+ * history generator) so the committed snapshot and its documented backtest
+ * numbers don't drift.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { finalsFormatForYear, seasonPremier, gameStart } from './squiggle.mjs';
 
 const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', 'public', 'data');
 const YEAR = 2026;
@@ -168,4 +178,155 @@ writeFileSync(join(OUT, 'games.json'), JSON.stringify(games, null, 1));
 writeFileSync(join(OUT, 'standings.json'), JSON.stringify(standings, null, 1));
 writeFileSync(join(OUT, 'tips.json'), JSON.stringify(tips, null, 1));
 writeFileSync(join(OUT, 'meta.json'), JSON.stringify(meta, null, 1));
-console.log(`Seed data written to ${OUT}: ${games.length} games, ${standings.length} teams, ${tips.length} tips`);
+
+// ---------------------------------------------------------------------------
+// History archive: fully played prior seasons (top-eight finals). Fully
+// self-contained — its own RNG per season, so it never perturbs the live-2026
+// stream above.
+// ---------------------------------------------------------------------------
+function buildHistorySeason(year) {
+  const localRng = (() => {
+    let s = (year * 100003 + 17) | 0;
+    return () => {
+      s |= 0;
+      s = (s + 0x6d2b79f5) | 0;
+      let t = Math.imul(s ^ (s >>> 15), 1 | s);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  })();
+  const strength = {};
+  for (const id of ids) strength[id] = STRENGTH[id] + (localRng() - 0.5) * 0.9;
+
+  const split = (score) => {
+    const behinds = Math.min(score, 6 + Math.floor(localRng() * 9));
+    const goals = Math.max(0, Math.round((score - behinds) / 6));
+    return [goals, score - goals * 6];
+  };
+  const play = (h, a, neutral = false) => {
+    const edge = strength[h] - strength[a] + (neutral ? 0 : 0.25);
+    const pHome = 1 / (1 + Math.exp(-1.1 * edge));
+    const homeWins = localRng() < pHome;
+    const margin = Math.round(3 + localRng() * 45);
+    const loserScore = Math.round(55 + localRng() * 40);
+    const hscore = homeWins ? loserScore + margin : loserScore;
+    const ascore = homeWins ? loserScore : loserScore + margin;
+    const [hgoals, hbehinds] = split(hscore);
+    const [agoals, abehinds] = split(ascore);
+    return { hscore, ascore, hgoals, hbehinds, agoals, abehinds, winner: homeWins ? h : a };
+  };
+
+  const seasonRounds = 23;
+  const hg = [];
+  let hid = year * 1000 + 1;
+  for (let round = 1; round <= seasonRounds; round++) {
+    const src = rr[(round - 1) % rr.length];
+    const flip = round > rr.length;
+    for (const pair of src) {
+      const [h, a] = flip ? [pair[1], pair[0]] : pair;
+      const day = new Date(Date.UTC(year, 2, 12));
+      day.setUTCDate(day.getUTCDate() + (round - 1) * 7 + (hid % 3));
+      const [yy, mo, dd] = day.toISOString().slice(0, 10).split('-').map(Number);
+      const r = play(h, a);
+      hg.push({
+        id: hid, round, year, complete: 100, hteamid: h, ateamid: a,
+        hscore: r.hscore, ascore: r.ascore, hgoals: r.hgoals, hbehinds: r.hbehinds,
+        agoals: r.agoals, abehinds: r.abehinds,
+        date: `${day.toISOString().slice(0, 10)} 19:40:00`,
+        unixtime: Math.floor(Date.UTC(yy, mo - 1, dd, 11, 40) / 1000),
+        venue: VENUES[hid % VENUES.length], is_final: 0, winnerteamid: r.winner
+      });
+      hid++;
+    }
+  }
+
+  // standings (H&A only)
+  const tbl = new Map(ids.map((id) => [id, { id, played: 0, wins: 0, losses: 0, draws: 0, pts: 0, for: 0, against: 0 }]));
+  for (const g of hg) {
+    const h = tbl.get(g.hteamid);
+    const a = tbl.get(g.ateamid);
+    h.played++; a.played++;
+    h.for += g.hscore; h.against += g.ascore;
+    a.for += g.ascore; a.against += g.hscore;
+    if (g.hscore > g.ascore) { h.wins++; h.pts += 4; a.losses++; }
+    else if (g.ascore > g.hscore) { a.wins++; a.pts += 4; h.losses++; }
+    else { h.draws++; a.draws++; h.pts += 2; a.pts += 2; }
+  }
+  const st = [...tbl.values()]
+    .map((t) => ({ ...t, percentage: Math.round((t.for / Math.max(t.against, 1)) * 10000) / 100 }))
+    .sort((x, y) => y.pts - x.pts || y.percentage - x.percentage)
+    .map((t, i) => ({ ...t, rank: i + 1 }));
+
+  // top-eight finals
+  const seeds = st.slice(0, 8).map((s) => s.id);
+  let sep = 5;
+  const playFinal = (h, a, week, neutral = false) => {
+    const r = play(h, a, neutral);
+    hg.push({
+      id: hid++, round: seasonRounds + week, year, complete: 100,
+      hteamid: h, ateamid: a, hscore: r.hscore, ascore: r.ascore,
+      hgoals: r.hgoals, hbehinds: r.hbehinds, agoals: r.agoals, abehinds: r.abehinds,
+      date: `${new Date(Date.UTC(year, 8, sep)).toISOString().slice(0, 10)} 19:40:00`,
+      unixtime: Math.floor(Date.UTC(year, 8, sep, 11, 40) / 1000),
+      venue: 'MCG', is_final: week, winnerteamid: r.winner
+    });
+    sep += 7;
+    return { winner: r.winner, loser: r.winner === h ? a : h };
+  };
+  const qf1 = playFinal(seeds[0], seeds[3], 1);
+  const qf2 = playFinal(seeds[1], seeds[2], 1);
+  const ef1 = playFinal(seeds[4], seeds[7], 1);
+  const ef2 = playFinal(seeds[5], seeds[6], 1);
+  const sf1 = playFinal(qf1.loser, ef2.winner, 2);
+  const sf2 = playFinal(qf2.loser, ef1.winner, 2);
+  const pf1 = playFinal(qf1.winner, sf1.winner, 3);
+  const pf2 = playFinal(qf2.winner, sf2.winner, 3);
+  playFinal(pf1.winner, pf2.winner, 4, true);
+
+  // full-season consensus tips so the hub can compare in-app model vs Squiggle
+  const htips = hg
+    .filter((g) => g.is_final === 0)
+    .map((g) => {
+      const edge = strength[g.hteamid] - strength[g.ateamid] + 0.25;
+      const p = 1 / (1 + Math.exp(-1.0 * edge));
+      return {
+        gameid: g.id, hteamid: g.hteamid, ateamid: g.ateamid,
+        hconfidence: Math.round(p * 1000) / 1000,
+        hmargin: Math.round(edge * 18 * 10) / 10, models: 9
+      };
+    });
+
+  const hmeta = {
+    fetchedAt: new Date(`${year}-09-30T04:00:00Z`).toISOString(),
+    year, source: 'seed', currentRound: seasonRounds, totalRounds: seasonRounds,
+    premier: seasonPremier(hg), format: finalsFormatForYear(year)
+  };
+  return { games: hg, standings: st, tips: htips, meta: hmeta };
+}
+
+const HISTORY_OUT = join(OUT, 'history');
+const HISTORY_YEARS = [2024, 2025];
+const seasons = HISTORY_YEARS.map(buildHistorySeason);
+const corpus = seasons
+  .flatMap((s) => s.games)
+  .filter((g) => g.complete && g.hscore != null && g.ascore != null)
+  .sort((a, b) => gameStart(a) - gameStart(b));
+const index = seasons.map((s) => ({
+  year: s.meta.year,
+  premier: s.meta.premier,
+  format: s.meta.format,
+  teams: s.standings.length,
+  games: s.games.filter((g) => g.complete).length
+}));
+
+mkdirSync(HISTORY_OUT, { recursive: true });
+for (const s of seasons) {
+  writeFileSync(join(HISTORY_OUT, `${s.meta.year}.json`), JSON.stringify(s, null, 1));
+}
+writeFileSync(join(HISTORY_OUT, 'games.json'), JSON.stringify(corpus));
+writeFileSync(join(HISTORY_OUT, 'index.json'), JSON.stringify(index, null, 1));
+
+console.log(
+  `Seed data written to ${OUT}: ${games.length} games, ${standings.length} teams, ${tips.length} tips` +
+    ` + history ${HISTORY_YEARS.join(', ')} (${corpus.length} corpus games).`
+);
