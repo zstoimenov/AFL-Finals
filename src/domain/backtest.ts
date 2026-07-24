@@ -1,5 +1,12 @@
-import type { Game, Standing } from './types';
-import { computeRatings, winProb, fixtureAdjustment, HOME_ADVANTAGE } from './predict';
+import type { Game, Standing, Tip, Snapshot } from './types';
+import {
+  computeRatings,
+  winProb,
+  fixtureAdjustment,
+  squiggleConsensusProb,
+  SQUIGGLE_BLEND,
+  HOME_ADVANTAGE
+} from './predict';
 import { gameStart, completedGames } from './features';
 
 /**
@@ -73,6 +80,21 @@ export const enrichedModel: PreGameModel = (prior, game) => {
   const ratings = computeRatings(buildStandings(prior), prior);
   return winProb(ratings, game.hteamid, game.ateamid, false, fixtureAdjustment(prior, game));
 };
+
+/**
+ * The shipped model: enriched model blended with the Squiggle consensus (from the
+ * pre-game tips) at `blend`. The tip for a past game is its frozen pre-game
+ * prediction, so looking it up here stays hindsight-free.
+ */
+export function blendedModel(tips: Tip[], blend = SQUIGGLE_BLEND): PreGameModel {
+  return (prior, game) => {
+    const model = enrichedModel(prior, game);
+    const snap = { games: prior, standings: [], tips } as unknown as Snapshot;
+    const consensus = squiggleConsensusProb(snap, game.hteamid, game.ateamid);
+    if (consensus == null) return model;
+    return Math.min(0.97, Math.max(0.03, (1 - blend) * model + blend * consensus));
+  };
+}
 
 /** Score a model over every completed H&A game with enough prior history. */
 export function evaluate(

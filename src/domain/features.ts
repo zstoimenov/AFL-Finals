@@ -21,6 +21,36 @@ export function completedGames(games: Game[]): Game[] {
     .sort((a, b) => gameStart(a) - gameStart(b));
 }
 
+/** Average points a single scoring shot (goal or behind) is worth. */
+export const POINTS_PER_SHOT = 3.5;
+/**
+ * How much the strength rating leans on scoring-shot margin versus final-score
+ * margin, when the goal/behind breakdown is available. Goal-kicking accuracy is
+ * noisy and regresses, so scoring shots track underlying strength more steadily
+ * than the final score. 0 = pure score margin (the behaviour on snapshots that
+ * predate the goals/behinds fields). A multi-season backtest should confirm/tune
+ * this once fetched data carries the breakdown.
+ */
+export const SHOT_WEIGHT = 0.4;
+
+function hasShots(g: Game): boolean {
+  return g.hgoals != null && g.hbehinds != null && g.agoals != null && g.abehinds != null;
+}
+
+/**
+ * Home-perspective margin used by the rating: blends the final-score margin with
+ * a scoring-shot expected margin when the breakdown is present, else falls back
+ * to the plain score margin so older snapshots behave exactly as before.
+ */
+export function effectiveMargin(g: Game): number {
+  const scoreMargin = g.hscore! - g.ascore!;
+  if (!hasShots(g)) return scoreMargin;
+  const homeShots = g.hgoals! + g.hbehinds!;
+  const awayShots = g.agoals! + g.abehinds!;
+  const shotMargin = (homeShots - awayShots) * POINTS_PER_SHOT;
+  return (1 - SHOT_WEIGHT) * scoreMargin + SHOT_WEIGHT * shotMargin;
+}
+
 const DAY = 86400;
 /** Recency weight: a game `ageDays` old counts 2^(-ageDays/halfLife). */
 function recencyWeight(refStart: number, gameStartSec: number, halfLifeDays: number): number {
@@ -33,7 +63,7 @@ export function homeMarginBaseline(games: Game[]): number {
   const done = completedGames(games);
   if (done.length === 0) return 0;
   let sum = 0;
-  for (const g of done) sum += g.hscore! - g.ascore!;
+  for (const g of done) sum += effectiveMargin(g);
   return sum / done.length;
 }
 
@@ -66,7 +96,7 @@ export function opponentAdjustedMargins(
       acc.set(team, e);
     };
     for (const { g, w } of weighted) {
-      const hm = g.hscore! - g.ascore!; // home margin
+      const hm = effectiveMargin(g); // home margin (scoring-shot aware)
       const sh = strength.get(g.hteamid) ?? 0;
       const sa = strength.get(g.ateamid) ?? 0;
       // Home team's neutral-ground performance vs this opponent's strength.
