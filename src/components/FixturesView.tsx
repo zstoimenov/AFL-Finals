@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { CSSProperties } from 'react';
+import type { ReactNode } from 'react';
 import type { BracketMatch, Game, Snapshot } from '../domain/types';
-import { squiggleProb, computeRatings, winProb } from '../domain/predict';
+import { squiggleProb, computeRatings, winProb, preGameHomeProb } from '../domain/predict';
 import { formatGameDateTime } from '../domain/format';
 import { currentHomeAwayRound, homeAwayRounds } from '../domain/ladder';
-import { TEAMS, teamName, teamAccent } from '../domain/teams';
+import { teamAbbrev } from '../domain/teams';
 import { gameHasFavourite } from '../domain/favourite';
 import TeamChip from './TeamChip';
 import ProbBar from './ProbBar';
@@ -76,9 +76,13 @@ export default function FixturesView({
         <h2>Fixtures</h2>
         <InfoButton title="About fixtures">
           <p>
-            Completed games show the final score with the winner highlighted; upcoming games
-            show each team&apos;s win probability from the in-app model, with the Squiggle
-            model consensus where it&apos;s been tipped.
+            Upcoming games show each team&apos;s win probability from the in-app model, with a
+            bar for the split and the Squiggle model consensus where it&apos;s been tipped.
+          </p>
+          <p>
+            Completed games show the final score with the winner highlighted, plus a check on
+            each tip: whether the in-app model and Squiggle picked the actual winner. The model
+            tip is graded on its pre-game rating, so a result never flatters its own forecast.
           </p>
           <p>
             The view opens on the current round and moves to the next one automatically once
@@ -116,7 +120,7 @@ export default function FixturesView({
       <div className="fixturelist">
         {games.map((g) =>
           g.complete ? (
-            <ResultRow key={g.id} game={g} />
+            <ResultRow key={g.id} game={g} snapshot={snapshot} />
           ) : (
             <FixtureRow key={g.id} game={g} snapshot={snapshot} ratings={ratings} />
           )
@@ -126,60 +130,127 @@ export default function FixturesView({
   );
 }
 
-function GameMeta({ game }: { game: Game }) {
+/** Top line of every card: kickoff date/time, plus an optional status chip. */
+function CardMeta({ game, tag }: { game: Game; tag?: ReactNode }) {
   return (
-    <span className="venue">
-      {formatGameDateTime(game.date, game.unixtime)}
-      {game.venue ? ` · ${game.venue}` : ''}
-    </span>
-  );
-}
-
-/** A finished game: final score, winner highlighted. */
-function ResultRow({ game }: { game: Game }) {
-  const homeWon = (game.hscore ?? 0) > (game.ascore ?? 0);
-  const awayWon = (game.ascore ?? 0) > (game.hscore ?? 0);
-  const fav = gameHasFavourite(game);
-  return (
-    <article className={fav ? 'fixturerow done fav-game' : 'fixturerow done'}>
-      <div className="fixturehead">
-        <span className="final-tag">Final</span>
-        {fav && <span className="fav-tag">Your club</span>}
-        <GameMeta game={game} />
-      </div>
-      <div className="scoreline">
-        <ScoreSide teamId={game.hteamid} score={game.hscore} won={homeWon} />
-        <ScoreSide teamId={game.ateamid} score={game.ascore} won={awayWon} />
-      </div>
-    </article>
-  );
-}
-
-function ScoreSide({
-  teamId,
-  score,
-  won
-}: {
-  teamId: number;
-  score: number | null;
-  won: boolean;
-}) {
-  return (
-    <div className={won ? 'scoreside won' : 'scoreside'}>
-      <span className="scoreside-team">
-        <TeamChip teamId={teamId} />
-        {won && (
-          <span className="wintick" title="Winner" style={{ color: TEAMS[teamId]?.color2 }}>
-            ✓
-          </span>
-        )}
-      </span>
-      <span className="scoreside-score">{score}</span>
+    <div className="fx-meta">
+      <span className="fx-when">{formatGameDateTime(game.date, game.unixtime)}</span>
+      {tag}
     </div>
   );
 }
 
-/** An upcoming game: win-probability bar + consensus. */
+/** Bottom line of every card: venue on the left, extra info on the right. */
+function CardFoot({ venue, children }: { venue: string | null; children?: ReactNode }) {
+  if (!venue && !children) return null;
+  return (
+    <div className="fx-foot">
+      {venue && <span className="fx-venue">{venue}</span>}
+      {children && <span className="fx-foot-end">{children}</span>}
+    </div>
+  );
+}
+
+/**
+ * One club on a card: crest + short name on the left, a value (win % or final
+ * score) pinned to a fixed right-hand column so the numbers line up across every
+ * card in the grid. `tone` drives the emphasis — leading side, winner, or the
+ * dimmed loser.
+ */
+function TeamLine({
+  teamId,
+  value,
+  tone,
+  won = false
+}: {
+  teamId: number;
+  value: ReactNode;
+  tone: 'lead' | 'trail' | 'win' | 'loss' | 'flat';
+  won?: boolean;
+}) {
+  return (
+    <div className={`teamline tone-${tone}`}>
+      <TeamChip teamId={teamId} short />
+      <span className="teamline-end">
+        {won && (
+          <span className="teamline-tick" title="Winner" aria-label="Winner">
+            ✓
+          </span>
+        )}
+        <span className="teamline-val">{value}</span>
+      </span>
+    </div>
+  );
+}
+
+/** Whether a predictor that made `homeProb` picked the team that actually won. */
+function tipVerdict(homeProb: number | null, game: Game) {
+  if (homeProb == null) return null;
+  const pickId = homeProb >= 0.5 ? game.hteamid : game.ateamid;
+  const drawn = game.winnerteamid == null;
+  return { pickId, drawn, hit: !drawn && game.winnerteamid === pickId };
+}
+
+/** A single "who did this model tip, and were they right?" chip. */
+function Verdict({
+  source,
+  v
+}: {
+  source: string;
+  v: { pickId: number; drawn: boolean; hit: boolean };
+}) {
+  const state = v.drawn ? 'drawn' : v.hit ? 'hit' : 'miss';
+  const outcome = v.drawn ? 'draw — no result to grade' : v.hit ? 'correct' : 'incorrect';
+  return (
+    <span className={`verdict ${state}`} title={`${source} tipped ${teamAbbrev(v.pickId)} — ${outcome}`}>
+      <span className="verdict-src">{source}</span>
+      <span className="verdict-pick">{teamAbbrev(v.pickId)}</span>
+      <span className="verdict-mark" aria-hidden="true">
+        {v.drawn ? '–' : v.hit ? '✓' : '✗'}
+      </span>
+      <span className="visually-hidden">{outcome}</span>
+    </span>
+  );
+}
+
+/** A finished game: final score, winner highlighted, and how the tips fared. */
+function ResultRow({ game, snapshot }: { game: Game; snapshot: Snapshot }) {
+  const fav = gameHasFavourite(game);
+  const homeWon = game.winnerteamid === game.hteamid;
+  const awayWon = game.winnerteamid === game.ateamid;
+  // grade each tip against the actual winner: the model on its pre-game rating
+  // (no hindsight), Squiggle on its stored consensus
+  const model = tipVerdict(preGameHomeProb(snapshot, game), game);
+  const squiggle = tipVerdict(squiggleProb(snapshot, game.hteamid, game.ateamid), game);
+  return (
+    <article className={fav ? 'fixturerow done fav-game' : 'fixturerow done'}>
+      <CardMeta game={game} tag={<span className="final-tag">Final</span>} />
+      <div className="fx-teams">
+        <TeamLine
+          teamId={game.hteamid}
+          value={game.hscore}
+          tone={homeWon ? 'win' : awayWon ? 'loss' : 'flat'}
+          won={homeWon}
+        />
+        <TeamLine
+          teamId={game.ateamid}
+          value={game.ascore}
+          tone={awayWon ? 'win' : homeWon ? 'loss' : 'flat'}
+          won={awayWon}
+        />
+      </div>
+      {(model || squiggle) && (
+        <div className="fx-tips">
+          {model && <Verdict source="Model" v={model} />}
+          {squiggle && <Verdict source="Squiggle" v={squiggle} />}
+        </div>
+      )}
+      <CardFoot venue={game.venue} />
+    </article>
+  );
+}
+
+/** An upcoming game: each side's win probability, a split bar, and consensus. */
 function FixtureRow({
   game,
   snapshot,
@@ -190,33 +261,35 @@ function FixtureRow({
   ratings: Map<number, number>;
 }) {
   const p = winProb(ratings, game.hteamid, game.ateamid);
+  const hp = Math.round(p * 100);
   const sq = squiggleProb(snapshot, game.hteamid, game.ateamid);
   const fav = gameHasFavourite(game);
-  // tint an upcoming game with the projected winner's colour (unless it's the
-  // user's club, which already gets the brighter highlight)
-  const favouredId = fav ? null : p >= 0.5 ? game.hteamid : game.ateamid;
-  const winStyle =
-    favouredId != null ? ({ '--win': teamAccent(favouredId) } as CSSProperties) : undefined;
   return (
-    <article
-      className={fav ? 'fixturerow fav-game' : 'fixturerow win-edge'}
-      style={winStyle}
-    >
-      <div className="fixturehead">
-        {fav && <span className="fav-tag">Your club</span>}
-        <span className="fixture-teams">
-          <TeamChip teamId={game.hteamid} /> <span className="vs">v</span>{' '}
-          <TeamChip teamId={game.ateamid} />
-        </span>
-        <GameMeta game={game} />
+    <article className={fav ? 'fixturerow fav-game' : 'fixturerow'}>
+      <CardMeta game={game} />
+      <div className="fx-teams">
+        <TeamLine
+          teamId={game.hteamid}
+          value={`${hp}%`}
+          tone={p >= 0.5 ? 'lead' : 'trail'}
+        />
+        <TeamLine
+          teamId={game.ateamid}
+          value={`${100 - hp}%`}
+          tone={p < 0.5 ? 'lead' : 'trail'}
+        />
       </div>
-      <ProbBar homeId={game.hteamid} awayId={game.ateamid} homeProb={p} />
-      {sq != null && (
-        <p className="consensus">
-          Squiggle consensus: {teamName(sq >= 0.5 ? game.hteamid : game.ateamid)}{' '}
-          {Math.round(Math.max(sq, 1 - sq) * 100)}%
-        </p>
-      )}
+      <div className="fx-bar">
+        <ProbBar homeId={game.hteamid} awayId={game.ateamid} homeProb={p} bare />
+      </div>
+      <CardFoot venue={game.venue}>
+        {sq != null && (
+          <span className="fx-consensus">
+            Squiggle <strong>{teamAbbrev(sq >= 0.5 ? game.hteamid : game.ateamid)}</strong>{' '}
+            {Math.round(Math.max(sq, 1 - sq) * 100)}%
+          </span>
+        )}
+      </CardFoot>
     </article>
   );
 }
