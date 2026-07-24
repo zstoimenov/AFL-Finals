@@ -4,8 +4,8 @@
       <stop offset="0" stop-color="#182029"/>
       <stop offset="1" stop-color="#0b0f14"/>
     </linearGradient>
-    <linearGradient id="arm" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#6bb4ff"/>
+    <linearGradient id="post" gradientUnits="userSpaceOnUse" x1="0" y1="120" x2="0" y2="400">
+      <stop offset="0" stop-color="#7cbcff"/>
       <stop offset="1" stop-color="#2f80d8"/>
     </linearGradient>
     <linearGradient id="ball" x1="0.15" y1="0" x2="0.85" y2="1">
@@ -13,7 +13,7 @@
       <stop offset="1" stop-color="#e3a423"/>
     </linearGradient>
     <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#f5c542" stop-opacity="0.30"/>
+      <stop offset="0" stop-color="#f5c542" stop-opacity="0.26"/>
       <stop offset="1" stop-color="#f5c542" stop-opacity="0"/>
     </radialGradient>
   </defs>
@@ -21,30 +21,18 @@
   <rect width="512" height="512" rx="112" fill="url(#bg)"/>
   <rect x="5" y="5" width="502" height="502" rx="107" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="2"/>
 
-  <!-- focal halo behind the premiership -->
-  <circle cx="256" cy="256" r="132" fill="url(#glow)"/>
-
-  <!-- symmetric knockout bracket, both sides of the draw converging on the champion -->
-  <g fill="none" stroke="url(#arm)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M150 166 H198 V346 H150"/>
-    <path d="M198 256 H236"/>
-    <path d="M362 166 H314 V346 H362"/>
-    <path d="M314 256 H276"/>
+  <!-- an AFL goal, front on: behind, goal, goal, behind (short, tall, tall, short) -->
+  <g stroke="url(#post)" stroke-width="21" stroke-linecap="round">
+    <line x1="150" y1="266" x2="150" y2="392"/>
+    <line x1="221" y1="128" x2="221" y2="392"/>
+    <line x1="291" y1="128" x2="291" y2="392"/>
+    <line x1="362" y1="266" x2="362" y2="392"/>
   </g>
 
-  <!-- seed nodes -->
-  <g fill="#4da3ff">
-    <circle cx="150" cy="166" r="16"/>
-    <circle cx="150" cy="346" r="16"/>
-    <circle cx="362" cy="166" r="16"/>
-    <circle cx="362" cy="346" r="16"/>
-  </g>
-
-  <!-- premiership: a gold Sherrin at the apex of the bracket -->
-  <g transform="rotate(-30 256 256)">
-    <ellipse cx="256" cy="256" rx="48" ry="31" fill="url(#ball)"/>
-    <line x1="224" y1="256" x2="288" y2="256" stroke="#8a5600" stroke-opacity="0.5" stroke-width="6.5" stroke-linecap="round"/>
-    <line x1="248" y1="242" x2="248" y2="270" stroke="#8a5600" stroke-opacity="0.4" stroke-width="5" stroke-linecap="round"/>
-    <line x1="264" y1="242" x2="264" y2="270" stroke="#8a5600" stroke-opacity="0.4" stroke-width="5" stroke-linecap="round"/>
+  <!-- the ball sailing through for a goal -->
+  <circle cx="256" cy="186" r="70" fill="url(#glow)"/>
+  <g transform="rotate(-20 256 186)">
+    <ellipse cx="256" cy="186" rx="29" ry="18.5" fill="url(#ball)"/>
+    <line x1="238" y1="186" x2="274" y2="186" stroke="#8a5600" stroke-opacity="0.5" stroke-width="4.5" stroke-linecap="round"/>
   </g>
 </svg>

@@ -121,37 +121,14 @@ export default function App() {
       <header className="topbar">
         <h1>
           <svg className="logo" viewBox="0 0 48 48" width="26" height="26" aria-hidden="true">
-            <g
-              fill="none"
-              stroke="#4da3ff"
-              strokeWidth="3.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 15 H17 V33 H12" />
-              <path d="M17 24 H21" />
-              <path d="M36 15 H31 V33 H36" />
-              <path d="M31 24 H27" />
+            {/* AFL goal, front on: behind, goal, goal, behind (short, tall, tall, short) */}
+            <g stroke="#4da3ff" strokeWidth="3" strokeLinecap="round">
+              <line x1="13" y1="25" x2="13" y2="38" />
+              <line x1="20.5" y1="11" x2="20.5" y2="38" />
+              <line x1="27.5" y1="11" x2="27.5" y2="38" />
+              <line x1="35" y1="25" x2="35" y2="38" />
             </g>
-            <g fill="#4da3ff">
-              <circle cx="12" cy="15" r="2.4" />
-              <circle cx="12" cy="33" r="2.4" />
-              <circle cx="36" cy="15" r="2.4" />
-              <circle cx="36" cy="33" r="2.4" />
-            </g>
-            <g transform="rotate(-30 24 24)">
-              <ellipse cx="24" cy="24" rx="5.4" ry="3.5" fill="#f5c542" />
-              <line
-                x1="20.6"
-                y1="24"
-                x2="27.4"
-                y2="24"
-                stroke="#8a5600"
-                strokeOpacity="0.5"
-                strokeWidth="1.1"
-                strokeLinecap="round"
-              />
-            </g>
+            <ellipse cx="24" cy="16.5" rx="3.7" ry="2.4" fill="#f5c542" transform="rotate(-20 24 16.5)" />
           </svg>{' '}
           AFL Finals Tracker
         </h1>
