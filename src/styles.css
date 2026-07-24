@@ -466,11 +466,6 @@ h2 {
   color: var(--muted);
 }
 
-.venue {
-  font-size: 0.7rem;
-  color: var(--muted);
-}
-
 .siderow {
   display: flex;
   align-items: center;
@@ -662,50 +657,185 @@ h2 {
   border-radius: 999px;
 }
 
-.scoreline {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+/* every fixture card shares one skeleton — meta line, two team rows, then an
+   optional bar / tips strip / footer — so equivalent parts line up across the
+   grid no matter how long the text is */
 
-.scoreside {
+.fx-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 5px 8px;
+  min-height: 18px;
+}
+
+.fx-when {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fx-teams {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* one club row: crest + short name grow to fill, the value sits in a fixed
+   right-hand column so every card's numbers align down the grid */
+.teamline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 9px;
   border-radius: 8px;
   background: var(--surface2);
 }
 
-.scoreside.won {
-  background: color-mix(in srgb, var(--good) 14%, var(--surface2));
-}
-
-.scoreside:not(.won) {
-  opacity: 0.68;
-}
-
-.scoreside-team {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+.teamline .teamchip {
+  flex: 1 1 auto;
   min-width: 0;
 }
 
-.wintick {
-  font-weight: 900;
-  font-size: 0.8rem;
+.teamline-end {
+  flex: none;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.scoreside-score {
+.teamline-val {
+  min-width: 2.7em;
+  text-align: right;
   font-weight: 800;
-  font-size: 1.05rem;
   font-variant-numeric: tabular-nums;
 }
 
-.scoreside.won .scoreside-score {
+.teamline-tick {
+  font-weight: 900;
+  font-size: 0.85rem;
+  color: var(--good);
+}
+
+/* upcoming: the favoured side leads, the underdog recedes */
+.teamline.tone-lead {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface2));
+}
+
+.teamline.tone-lead .teamline-val {
+  color: var(--accent);
+}
+
+.teamline.tone-trail .teamline-val {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+/* completed: winner is picked out, loser dims back */
+.teamline.tone-win {
+  background: color-mix(in srgb, var(--good) 15%, var(--surface2));
+}
+
+.teamline.tone-loss {
+  opacity: 0.6;
+}
+
+.fx-bar {
+  margin: 1px 0;
+}
+
+.fx-bar .probbar {
+  height: 8px;
+  border-radius: 4px;
+}
+
+/* post-game tip check: did the model / Squiggle pick the actual winner? */
+.fx-tips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+
+.verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+.verdict-src {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.verdict-pick {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.verdict-mark {
+  font-weight: 900;
+  line-height: 1;
+}
+
+.verdict.hit {
+  border-color: color-mix(in srgb, var(--good) 45%, transparent);
+  background: color-mix(in srgb, var(--good) 12%, transparent);
+}
+
+.verdict.hit .verdict-mark {
+  color: var(--good);
+}
+
+.verdict.miss {
+  border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+
+.verdict.miss .verdict-mark {
+  color: var(--danger);
+}
+
+.verdict.drawn .verdict-mark {
+  color: var(--muted);
+}
+
+/* venue + secondary info, pinned to the bottom edge so cards read to a shared
+   baseline */
+.fx-foot {
+  margin-top: auto;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.fx-venue {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fx-foot-end {
+  flex: none;
+  white-space: nowrap;
+}
+
+.fx-consensus strong {
   color: var(--text);
+  font-variant-numeric: tabular-nums;
 }
 
 /* round stepper */
@@ -772,24 +902,6 @@ h2 {
   color: var(--good);
   background: color-mix(in srgb, var(--good) 14%, transparent);
   border: 1px solid color-mix(in srgb, var(--good) 45%, transparent);
-}
-
-.fixturehead {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.fixture-teams {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.vs {
-  color: var(--muted);
-  font-size: 0.78rem;
 }
 
 /* ---------- ladder ---------- */
@@ -1439,10 +1551,9 @@ button.teamchip:focus-visible {
     0 6px 22px -8px color-mix(in srgb, var(--fav) 45%, transparent);
 }
 
-/* every other match card echoes that highlight for the projected winner, but
+/* every finals/bracket card echoes that highlight for the projected winner, but
    quieter — a darkened band in that team's own colours, and no outer glow, so
    it stays clearly subordinate to the club highlight above */
-.fixturerow.win-edge,
 .matchcard.win-edge {
   border-color: color-mix(in srgb, var(--win) 34%, var(--border));
   border-left: 3px solid color-mix(in srgb, var(--win) 72%, #000);

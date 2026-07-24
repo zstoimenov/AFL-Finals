@@ -14,12 +14,19 @@ export default function TeamChip({
   teamId,
   seed,
   compact = false,
+  short = false,
   interactive = true,
   part = 'full'
 }: {
   teamId: number | null;
   seed?: number | null;
   compact?: boolean;
+  /**
+   * Use the club's short place name (e.g. "West Coast") instead of the full
+   * "Place + Nickname". Keeps fixture matchups on one line; ignored when
+   * `compact` is set, which shows the 3-letter code.
+   */
+  short?: boolean;
   /** set false to render a plain chip even inside the select context */
   interactive?: boolean;
   /**
@@ -63,7 +70,7 @@ export default function TeamChip({
   );
   const label = (
     <>
-      <span className="teamname">{compact ? team.abbrev : team.name}</span>
+      <span className="teamname">{compact ? team.abbrev : short ? team.short : team.name}</span>
       {fav && (
         <span className="fav-star" title="Your club" aria-label="Your club">
           ★
