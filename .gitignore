@@ -4,3 +4,4 @@ dev-dist
 *.tsbuildinfo
 *.local
 .DS_Store
+scratch

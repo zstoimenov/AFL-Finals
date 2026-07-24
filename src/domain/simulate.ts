@@ -1,6 +1,6 @@
 import type { SimResult, Snapshot } from './types';
 import { remainingHomeAwayGames, sortedStandings, finalsGames } from './ladder';
-import { computeRatings, winProb } from './predict';
+import { computeRatings, winProb, fixtureAdjustment } from './predict';
 import { MATCH_ORDER, matchParticipants, type MatchKey } from './bracket';
 
 /** Deterministic RNG (mulberry32) so simulations are reproducible. */
@@ -34,6 +34,11 @@ export function simulateSeason(snapshot: Snapshot, iterations = 10000, seed = 20
   const remaining = remainingHomeAwayGames(snapshot.games);
   const base = sortedStandings(snapshot.standings);
 
+  // Per-fixture context (travel, head-to-head, rest) depends only on the fixture
+  // and prior results, so compute each once here rather than 10k times in-loop.
+  const context = new Map<number, number>();
+  for (const g of remaining) context.set(g.id, fixtureAdjustment(snapshot.games, g));
+
   // actual finals results, keyed by unordered pair "loId-hiId"
   const realFinals = new Map<string, number>();
   for (const g of finalsGames(snapshot.games)) {
@@ -56,7 +61,7 @@ export function simulateSeason(snapshot: Snapshot, iterations = 10000, seed = 20
     const pts = new Map(base.map((s) => [s.id, s.pts]));
     const pct = new Map(base.map((s) => [s.id, s.percentage]));
     for (const g of remaining) {
-      const p = winProb(ratings, g.hteamid, g.ateamid);
+      const p = winProb(ratings, g.hteamid, g.ateamid, false, context.get(g.id) ?? 0);
       const homeWins = rng() < p;
       const winner = homeWins ? g.hteamid : g.ateamid;
       pts.set(winner, (pts.get(winner) ?? 0) + 4);

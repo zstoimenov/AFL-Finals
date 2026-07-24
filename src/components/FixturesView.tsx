@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { BracketMatch, Game, Snapshot } from '../domain/types';
-import { squiggleProb, computeRatings, winProb, preGameHomeProb } from '../domain/predict';
+import { squiggleProb, computeRatings, fixtureHomeProb, preGameHomeProb } from '../domain/predict';
 import { formatGameDateTime, isGameToday } from '../domain/format';
 import { currentHomeAwayRound, homeAwayRounds } from '../domain/ladder';
 import { teamAbbrev } from '../domain/teams';
@@ -257,7 +257,7 @@ function FixtureRow({
   snapshot: Snapshot;
   ratings: Map<number, number>;
 }) {
-  const p = winProb(ratings, game.hteamid, game.ateamid);
+  const p = fixtureHomeProb(ratings, snapshot.games, game);
   const hp = Math.round(p * 100);
   const sq = squiggleProb(snapshot, game.hteamid, game.ateamid);
   const fav = gameHasFavourite(game);

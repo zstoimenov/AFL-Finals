@@ -1,19 +1,43 @@
 import type { Game, Snapshot, Standing } from './types';
-import { recentForm } from './ladder';
+import {
+  gameStart,
+  opponentAdjustedMargins,
+  recencyForm,
+  headToHead,
+  restDays
+} from './features';
+import { homeVenuesByTeam, isAwayTravelling, isHostAtHome } from './venues';
 
 /**
- * Transparent team rating: blend of season win ratio, percentage (log-scaled)
- * and last-5 form. Scale roughly [-2.5, +2.5]; the logistic below turns a
- * rating gap into a win probability.
+ * Transparent team rating: a readable blend of season win ratio, percentage
+ * (log-scaled), recency-weighted form and an opponent-adjusted margin term that
+ * folds in strength of schedule. Scale roughly [-2.5, +2.5]; the logistic in
+ * `winProb` turns a rating gap into a win probability. Every weight is a named
+ * constant so the model stays inspectable and the backtest can justify each one.
  */
+export const RATING_WEIGHTS = {
+  winRatio: 1.2,
+  percentage: 1.3,
+  form: 0.7,
+  margin: 1.0
+} as const;
+/** Points of opponent-adjusted margin per 1.0 of rating. */
+export const MARGIN_SCALE = 26;
+
 export function computeRatings(standings: Standing[], games: Game[]): Map<number, number> {
+  const strength = opponentAdjustedMargins(games);
   const ratings = new Map<number, number>();
   for (const s of standings) {
     const maxPts = s.played > 0 ? s.played * 4 : 1;
     const winRatio = s.pts / maxPts;
     const pctTerm = Math.log(Math.max(s.percentage, 40) / 100);
-    const form = recentForm(games, s.id, 5);
-    const rating = 2.0 * (winRatio - 0.5) + 2.2 * pctTerm + 0.8 * (form - 0.5);
+    const form = recencyForm(games, s.id);
+    const margin = clamp((strength.get(s.id) ?? 0) / MARGIN_SCALE, -1.5, 1.5);
+    const rating =
+      RATING_WEIGHTS.winRatio * (winRatio - 0.5) +
+      RATING_WEIGHTS.percentage * pctTerm +
+      RATING_WEIGHTS.form * (form - 0.5) +
+      RATING_WEIGHTS.margin * margin;
     ratings.set(s.id, rating);
   }
   return ratings;
@@ -23,20 +47,81 @@ export function computeRatings(standings: Standing[], games: Game[]): Map<number
 export const HOME_ADVANTAGE = 0.25;
 
 /**
+ * Per-fixture context weights, layered on top of the flat home bump.
+ *
+ * Weights are set from the backtest harness (`backtest.ts`), not by feel. On the
+ * 2026-to-date corpus, the interstate-travel term clearly improved calibration
+ * (Brier and log-loss) while holding tip accuracy; the head-to-head, rest-day and
+ * neutral-host terms did **not** improve single-season accuracy, so they ship at
+ * weight 0 — fully implemented and unit-tested, ready to enable once a
+ * multi-season backtest (`scripts/backtest-years.mjs`) justifies them. Setting a
+ * weight non-zero activates the term; nothing else needs to change.
+ */
+export const CONTEXT: { travel: number; hostNeutral: number; h2h: number; rest: number } = {
+  /** extra edge to the host when the away side is playing away from its grounds */
+  travel: 0.2,
+  /** claw back part of the home bump when the "home" side isn't at its own venue */
+  hostNeutral: 0,
+  /** weight on the head-to-head signal (roughly [-1, 1]) */
+  h2h: 0,
+  /** weight on the rest-day differential (normalised to ~[-1, 1]) */
+  rest: 0
+};
+
+/**
+ * Match-specific rating-gap adjustment beyond the flat home bump: interstate
+ * travel, a genuinely neutral "home" venue, recent head-to-head, and the rest
+ * differential. All derived from `games` (pass only pre-kickoff games to keep a
+ * prediction hindsight-free). Positive favours the home side. Each term is gated
+ * by its `CONTEXT` weight, so disabled terms cost nothing.
+ */
+export function fixtureAdjustment(games: Game[], game: Game): number {
+  const homeVenues = homeVenuesByTeam(games);
+  let d = 0;
+  if (CONTEXT.travel && isAwayTravelling(homeVenues, game)) d += CONTEXT.travel;
+  if (CONTEXT.hostNeutral && !isHostAtHome(homeVenues, game)) d -= CONTEXT.hostNeutral;
+  if (CONTEXT.h2h) d += CONTEXT.h2h * headToHead(games, game.hteamid, game.ateamid);
+  if (CONTEXT.rest) {
+    const start = gameStart(game);
+    const restH = restDays(games, game.hteamid, start);
+    const restA = restDays(games, game.ateamid, start);
+    if (restH != null && restA != null) {
+      d += CONTEXT.rest * clamp((restH - restA) / 7, -1, 1);
+    }
+  }
+  return d;
+}
+
+/**
  * P(home wins) from the rating gap via a logistic curve.
- * `neutral` disables home advantage (Grand Final at the MCG).
+ * `neutral` disables the flat home advantage (Grand Final at the MCG).
+ * `contextDelta` adds per-fixture effects (travel, head-to-head, rest).
  */
 export function winProb(
   ratings: Map<number, number>,
   homeId: number,
   awayId: number,
-  neutral = false
+  neutral = false,
+  contextDelta = 0
 ): number {
   const rh = ratings.get(homeId) ?? 0;
   const ra = ratings.get(awayId) ?? 0;
-  const gap = rh - ra + (neutral ? 0 : HOME_ADVANTAGE);
+  const gap = rh - ra + (neutral ? 0 : HOME_ADVANTAGE) + contextDelta;
   const p = 1 / (1 + Math.exp(-1.1 * gap));
   return Math.min(0.97, Math.max(0.03, p));
+}
+
+/**
+ * P(home wins) for a real fixture with full context folded in. `games` supplies
+ * the history the context is drawn from — pass pre-kickoff games only for a
+ * hindsight-free number.
+ */
+export function fixtureHomeProb(
+  ratings: Map<number, number>,
+  games: Game[],
+  game: Game
+): number {
+  return winProb(ratings, game.hteamid, game.ateamid, false, fixtureAdjustment(games, game));
 }
 
 /** Squiggle consensus P(home wins) for a fixture, if models have tipped it. */
@@ -52,13 +137,6 @@ export function squiggleProb(
   );
   if (!tip) return null;
   return tip.hteamid === homeId ? tip.hconfidence : 1 - tip.hconfidence;
-}
-
-/** Kickoff instant (epoch seconds) — unixtime when present, else the parsed date. */
-function gameStart(g: Game): number {
-  if (g.unixtime && g.unixtime > 0) return g.unixtime;
-  const t = Date.parse((g.date ?? '').replace(' ', 'T'));
-  return Number.isNaN(t) ? 0 : Math.round(t / 1000);
 }
 
 /**
@@ -96,13 +174,17 @@ function standingsBefore(games: Game[], cutoff: number): Standing[] {
 
 /**
  * The in-app model's P(home wins) as it would have stood before a given game —
- * built from results and form up to kickoff only. Lets a completed fixture show
- * whether the model's pre-game tip actually came off, without hindsight leaking
- * this game's result into its own rating.
+ * built from results, ratings and fixture context up to kickoff only. Lets a
+ * completed fixture show whether the model's pre-game tip actually came off,
+ * without hindsight leaking this game's result into its own prediction.
  */
 export function preGameHomeProb(snapshot: Snapshot, game: Game): number {
   const cutoff = gameStart(game);
   const prior = snapshot.games.filter((g) => gameStart(g) < cutoff);
   const ratings = computeRatings(standingsBefore(prior, cutoff), prior);
-  return winProb(ratings, game.hteamid, game.ateamid);
+  return winProb(ratings, game.hteamid, game.ateamid, false, fixtureAdjustment(prior, game));
+}
+
+function clamp(x: number, lo: number, hi: number): number {
+  return Math.min(hi, Math.max(lo, x));
 }
