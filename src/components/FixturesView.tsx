@@ -28,15 +28,21 @@ const roundLabel = (r: number) => (r === 0 ? 'Opening Round' : `Round ${r}`);
 export default function FixturesView({
   snapshot,
   bracket,
-  finalsStarted
+  finalsStarted,
+  history = []
 }: {
   snapshot: Snapshot;
   bracket: BracketMatch[];
   finalsStarted: boolean;
+  history?: Game[];
 }) {
+  const priorHistory = useMemo(
+    () => history.filter((g) => g.year < snapshot.meta.year),
+    [history, snapshot]
+  );
   const ratings = useMemo(
-    () => computeRatings(snapshot.standings, snapshot.games),
-    [snapshot]
+    () => computeRatings(snapshot.standings, snapshot.games, { history: priorHistory }),
+    [snapshot, priorHistory]
   );
   const rounds = useMemo(() => homeAwayRounds(snapshot.games), [snapshot]);
   const current = useMemo(() => currentHomeAwayRound(snapshot.games), [snapshot]);
@@ -126,7 +132,7 @@ export default function FixturesView({
       <div className="fixturelist">
         {games.map((g) =>
           g.complete ? (
-            <ResultRow key={g.id} game={g} snapshot={snapshot} />
+            <ResultRow key={g.id} game={g} snapshot={snapshot} history={priorHistory} />
           ) : (
             <FixtureRow key={g.id} game={g} snapshot={snapshot} ratings={ratings} />
           )
@@ -220,13 +226,21 @@ function Verdict({
 }
 
 /** A finished game: final score, winner highlighted, and how the tips fared. */
-function ResultRow({ game, snapshot }: { game: Game; snapshot: Snapshot }) {
+function ResultRow({
+  game,
+  snapshot,
+  history
+}: {
+  game: Game;
+  snapshot: Snapshot;
+  history: Game[];
+}) {
   const fav = gameHasFavourite(game);
   const homeWon = game.winnerteamid === game.hteamid;
   const awayWon = game.winnerteamid === game.ateamid;
   // grade each tip against the actual winner: the model on its pre-game rating
-  // (no hindsight), Squiggle on its stored consensus
-  const model = tipVerdict(preGameHomeProb(snapshot, game), game);
+  // (no hindsight, carry-over prior included), Squiggle on its stored consensus
+  const model = tipVerdict(preGameHomeProb(snapshot, game, history), game);
   const squiggle = tipVerdict(squiggleProb(snapshot, game.hteamid, game.ateamid), game);
   return (
     <article className={fav ? 'fixturerow done fav-game' : 'fixturerow done'}>

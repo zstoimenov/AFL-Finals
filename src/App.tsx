@@ -1,25 +1,41 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { loadSnapshot } from './api/loadData';
-import type { Snapshot } from './domain/types';
+import {
+  loadSnapshot,
+  loadHistoryIndex,
+  loadHistoryCorpus,
+  loadSeason
+} from './api/loadData';
+import type { Game, HistoryIndexEntry, Snapshot } from './domain/types';
 import type { SimOutput } from './domain/simulate';
 import { computeLocks } from './domain/locks';
 import { buildBracket } from './domain/buildBracket';
 import { finalsGames } from './domain/ladder';
+import { completedGames } from './domain/features';
+import { supportsProjectedBracket } from './domain/season';
 import { formatUpdatedAt } from './domain/format';
 import BracketView from './components/BracketView';
 import FixturesView from './components/FixturesView';
 import LadderView from './components/LadderView';
 import PremiershipView from './components/PremiershipView';
+import FinalsResults from './components/FinalsResults';
+import SeasonSummary from './components/SeasonSummary';
+import SeasonsHub from './components/SeasonsHub';
+import SeasonSwitcher from './components/SeasonSwitcher';
 import TeamDetail from './components/TeamDetail';
 import InfoButton from './components/InfoButton';
 import { TeamSelectContext } from './teamSelect';
 
-type Tab = 'bracket' | 'fixtures' | 'ladder' | 'odds';
+type Tab = 'bracket' | 'fixtures' | 'ladder' | 'odds' | 'seasons';
 
 const SIM_ITERATIONS = 10000;
 
 export default function App() {
-  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+  const [live, setLive] = useState<Snapshot | null>(null);
+  const [historyIndex, setHistoryIndex] = useState<HistoryIndexEntry[]>([]);
+  const [historyCorpus, setHistoryCorpus] = useState<Game[]>([]);
+  const [seasons, setSeasons] = useState<Map<number, Snapshot>>(new Map());
+  const [activeYear, setActiveYear] = useState<number | null>(null);
+  const [seasonLoading, setSeasonLoading] = useState(false);
   const [sim, setSim] = useState<SimOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('fixtures');
@@ -46,9 +62,33 @@ export default function App() {
       return next;
     });
 
+  // initial load: the live season, plus the multi-season archive (fail-soft)
   useEffect(() => {
-    loadSnapshot().then(setSnapshot).catch((e) => setError(String(e)));
+    loadSnapshot()
+      .then((snap) => {
+        setLive(snap);
+        setActiveYear(snap.meta.year);
+        setSeasons((prev) => new Map(prev).set(snap.meta.year, snap));
+      })
+      .catch((e) => setError(String(e)));
+    loadHistoryIndex().then(setHistoryIndex).catch(() => setHistoryIndex([]));
+    loadHistoryCorpus().then(setHistoryCorpus).catch(() => setHistoryCorpus([]));
   }, []);
+
+  // eagerly load every archived season so the hub can score them
+  useEffect(() => {
+    let cancelled = false;
+    for (const { year } of historyIndex) {
+      if (seasons.has(year)) continue;
+      loadSeason(year).then((snap) => {
+        if (!cancelled && snap) setSeasons((prev) => new Map(prev).set(year, snap));
+      });
+    }
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyIndex]);
 
   // shadow under the nav pills only once they've stuck to the top
   useEffect(() => {
@@ -59,24 +99,42 @@ export default function App() {
     });
     io.observe(el);
     return () => io.disconnect();
-  }, [snapshot]);
+  }, [live]);
 
+  // the Monte-Carlo runs on the live season only, informed by the history prior
   useEffect(() => {
-    if (!snapshot) return;
+    if (!live) return;
     const worker = new Worker(new URL('./simWorker.ts', import.meta.url), { type: 'module' });
     worker.onmessage = (e: MessageEvent<SimOutput>) => setSim(e.data);
-    worker.postMessage({ snapshot, iterations: SIM_ITERATIONS });
+    worker.postMessage({ snapshot: live, iterations: SIM_ITERATIONS, history: historyCorpus });
     return () => worker.terminate();
-  }, [snapshot]);
+  }, [live, historyCorpus]);
+
+  const ensureSeason = (year: number) => {
+    if (seasons.has(year)) return;
+    setSeasonLoading(true);
+    loadSeason(year)
+      .then((snap) => {
+        if (snap) setSeasons((prev) => new Map(prev).set(year, snap));
+      })
+      .finally(() => setSeasonLoading(false));
+  };
+
+  const openSeason = (year: number) => {
+    ensureSeason(year);
+    setActiveYear(year);
+    setTab('ladder');
+  };
 
   const refresh = async () => {
     if (refreshing) return;
     setRefreshing(true);
     setRefreshMsg(null);
-    const prev = snapshot?.meta.fetchedAt;
+    const prev = live?.meta.fetchedAt;
     try {
       const fresh = await loadSnapshot(true);
-      setSnapshot(fresh);
+      setLive(fresh);
+      setSeasons((p) => new Map(p).set(fresh.meta.year, fresh));
       setRefreshMsg(
         fresh.meta.fetchedAt !== prev ? 'Updated to the latest data' : 'Already up to date'
       );
@@ -88,13 +146,24 @@ export default function App() {
     }
   };
 
+  const liveYear = live?.meta.year ?? null;
+  const isLive = activeYear != null && activeYear === liveYear;
+  const active = activeYear != null ? seasons.get(activeYear) ?? null : null;
+
+  // live-season derived state (locks/bracket/sim only apply to the live season)
   const locks = useMemo(
-    () => (snapshot ? computeLocks(snapshot.standings, snapshot.games) : []),
-    [snapshot]
+    () => (live ? computeLocks(live.standings, live.games) : []),
+    [live]
   );
   const bracket = useMemo(
-    () => (snapshot ? buildBracket(snapshot, sim, locks) : []),
-    [snapshot, sim, locks]
+    () => (live ? buildBracket(live, sim, locks, historyCorpus) : []),
+    [live, sim, locks, historyCorpus]
+  );
+
+  // every completed game across seasons — for the hub's head-to-head explorer
+  const allGames = useMemo(
+    () => (live ? [...historyCorpus, ...completedGames(live.games)] : historyCorpus),
+    [historyCorpus, live]
   );
 
   if (error) {
@@ -104,7 +173,7 @@ export default function App() {
       </div>
     );
   }
-  if (!snapshot) {
+  if (!live || activeYear == null) {
     return (
       <div className="shell loading" aria-busy="true">
         <div className="spinner" />
@@ -113,7 +182,8 @@ export default function App() {
     );
   }
 
-  const finalsStarted = finalsGames(snapshot.games).length > 0;
+  const liveFinalsStarted = finalsGames(live.games).length > 0;
+  const viewingArchive = !isLive;
 
   return (
     <TeamSelectContext.Provider value={setSelectedTeam}>
@@ -133,39 +203,59 @@ export default function App() {
           AFL Finals Tracker
         </h1>
         <div className="topbar-right">
+          <SeasonSwitcher
+            liveYear={liveYear!}
+            activeYear={activeYear}
+            history={historyIndex}
+            loading={seasonLoading}
+            onChange={(y) => {
+              ensureSeason(y);
+              setActiveYear(y);
+            }}
+          />
           <p className="datastamp">
-            {snapshot.meta.source === 'seed' ? 'Sample data · ' : ''}
-            {finalsStarted ? 'Finals series · ' : ''}
-            updated {formatUpdatedAt(snapshot.meta.fetchedAt)}
+            {isLive ? (
+              <>
+                {live.meta.source === 'seed' ? 'Sample data · ' : ''}
+                {liveFinalsStarted ? 'Finals series · ' : ''}
+                updated {formatUpdatedAt(live.meta.fetchedAt)}
+              </>
+            ) : (
+              <>Archived season · final</>
+            )}
           </p>
-          <button
-            type="button"
-            className="refreshbtn"
-            onClick={refresh}
-            disabled={refreshing}
-            aria-label="Refresh data"
-            title="Check for the latest published data"
-          >
-            <span className={refreshing ? 'refreshicon spinning' : 'refreshicon'} aria-hidden="true">
-              ⟳
-            </span>
-            <span className="refreshlabel">{refreshing ? 'Refreshing…' : 'Refresh'}</span>
-          </button>
+          {isLive && (
+            <button
+              type="button"
+              className="refreshbtn"
+              onClick={refresh}
+              disabled={refreshing}
+              aria-label="Refresh data"
+              title="Check for the latest published data"
+            >
+              <span className={refreshing ? 'refreshicon spinning' : 'refreshicon'} aria-hidden="true">
+                ⟳
+              </span>
+              <span className="refreshlabel">{refreshing ? 'Refreshing…' : 'Refresh'}</span>
+            </button>
+          )}
           <InfoButton title="About this app" label="About">
             <p>
-              A tracker for the 2026 AFL finals (the new top-ten Wildcard format). It projects
-              the bracket from the live ladder and estimates each match and the premiership.
+              A tracker for the AFL finals (the 2026 top-ten Wildcard format). It projects the
+              live bracket from the ladder, estimates each match and the premiership, and —
+              across {historyIndex.length > 0 ? `${historyIndex.length}+ ` : ''}seasons — grades
+              how the model actually tips.
             </p>
             <p>
-              Projections come from an in-app model (ladder, percentage, form, home advantage)
-              plus a {SIM_ITERATIONS.toLocaleString()}-run Monte Carlo of the finals series.
-              Ladder, fixtures, results and consensus tips are from{' '}
-              <a href="https://squiggle.com.au">Squiggle</a>. All times are AWST.
+              Projections come from an in-app model (ladder, percentage, form, home advantage,
+              and a cross-season carry-over prior) plus a {SIM_ITERATIONS.toLocaleString()}-run
+              Monte Carlo of the finals series. Ladder, fixtures, results and consensus tips are
+              from <a href="https://squiggle.com.au">Squiggle</a>. All times are AWST.
             </p>
             <p>
-              New results are fetched from Squiggle automatically every day at 9:00 PM AWST and
-              published here. <strong>Refresh</strong> re-checks for the latest published data
-              without reinstalling — it won&apos;t appear until that daily update has run.
+              The <strong>Seasons</strong> tab browses past seasons and shows the model&apos;s
+              per-season accuracy. New results are fetched from Squiggle automatically every day
+              and published here; <strong>Refresh</strong> re-checks for the latest.
             </p>
             <p className="disclaimer">
               Unofficial fan project — not affiliated with, authorised or endorsed by the
@@ -182,7 +272,19 @@ export default function App() {
         </div>
       )}
 
-      {snapshot.meta.source === 'seed' && !dismissed.has('seed') && (
+      {viewingArchive && (
+        <div className="banner archive-banner" role="note">
+          <span>
+            Viewing the <strong>{activeYear}</strong> season
+            {active?.meta.source === 'seed' ? ' (sample data)' : ''}.
+          </span>
+          <button type="button" className="banner-back" onClick={() => setActiveYear(liveYear)}>
+            Back to {liveYear}
+          </button>
+        </div>
+      )}
+
+      {isLive && live.meta.source === 'seed' && !dismissed.has('seed') && (
         <div className="banner" role="note">
           <span>
             Showing generated sample data — live Squiggle data replaces this after the first
@@ -198,7 +300,7 @@ export default function App() {
           </button>
         </div>
       )}
-      {!finalsStarted && !dismissed.has('prefinals') && (
+      {isLive && !liveFinalsStarted && !dismissed.has('prefinals') && (
         <div className="banner subtle" role="note">
           <span>
             Finals haven&apos;t started yet — the bracket below is projected from the current
@@ -219,10 +321,11 @@ export default function App() {
       <nav className={tabsStuck ? 'tabs stuck' : 'tabs'} role="tablist">
         {(
           [
-            ['fixtures', 'Fixtures'],
+            ['fixtures', isLive ? 'Fixtures' : 'Results'],
             ['ladder', 'Ladder'],
-            ['bracket', 'Bracket'],
-            ['odds', 'Odds']
+            ['bracket', isLive ? 'Bracket' : 'Finals'],
+            ['odds', isLive ? 'Odds' : 'Summary'],
+            ['seasons', 'Seasons']
           ] as Array<[Tab, string]>
         ).map(([key, label]) => (
           <button
@@ -238,22 +341,59 @@ export default function App() {
       </nav>
 
       <main>
-        {tab === 'bracket' && (
-          <BracketView bracket={bracket} finalsStarted={finalsStarted} simReady={sim != null} />
+        {tab === 'seasons' ? (
+          <SeasonsHub
+            index={historyIndex}
+            seasons={seasons}
+            liveYear={liveYear!}
+            allGames={allGames}
+            onOpenSeason={openSeason}
+          />
+        ) : active == null ? (
+          <div className="shell loading" aria-busy="true">
+            <div className="spinner" />
+            <p>Loading {activeYear} season…</p>
+          </div>
+        ) : (
+          <>
+            {tab === 'bracket' &&
+              (supportsProjectedBracket(active.meta) && isLive ? (
+                <BracketView bracket={bracket} finalsStarted={liveFinalsStarted} simReady={sim != null} />
+              ) : (
+                <FinalsResults snapshot={active} />
+              ))}
+            {tab === 'fixtures' && (
+              <FixturesView
+                snapshot={active}
+                bracket={isLive ? bracket : []}
+                finalsStarted={isLive && liveFinalsStarted}
+                history={historyCorpus}
+              />
+            )}
+            {tab === 'ladder' && (
+              <LadderView
+                snapshot={active}
+                locks={isLive ? locks : []}
+                sim={isLive ? sim : null}
+                historical={!isLive}
+              />
+            )}
+            {tab === 'odds' &&
+              (isLive ? (
+                <PremiershipView snapshot={active} sim={sim} />
+              ) : (
+                <SeasonSummary snapshot={active} />
+              ))}
+          </>
         )}
-        {tab === 'fixtures' && (
-          <FixturesView snapshot={snapshot} bracket={bracket} finalsStarted={finalsStarted} />
-        )}
-        {tab === 'ladder' && <LadderView snapshot={snapshot} locks={locks} sim={sim} />}
-        {tab === 'odds' && <PremiershipView snapshot={snapshot} sim={sim} />}
       </main>
 
-      {selectedTeam != null && (
+      {selectedTeam != null && active != null && (
         <TeamDetail
           teamId={selectedTeam}
-          snapshot={snapshot}
-          sim={sim}
-          locks={locks}
+          snapshot={active}
+          sim={isLive ? sim : null}
+          locks={isLive ? locks : []}
           onClose={() => setSelectedTeam(null)}
         />
       )}

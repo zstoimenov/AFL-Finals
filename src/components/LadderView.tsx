@@ -3,26 +3,34 @@ import type { Snapshot, TeamLocks } from '../domain/types';
 import type { SimOutput } from '../domain/simulate';
 import { sortedStandings } from '../domain/ladder';
 import { lockLabel } from '../domain/locks';
+import { ladderCutLines, finalsFormatFor } from '../domain/season';
 import { isFavourite } from '../domain/favourite';
 import TeamChip from './TeamChip';
 import LockBadge from './LockBadge';
 import InfoButton from './InfoButton';
 
 /**
- * The live ladder with the 2026 finals cut lines (top 6 bye, top 10 finals)
- * and mathematical lock badges from the locks engine.
+ * The ladder with format-aware finals cut lines and, for the live season,
+ * mathematical lock badges and simulated finals chances. For an archived season
+ * it shows the final table: the cut lines match that era's format and the
+ * simulated column is dropped (the season is decided).
  */
 export default function LadderView({
   snapshot,
   locks,
-  sim
+  sim,
+  historical = false
 }: {
   snapshot: Snapshot;
   locks: TeamLocks[];
   sim: SimOutput | null;
+  historical?: boolean;
 }) {
   const ladder = sortedStandings(snapshot.standings);
   const lockByTeam = new Map(locks.map((l) => [l.teamId, l]));
+  const { byeCutIndex, finalsCutIndex } = ladderCutLines(snapshot.meta);
+  const wildcard = finalsFormatFor(snapshot.meta) === 'top10-wildcard';
+  const showChance = !historical;
   // a soft edge on the pinned crest column, shown only once scrolled sideways
   const [scrolled, setScrolled] = useState(false);
 
@@ -31,14 +39,22 @@ export default function LadderView({
       <div className="section-head">
         <h2>Ladder</h2>
         <InfoButton title="About the ladder">
+          {wildcard ? (
+            <p>
+              Top 6 skip the Wildcard Round; 7th–10th play sudden-death wildcards to reach the
+              finals. The dashed gold line marks the wildcard-bye cut (6th); the solid line marks
+              the finals cut (10th).
+            </p>
+          ) : (
+            <p>
+              This season used the top-eight final eight. The solid line marks the finals cut
+              (8th).
+            </p>
+          )}
           <p>
-            Top 6 skip the Wildcard Round; 7th–10th play sudden-death wildcards to reach the
-            finals. The dashed gold line marks the wildcard-bye cut (6th); the solid line marks
-            the finals cut (10th).
-          </p>
-          <p>
-            Badges mark mathematically settled fates. “Finals %” is each team&apos;s simulated
-            chance of playing finals. Tap any team for its run home and odds.
+            {historical
+              ? 'The final table for this season. Tap any team for its season and record.'
+              : 'Badges mark mathematically settled fates. “Finals %” is each team’s simulated chance of playing finals. Tap any team for its run home and odds.'}
           </p>
         </InfoButton>
       </div>
@@ -59,7 +75,7 @@ export default function LadderView({
               <th className="num sec">D</th>
               <th className="num">Pts</th>
               <th className="num">%</th>
-              <th className="num finalspct">Finals %</th>
+              {showChance && <th className="num finalspct">Finals %</th>}
               <th>Status</th>
             </tr>
           </thead>
@@ -72,7 +88,7 @@ export default function LadderView({
                 <tr
                   key={s.id}
                   className={[
-                    i === 5 ? 'cut bye-cut' : i === 9 ? 'cut finals-cut' : '',
+                    i === byeCutIndex ? 'cut bye-cut' : i === finalsCutIndex ? 'cut finals-cut' : '',
                     isFavourite(s.id) ? 'fav-row' : ''
                   ]
                     .filter(Boolean)
@@ -91,9 +107,11 @@ export default function LadderView({
                   <td className="num sec">{s.draws}</td>
                   <td className="num pts">{s.pts}</td>
                   <td className="num">{s.percentage.toFixed(1)}</td>
-                  <td className="num finalspct">
-                    {finalsPct != null ? `${Math.round(finalsPct * 100)}%` : '…'}
-                  </td>
+                  {showChance && (
+                    <td className="num finalspct">
+                      {finalsPct != null ? `${Math.round(finalsPct * 100)}%` : '…'}
+                    </td>
+                  )}
                   <td>{label && <LockBadge label={label} />}</td>
                 </tr>
               );
@@ -102,8 +120,14 @@ export default function LadderView({
         </table>
       </div>
       <p className="legendnote">
-        <span className="cutkey bye" /> bye line (6th) · <span className="cutkey fin" /> finals
-        line (10th) · <span className="fav-star" aria-hidden="true">★</span> your club
+        {wildcard && (
+          <>
+            <span className="cutkey bye" /> bye line (6th) ·{' '}
+          </>
+        )}
+        <span className="cutkey fin" /> finals line ({finalsCutIndex + 1}
+        {finalsCutIndex + 1 === 8 ? 'th' : 'th'}) ·{' '}
+        <span className="fav-star" aria-hidden="true">★</span> your club
       </p>
     </section>
   );

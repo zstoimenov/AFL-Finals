@@ -82,6 +82,32 @@ export const enrichedModel: PreGameModel = (prior, game) => {
 };
 
 /**
+ * The enriched model scoped to the target game's own season. On a single-season
+ * corpus this is identical to `enrichedModel`; on a multi-season corpus it's the
+ * fair baseline for the carry-over prior — both see the same within-season games,
+ * so any difference is the prior's doing, not leakage from summing prior seasons
+ * into this season's ladder.
+ */
+export const enrichedSeasonModel: PreGameModel = (prior, game) => {
+  const season = prior.filter((g) => g.year === game.year);
+  const ratings = computeRatings(buildStandings(season), season);
+  return winProb(ratings, game.hteamid, game.ateamid, false, fixtureAdjustment(season, game));
+};
+
+/**
+ * The shipped in-app model: season-scoped enriched ratings shrunk toward the
+ * cross-season carry-over prior built from earlier seasons. This is what
+ * `computeRatings({ history })` does in the app; evaluating it here on a
+ * multi-season corpus is how the prior earns (or loses) its place.
+ */
+export const priorAwareModel: PreGameModel = (prior, game) => {
+  const season = prior.filter((g) => g.year === game.year);
+  const history = prior.filter((g) => g.year < game.year);
+  const ratings = computeRatings(buildStandings(season), season, { history });
+  return winProb(ratings, game.hteamid, game.ateamid, false, fixtureAdjustment(season, game));
+};
+
+/**
  * The shipped model: enriched model blended with the Squiggle consensus (from the
  * pre-game tips) at `blend`. The tip for a past game is its frozen pre-game
  * prediction, so looking it up here stays hindsight-free.

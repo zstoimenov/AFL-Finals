@@ -1,4 +1,4 @@
-import type { BracketMatch, BracketSide, Snapshot, TeamLocks } from './types';
+import type { BracketMatch, BracketSide, Game, Snapshot, TeamLocks } from './types';
 import type { SimOutput } from './simulate';
 import {
   MATCH_NAMES,
@@ -29,11 +29,13 @@ const PLACEHOLDERS: Partial<Record<MatchKey, { home?: string; away?: string }>> 
 export function buildBracket(
   snapshot: Snapshot,
   sim: SimOutput | null,
-  locks: TeamLocks[]
+  locks: TeamLocks[],
+  history: Game[] = []
 ): BracketMatch[] {
   const ladder = sortedStandings(snapshot.standings);
   const seeds = ladder.slice(0, 10).map((s) => s.id);
-  const ratings = computeRatings(snapshot.standings, snapshot.games);
+  const priorHistory = history.filter((g) => g.year < snapshot.meta.year);
+  const ratings = computeRatings(snapshot.standings, snapshot.games, { history: priorHistory });
   const lockByTeam = new Map(locks.map((l) => [l.teamId, l]));
   const finalsStarted = finalsGames(snapshot.games).length > 0;
 
