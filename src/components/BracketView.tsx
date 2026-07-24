@@ -44,7 +44,7 @@ export default function BracketView({
         </div>
       </div>
       {premier != null && (
-        <p className="premier-callout">🏆 {`Premiers decided — see the Grand Final card`}</p>
+        <p className="premier-callout">Premiers decided — see the Grand Final card</p>
       )}
       {!finalsStarted && !simReady && (
         <p className="simnote">Running premiership simulation…</p>

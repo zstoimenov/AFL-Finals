@@ -115,7 +115,10 @@ body {
 }
 
 .logo {
-  margin-right: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+  position: relative;
+  top: -2px;
 }
 
 .topbar-right {
@@ -753,14 +756,9 @@ h2 {
   border-radius: 4px;
 }
 
-/* post-game tip check: did the model / Squiggle pick the actual winner? */
-.fx-tips {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 8px;
-}
-
+/* post-game tip check: did the model / Squiggle pick the actual winner? the
+   pills ride on the shared card footer (right side), matching where upcoming
+   games show the Squiggle consensus, so the venue stays on the left either way */
 .verdict {
   display: inline-flex;
   align-items: center;
@@ -814,7 +812,7 @@ h2 {
 .fx-foot {
   margin-top: auto;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   font-size: 0.7rem;
@@ -830,12 +828,39 @@ h2 {
 
 .fx-foot-end {
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   white-space: nowrap;
 }
 
 .fx-consensus strong {
   color: var(--text);
   font-variant-numeric: tabular-nums;
+}
+
+/* today's games: a "Today" pill plus a blue accent so the day's slate stands
+   out of the grid. The club-highlight (purple) keeps its border when both apply */
+.today-tag {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  padding: 2px 7px;
+  border-radius: 999px;
+  flex: none;
+  white-space: nowrap;
+}
+
+.fixturerow.today:not(.fav-game) {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  border-left: 3px solid var(--accent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent),
+    0 6px 22px -10px color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
 /* round stepper */

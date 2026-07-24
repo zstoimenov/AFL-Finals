@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { BracketMatch, Game, Snapshot } from '../domain/types';
 import { squiggleProb, computeRatings, winProb, preGameHomeProb } from '../domain/predict';
-import { formatGameDateTime } from '../domain/format';
+import { formatGameDateTime, isGameToday } from '../domain/format';
 import { currentHomeAwayRound, homeAwayRounds } from '../domain/ladder';
 import { teamAbbrev } from '../domain/teams';
 import { gameHasFavourite } from '../domain/favourite';
@@ -239,13 +239,10 @@ function ResultRow({ game, snapshot }: { game: Game; snapshot: Snapshot }) {
           won={awayWon}
         />
       </div>
-      {(model || squiggle) && (
-        <div className="fx-tips">
-          {model && <Verdict source="Model" v={model} />}
-          {squiggle && <Verdict source="Squiggle" v={squiggle} />}
-        </div>
-      )}
-      <CardFoot venue={game.venue} />
+      <CardFoot venue={game.venue}>
+        {model && <Verdict source="Model" v={model} />}
+        {squiggle && <Verdict source="Squiggle" v={squiggle} />}
+      </CardFoot>
     </article>
   );
 }
@@ -264,9 +261,14 @@ function FixtureRow({
   const hp = Math.round(p * 100);
   const sq = squiggleProb(snapshot, game.hteamid, game.ateamid);
   const fav = gameHasFavourite(game);
+  const today = isGameToday(game.unixtime, game.date);
+  const cls = `fixturerow${fav ? ' fav-game' : ''}${today ? ' today' : ''}`;
   return (
-    <article className={fav ? 'fixturerow fav-game' : 'fixturerow'}>
-      <CardMeta game={game} />
+    <article className={cls}>
+      <CardMeta
+        game={game}
+        tag={today ? <span className="today-tag">Today</span> : undefined}
+      />
       <div className="fx-teams">
         <TeamLine
           teamId={game.hteamid}

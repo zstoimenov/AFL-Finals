@@ -1,10 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="110" fill="#0d1117"/>
-  <ellipse cx="256" cy="256" rx="170" ry="105" transform="rotate(-35 256 256)" fill="#8a3324" stroke="#f5c542" stroke-width="14"/>
-  <g stroke="#ffffff" stroke-width="12" stroke-linecap="round">
-    <line x1="196" y1="298" x2="316" y2="214"/>
-    <line x1="222" y1="304" x2="238" y2="268"/>
-    <line x1="252" y1="283" x2="268" y2="247"/>
-    <line x1="282" y1="262" x2="298" y2="226"/>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#182029"/>
+      <stop offset="1" stop-color="#0b0f14"/>
+    </linearGradient>
+    <linearGradient id="post" gradientUnits="userSpaceOnUse" x1="0" y1="120" x2="0" y2="400">
+      <stop offset="0" stop-color="#7cbcff"/>
+      <stop offset="1" stop-color="#2f80d8"/>
+    </linearGradient>
+    <linearGradient id="ball" x1="0.15" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#f8d873"/>
+      <stop offset="1" stop-color="#e3a423"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f5c542" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#f5c542" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="5" y="5" width="502" height="502" rx="107" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="2"/>
+
+  <!-- an AFL goal, front on: behind, goal, goal, behind (short, tall, tall, short) -->
+  <g stroke="url(#post)" stroke-width="21" stroke-linecap="round">
+    <line x1="150" y1="266" x2="150" y2="392"/>
+    <line x1="221" y1="128" x2="221" y2="392"/>
+    <line x1="291" y1="128" x2="291" y2="392"/>
+    <line x1="362" y1="266" x2="362" y2="392"/>
+  </g>
+
+  <!-- the ball sailing through for a goal -->
+  <circle cx="256" cy="186" r="70" fill="url(#glow)"/>
+  <g transform="rotate(-20 256 186)">
+    <ellipse cx="256" cy="186" rx="29" ry="18.5" fill="url(#ball)"/>
+    <line x1="238" y1="186" x2="274" y2="186" stroke="#8a5600" stroke-opacity="0.5" stroke-width="4.5" stroke-linecap="round"/>
   </g>
 </svg>

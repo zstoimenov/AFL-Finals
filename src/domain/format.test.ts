@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatGameDateTime, formatUpdatedAt } from './format';
+import { formatGameDateTime, formatUpdatedAt, isGameToday } from './format';
 
 describe('formatUpdatedAt', () => {
   it('renders an ISO instant as an AWST date + time', () => {
@@ -36,5 +36,28 @@ describe('formatGameDateTime', () => {
   });
   it('passes through malformed input unchanged', () => {
     expect(formatGameDateTime('TBC')).toBe('TBC');
+  });
+});
+
+describe('isGameToday', () => {
+  // "now" = 2026-07-24 02:00 UTC → 10:00 AWST on 24 Jul
+  const now = new Date('2026-07-24T02:00:00Z');
+
+  it('is true for a kickoff on the same AWST day', () => {
+    const unix = Date.UTC(2026, 6, 24, 9, 40, 0) / 1000; // 24 Jul 17:40 AWST
+    expect(isGameToday(unix, 'ignored', now)).toBe(true);
+  });
+  it('is false for a kickoff on the next AWST day', () => {
+    const unix = Date.UTC(2026, 6, 25, 3, 0, 0) / 1000; // 25 Jul 11:00 AWST
+    expect(isGameToday(unix, 'ignored', now)).toBe(false);
+  });
+  it('uses the AWST day, not UTC, near the date boundary', () => {
+    // 23 Jul 23:00 UTC is already 24 Jul 07:00 in Perth → today
+    const unix = Date.UTC(2026, 6, 23, 23, 0, 0) / 1000;
+    expect(isGameToday(unix, 'ignored', now)).toBe(true);
+  });
+  it('falls back to the date string when unixtime is absent', () => {
+    expect(isGameToday(null, '2026-07-24 19:40:00', now)).toBe(true);
+    expect(isGameToday(null, '2026-07-25 19:40:00', now)).toBe(false);
   });
 });

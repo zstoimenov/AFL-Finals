@@ -120,12 +120,22 @@ export default function App() {
     <div className="shell">
       <header className="topbar">
         <h1>
-          <span className="logo" aria-hidden="true">🏉</span> AFL Finals Tracker
+          <svg className="logo" viewBox="0 0 48 48" width="26" height="26" aria-hidden="true">
+            {/* AFL goal, front on: behind, goal, goal, behind (short, tall, tall, short) */}
+            <g stroke="#4da3ff" strokeWidth="3" strokeLinecap="round">
+              <line x1="13" y1="25" x2="13" y2="38" />
+              <line x1="20.5" y1="11" x2="20.5" y2="38" />
+              <line x1="27.5" y1="11" x2="27.5" y2="38" />
+              <line x1="35" y1="25" x2="35" y2="38" />
+            </g>
+            <ellipse cx="24" cy="16.5" rx="3.7" ry="2.4" fill="#f5c542" transform="rotate(-20 24 16.5)" />
+          </svg>{' '}
+          AFL Finals Tracker
         </h1>
         <div className="topbar-right">
           <p className="datastamp">
             {snapshot.meta.source === 'seed' ? 'Sample data · ' : ''}
-            {finalsStarted ? 'Finals series' : `After round ${snapshot.meta.currentRound}`} ·
+            {finalsStarted ? 'Finals series · ' : ''}
             updated {formatUpdatedAt(snapshot.meta.fetchedAt)}
           </p>
           <button
