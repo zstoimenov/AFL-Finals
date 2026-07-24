@@ -21,6 +21,35 @@ const AWST_STAMP = new Intl.DateTimeFormat('en-AU', {
   hour12: true
 });
 
+const AWST_DAY = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Australia/Perth',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit'
+});
+
+/** The Australia/Perth calendar day of an instant, as a sortable 'YYYY-MM-DD'. */
+function awstDayKey(ms: number): string {
+  const p = Object.fromEntries(AWST_DAY.formatToParts(new Date(ms)).map((x) => [x.type, x.value]));
+  return `${p.year}-${p.month}-${p.day}`;
+}
+
+/**
+ * Whether a game's kickoff falls on the same AWST day as `now` — the app is
+ * AWST-based, so "today" is the Perth calendar day regardless of where it's
+ * viewed. Uses the absolute `unixtime` when present, else the date string's day.
+ */
+export function isGameToday(
+  unixtime: number | null | undefined,
+  date: string,
+  now: Date = new Date()
+): boolean {
+  const today = awstDayKey(now.getTime());
+  if (unixtime && unixtime > 0) return awstDayKey(unixtime * 1000) === today;
+  const m = /^(\d{4}-\d{2}-\d{2})/.exec(date ?? '');
+  return m ? m[1] === today : false;
+}
+
 /**
  * Formats an ISO instant (e.g. the snapshot's fetchedAt) as an AWST date + time,
  * like "19 Jul, 4:39 PM AWST", for the "last updated" stamp.
