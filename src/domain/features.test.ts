@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import type { Game } from './types';
-import { opponentAdjustedMargins, recencyForm, headToHead, restDays } from './features';
+import {
+  opponentAdjustedMargins,
+  recencyForm,
+  headToHead,
+  restDays,
+  effectiveMargin,
+  SHOT_WEIGHT,
+  POINTS_PER_SHOT
+} from './features';
 
 /** Minimal completed game helper. */
 function g(
@@ -75,6 +83,23 @@ describe('headToHead', () => {
 
   it('is 0 when the teams have not met', () => {
     expect(headToHead([g(1, 1, 3, 100, 60, 0)], 1, 2)).toBe(0);
+  });
+});
+
+describe('effectiveMargin', () => {
+  it('falls back to the score margin when no goal/behind breakdown', () => {
+    expect(effectiveMargin(g(1, 1, 2, 90, 78, 0))).toBe(12);
+  });
+
+  it('leans toward scoring-shot margin when the breakdown is present', () => {
+    // Home 90 (12g 18b = 30 shots), away 96 (16g 0b = 16 shots): away won on the
+    // scoreboard but home had far more scoring shots, so the effective margin
+    // swings toward home relative to the raw -6.
+    const game: Game = { ...g(1, 1, 2, 90, 96, 0), hgoals: 12, hbehinds: 18, agoals: 16, abehinds: 0 };
+    const shotMargin = (30 - 16) * POINTS_PER_SHOT;
+    const expected = (1 - SHOT_WEIGHT) * -6 + SHOT_WEIGHT * shotMargin;
+    expect(effectiveMargin(game)).toBeCloseTo(expected, 5);
+    expect(effectiveMargin(game)).toBeGreaterThan(-6);
   });
 });
 

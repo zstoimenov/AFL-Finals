@@ -45,6 +45,10 @@ function normaliseGames(raw) {
       ateamid: Number(g.ateamid),
       hscore: g.hscore != null ? Number(g.hscore) : null,
       ascore: g.ascore != null ? Number(g.ascore) : null,
+      hgoals: g.hgoals != null ? Number(g.hgoals) : null,
+      hbehinds: g.hbehinds != null ? Number(g.hbehinds) : null,
+      agoals: g.agoals != null ? Number(g.agoals) : null,
+      abehinds: g.abehinds != null ? Number(g.abehinds) : null,
       date: String(g.date ?? ''),
       unixtime: g.unixtime != null ? Number(g.unixtime) : null,
       venue: g.venue ?? null,
@@ -79,18 +83,28 @@ function normaliseTips(raw) {
       hteamid: Number(t.hteamid),
       ateamid: Number(t.ateamid),
       sum: 0,
+      marginSum: 0,
+      marginCount: 0,
       models: 0
     };
     // Squiggle confidence is 0-100 for the TIPPED team; convert to home-win prob
     const conf = Number(t.confidence ?? 50) / 100;
-    const homeProb = Number(t.tipteamid) === entry.hteamid ? conf : 1 - conf;
-    entry.sum += homeProb;
+    const homeSide = Number(t.tipteamid) === entry.hteamid;
+    entry.sum += homeSide ? conf : 1 - conf;
+    // Squiggle margin is the predicted winning margin for the tipped team;
+    // fold to the home team's perspective (positive = home favoured).
+    if (t.margin != null) {
+      const m = Math.abs(Number(t.margin));
+      entry.marginSum += homeSide ? m : -m;
+      entry.marginCount += 1;
+    }
     entry.models += 1;
     byGame.set(gid, entry);
   }
-  return [...byGame.values()].map(({ sum, models, ...rest }) => ({
+  return [...byGame.values()].map(({ sum, marginSum, marginCount, models, ...rest }) => ({
     ...rest,
     hconfidence: Math.round((sum / Math.max(models, 1)) * 1000) / 1000,
+    hmargin: marginCount > 0 ? Math.round((marginSum / marginCount) * 10) / 10 : null,
     models
   }));
 }

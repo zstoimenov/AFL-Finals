@@ -31,25 +31,33 @@ run of the update workflow replaces it with live data.
 
 ## Prediction model
 
-Transparent and self-contained (`src/domain/predict.ts`), and driven only by the
-game history we already fetch — no new data source. Each team gets a rating that
+Transparent and inspectable (`src/domain/predict.ts`). Each team gets a rating that
 blends ladder win ratio, log-scaled percentage, **recency-weighted form**, and an
 **opponent-adjusted margin** term that folds in strength of schedule (`features.ts`).
-A logistic on the rating gap gives each match probability, plus a home-ground bump
-(disabled for the Grand Final) and a per-fixture **interstate-travel** adjustment
-derived from each club's home grounds (`venues.ts`). `src/domain/simulate.ts`
-Monte-Carlos the rest of the season in a Web Worker to produce finals, top-6,
-top-4, Grand-Final and premiership probabilities. Squiggle's aggregated model tips
-are displayed alongside for comparison.
+That margin uses **scoring shots** (goals + behinds) when the breakdown is
+available — a steadier strength signal than the final score, since goal-kicking
+accuracy is noisy. A logistic on the rating gap gives each match probability, plus a
+home-ground bump (disabled for the Grand Final) and a per-fixture
+**interstate-travel** adjustment derived from each club's home grounds (`venues.ts`).
+
+The in-app model is then **blended ~50/50 with the Squiggle consensus** — its
+predicted margin (or confidence) across ~31 models — for the win probability the
+app displays and simulates (`blendedHomeProb`, `SQUIGGLE_BLEND`). The completed-game
+verdicts still grade the in-app model and Squiggle **independently**, so you can see
+each tipster's own record. `src/domain/simulate.ts` Monte-Carlos the rest of the
+season in a Web Worker to produce finals, top-6, top-4, Grand-Final and premiership
+probabilities.
 
 Every signal earns its place through the **backtest harness** (`src/domain/backtest.ts`,
 run by `npm test`), which replays completed games and scores each model's
 pre-kickoff probabilities — with no hindsight — by hit-rate, Brier score and
-log-loss. On the current season the enriched model beats the original on all three
-(Brier 0.203 → 0.198, log-loss 0.595 → 0.582, hit-rate 69.7% → 70.5%). Head-to-head,
-rest-day and neutral-host terms are implemented and unit-tested but ship disabled
-(`CONTEXT` weights of 0) because they did not improve single-season accuracy;
-`scripts/backtest-years.mjs` builds a multi-season corpus to re-evaluate them:
+log-loss. On the current season each step improves on the last (Brier: original
+0.203 → enriched model 0.198 → **Squiggle blend 0.182**; log-loss 0.595 → 0.582 →
+**0.538**). Head-to-head, rest-day and neutral-host terms are implemented and
+unit-tested but ship disabled (`CONTEXT` weights of 0) because they did not improve
+single-season accuracy; the scoring-shot weight (`SHOT_WEIGHT`) awaits real data
+carrying goals/behinds. `scripts/backtest-years.mjs` builds a multi-season corpus to
+re-evaluate all of these:
 
 ```bash
 node scripts/backtest-years.mjs 2022 2023 2024 2025 2026

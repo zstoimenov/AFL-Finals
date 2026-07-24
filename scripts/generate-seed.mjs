@@ -32,6 +32,13 @@ function rng() {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 }
 
+/** Break a total score into a plausible goals/behinds pair (6*goals + behinds). */
+function splitScore(score) {
+  const behinds = Math.min(score, 6 + Math.floor(rng() * 9)); // ~6..14 behinds
+  const goals = Math.max(0, Math.round((score - behinds) / 6));
+  return [goals, score - goals * 6];
+}
+
 // circle-method round robin for 18 teams: 17 rounds, then repeat with venues flipped
 const ids = Object.keys(STRENGTH).map(Number);
 function roundRobin(teams) {
@@ -67,6 +74,10 @@ for (let round = 1; round <= TOTAL_ROUNDS; round++) {
   for (const [h, a] of schedule[round - 1]) {
     let hscore = null;
     let ascore = null;
+    let hgoals = null;
+    let hbehinds = null;
+    let agoals = null;
+    let abehinds = null;
     let winner = null;
     if (complete) {
       const edge = STRENGTH[h] - STRENGTH[a] + 0.25; // home advantage
@@ -76,6 +87,9 @@ for (let round = 1; round <= TOTAL_ROUNDS; round++) {
       const loserScore = Math.round(55 + rng() * 40);
       hscore = homeWins ? loserScore + margin : loserScore;
       ascore = homeWins ? loserScore : loserScore + margin;
+      // Split each score into a plausible goal/behind breakdown (6*g + b).
+      [hgoals, hbehinds] = splitScore(hscore);
+      [agoals, abehinds] = splitScore(ascore);
       winner = homeWins ? h : a;
     }
     // season runs Mar..Aug; spread rounds weekly from 2026-03-12
@@ -93,6 +107,10 @@ for (let round = 1; round <= TOTAL_ROUNDS; round++) {
       ateamid: a,
       hscore,
       ascore,
+      hgoals,
+      hbehinds,
+      agoals,
+      abehinds,
       date: start.toISOString().slice(0, 10) + ' 19:40:00',
       unixtime,
       venue: VENUES[gid % VENUES.length],
@@ -132,6 +150,7 @@ const tips = games
       hteamid: g.hteamid,
       ateamid: g.ateamid,
       hconfidence: Math.round(p * 1000) / 1000,
+      hmargin: Math.round(edge * 18 * 10) / 10,
       models: 9
     };
   });

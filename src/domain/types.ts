@@ -9,6 +9,13 @@ export interface Game {
   ateamid: number;
   hscore: number | null;
   ascore: number | null;
+  /** Goal/behind breakdown, when Squiggle provides it — lets the model use
+   * scoring shots (goals + behinds), a steadier strength signal than final
+   * score since goal-kicking accuracy is noisy. Absent on older snapshots. */
+  hgoals?: number | null;
+  hbehinds?: number | null;
+  agoals?: number | null;
+  abehinds?: number | null;
   /** ISO-ish venue-local start time, e.g. "2026-09-11 19:40:00" */
   date: string;
   /** absolute kickoff instant (epoch seconds) — used to render AWST */
@@ -40,6 +47,10 @@ export interface Tip {
   ateamid: number;
   /** mean predicted probability that the HOME team wins, 0..1 */
   hconfidence: number;
+  /** mean predicted margin from the HOME team's perspective (points; positive =
+   * home favoured). A sharper consensus signal than confidence alone. Absent on
+   * older snapshots. */
+  hmargin?: number | null;
   /** number of models aggregated */
   models: number;
 }

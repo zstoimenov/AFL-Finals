@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { BracketMatch, Game, Snapshot } from '../domain/types';
-import { squiggleProb, computeRatings, fixtureHomeProb, preGameHomeProb } from '../domain/predict';
+import {
+  squiggleProb,
+  squiggleMargin,
+  computeRatings,
+  blendedHomeProb,
+  preGameHomeProb
+} from '../domain/predict';
 import { formatGameDateTime, isGameToday } from '../domain/format';
 import { currentHomeAwayRound, homeAwayRounds } from '../domain/ladder';
 import { teamAbbrev } from '../domain/teams';
@@ -257,9 +263,10 @@ function FixtureRow({
   snapshot: Snapshot;
   ratings: Map<number, number>;
 }) {
-  const p = fixtureHomeProb(ratings, snapshot.games, game);
+  const p = blendedHomeProb(snapshot, ratings, snapshot.games, game);
   const hp = Math.round(p * 100);
   const sq = squiggleProb(snapshot, game.hteamid, game.ateamid);
+  const sqMargin = squiggleMargin(snapshot, game.hteamid, game.ateamid);
   const fav = gameHasFavourite(game);
   const today = isGameToday(game.unixtime, game.date);
   const cls = `fixturerow${fav ? ' fav-game' : ''}${today ? ' today' : ''}`;
@@ -289,6 +296,7 @@ function FixtureRow({
           <span className="fx-consensus">
             Squiggle <strong>{teamAbbrev(sq >= 0.5 ? game.hteamid : game.ateamid)}</strong>{' '}
             {Math.round(Math.max(sq, 1 - sq) * 100)}%
+            {sqMargin != null && ` · by ${Math.round(Math.abs(sqMargin))}`}
           </span>
         )}
       </CardFoot>

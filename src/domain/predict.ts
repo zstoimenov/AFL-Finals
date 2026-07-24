@@ -139,6 +139,64 @@ export function squiggleProb(
   return tip.hteamid === homeId ? tip.hconfidence : 1 - tip.hconfidence;
 }
 
+/** Squiggle consensus predicted margin from `homeId`'s perspective, if tipped. */
+export function squiggleMargin(
+  snapshot: Snapshot,
+  homeId: number,
+  awayId: number
+): number | null {
+  const tip = snapshot.tips.find(
+    (t) =>
+      (t.hteamid === homeId && t.ateamid === awayId) ||
+      (t.hteamid === awayId && t.ateamid === homeId)
+  );
+  if (!tip || tip.hmargin == null) return null;
+  return tip.hteamid === homeId ? tip.hmargin : -tip.hmargin;
+}
+
+/** Points of predicted margin ≈ one logistic unit when converting to a probability. */
+export const MARGIN_PROB_SCALE = 21;
+/**
+ * How much the shipped win probability leans on the Squiggle consensus versus the
+ * in-app model. The backtest harness shows the 31-model consensus is sharper than
+ * the in-app model alone, and a ~50/50 blend captures most of that accuracy while
+ * keeping the app's own model a genuine, equal contributor.
+ */
+export const SQUIGGLE_BLEND = 0.5;
+
+/**
+ * Squiggle consensus P(home wins), preferring the predicted margin (richer) and
+ * falling back to the consensus confidence. Null when the game isn't tipped.
+ */
+export function squiggleConsensusProb(
+  snapshot: Snapshot,
+  homeId: number,
+  awayId: number
+): number | null {
+  const margin = squiggleMargin(snapshot, homeId, awayId);
+  if (margin != null) return 1 / (1 + Math.exp(-margin / MARGIN_PROB_SCALE));
+  return squiggleProb(snapshot, homeId, awayId);
+}
+
+/**
+ * The app's shipped fixture probability: the in-app model blended with the
+ * Squiggle consensus when the game is tipped, else the model alone. `games`
+ * supplies the history the model context is drawn from — pass pre-kickoff games
+ * only for a hindsight-free number.
+ */
+export function blendedHomeProb(
+  snapshot: Snapshot,
+  ratings: Map<number, number>,
+  games: Game[],
+  game: Game
+): number {
+  const model = fixtureHomeProb(ratings, games, game);
+  const consensus = squiggleConsensusProb(snapshot, game.hteamid, game.ateamid);
+  if (consensus == null) return model;
+  const p = (1 - SQUIGGLE_BLEND) * model + SQUIGGLE_BLEND * consensus;
+  return Math.min(0.97, Math.max(0.03, p));
+}
+
 /**
  * Rebuild the ladder from every completed home & away game that started before
  * `cutoff`, so a finished game can be scored on the rating the model *would*
@@ -182,6 +240,8 @@ export function preGameHomeProb(snapshot: Snapshot, game: Game): number {
   const cutoff = gameStart(game);
   const prior = snapshot.games.filter((g) => gameStart(g) < cutoff);
   const ratings = computeRatings(standingsBefore(prior, cutoff), prior);
+  // Pure in-app model (no Squiggle blend): the completed-game verdict compares
+  // the two independent tipsters, so this stays the model's own call.
   return winProb(ratings, game.hteamid, game.ateamid, false, fixtureAdjustment(prior, game));
 }
 
