@@ -2,14 +2,14 @@
  {
   "id": 6,
   "rank": 1,
-  "played": 19,
-  "wins": 17,
+  "played": 20,
+  "wins": 18,
   "losses": 2,
   "draws": 0,
-  "pts": 68,
-  "percentage": 145.977011494253,
-  "for": 1905,
-  "against": 1305
+  "pts": 72,
+  "percentage": 147.325408618128,
+  "for": 1983,
+  "against": 1346
  },
  {
   "id": 16,
@@ -86,14 +86,14 @@
  {
   "id": 18,
   "rank": 8,
-  "played": 19,
+  "played": 20,
   "wins": 12,
-  "losses": 7,
+  "losses": 8,
   "draws": 0,
   "pts": 48,
-  "percentage": 96.838905775076,
-  "for": 1593,
-  "against": 1645
+  "percentage": 94.8345908299478,
+  "for": 1634,
+  "against": 1723
  },
  {
   "id": 4,
