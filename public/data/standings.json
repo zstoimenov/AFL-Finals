@@ -14,26 +14,26 @@
  {
   "id": 16,
   "rank": 2,
-  "played": 19,
-  "wins": 14,
+  "played": 20,
+  "wins": 15,
   "losses": 5,
   "draws": 0,
-  "pts": 56,
-  "percentage": 129.968051118211,
-  "for": 2034,
-  "against": 1565
+  "pts": 60,
+  "percentage": 129.522081064731,
+  "for": 2141,
+  "against": 1653
  },
  {
   "id": 10,
   "rank": 3,
-  "played": 19,
-  "wins": 13,
+  "played": 20,
+  "wins": 14,
   "losses": 5,
   "draws": 1,
-  "pts": 54,
-  "percentage": 123.958333333333,
-  "for": 1904,
-  "against": 1536
+  "pts": 58,
+  "percentage": 123.718344657196,
+  "for": 2003,
+  "against": 1619
  },
  {
   "id": 2,
@@ -110,14 +110,14 @@
  {
   "id": 15,
   "rank": 10,
-  "played": 19,
+  "played": 20,
   "wins": 9,
-  "losses": 10,
+  "losses": 11,
   "draws": 0,
   "pts": 36,
-  "percentage": 105.765654060756,
-  "for": 1706,
-  "against": 1613
+  "percentage": 104.302325581395,
+  "for": 1794,
+  "against": 1720
  },
  {
   "id": 3,
@@ -146,14 +146,14 @@
  {
   "id": 12,
   "rank": 13,
-  "played": 19,
+  "played": 20,
   "wins": 8,
-  "losses": 11,
+  "losses": 12,
   "draws": 0,
   "pts": 32,
-  "percentage": 89.6059394631639,
-  "for": 1569,
-  "against": 1751
+  "percentage": 89.2972972972973,
+  "for": 1652,
+  "against": 1850
  },
  {
   "id": 8,
