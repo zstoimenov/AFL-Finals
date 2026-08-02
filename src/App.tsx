@@ -23,15 +23,12 @@ import SeasonsHub from './components/SeasonsHub';
 import SeasonSwitcher from './components/SeasonSwitcher';
 import TeamDetail from './components/TeamDetail';
 import ThisWeekView from './components/ThisWeekView';
+import MyClubView from './components/MyClubView';
+import PrimaryNav, { type NavItem } from './components/PrimaryNav';
 import InfoButton from './components/InfoButton';
+import { useFavourite } from './domain/favourite';
+import { DEFAULT_TAB, hashFor, isLiveOnly, tabFromHash, type Tab } from './nav';
 import { TeamSelectContext } from './teamSelect';
-
-/**
- * The screens in the nav row, plus the seasons hub — which is reached from the
- * season switcher in the header rather than the nav, since it's a season control
- * and the nav row is for the screens you move between during a round.
- */
-type Tab = 'week' | 'bracket' | 'fixtures' | 'ladder' | 'odds' | 'seasons';
 
 const SIM_ITERATIONS = 10000;
 
@@ -44,8 +41,9 @@ export default function App() {
   const [seasonLoading, setSeasonLoading] = useState(false);
   const [sim, setSim] = useState<SimOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>('week');
+  const [tab, setTab] = useState<Tab>(() => tabFromHash(window.location.hash) ?? DEFAULT_TAB);
   const [selectedTeam, setSelectedTeam] = useState<number | null>(null);
+  const favouriteId = useFavourite();
   const [tabsStuck, setTabsStuck] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -95,6 +93,29 @@ export default function App() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [historyIndex]);
+
+  // Screens are hash routes, so back/forward step between them instead of
+  // leaving the app, and any screen can be linked or opened directly.
+  useEffect(() => {
+    const fromUrl = () => setTab(tabFromHash(window.location.hash) ?? DEFAULT_TAB);
+    // pushState alone doesn't notify, but history navigation fires both of these
+    window.addEventListener('hashchange', fromUrl);
+    window.addEventListener('popstate', fromUrl);
+    if (!tabFromHash(window.location.hash)) {
+      // land on a real route without leaving an empty entry behind us
+      window.history.replaceState(null, '', hashFor(DEFAULT_TAB));
+    }
+    return () => {
+      window.removeEventListener('hashchange', fromUrl);
+      window.removeEventListener('popstate', fromUrl);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (window.location.hash !== hashFor(tab)) {
+      window.history.pushState(null, '', hashFor(tab));
+    }
+  }, [tab]);
 
   // shadow under the nav pills only once they've stuck to the top
   useEffect(() => {
@@ -191,6 +212,22 @@ export default function App() {
   const liveFinalsStarted = finalsGames(live.games).length > 0;
   const viewingArchive = !isLive;
 
+  // "This week" and "My club" are live-season screens; an archived year falls
+  // back to its results rather than rendering a week that has already happened.
+  const shownTab: Tab = !isLive && isLiveOnly(tab) ? 'fixtures' : tab;
+  const navItems: NavItem[] = [
+    ...(isLive
+      ? ([
+          { key: 'week', label: 'This week' },
+          { key: 'club', label: 'My club' }
+        ] as NavItem[])
+      : []),
+    { key: 'fixtures', label: isLive ? 'Fixtures' : 'Results' },
+    { key: 'ladder', label: 'Ladder' },
+    { key: 'bracket', label: isLive ? 'Bracket' : 'Finals' },
+    { key: 'odds', label: isLive ? 'Odds' : 'Summary' }
+  ];
+
   return (
     <TeamSelectContext.Provider value={setSelectedTeam}>
     <div className="shell">
@@ -218,8 +255,8 @@ export default function App() {
             onChange={(y) => {
               ensureSeason(y);
               setActiveYear(y);
-              // "This week" is a live-season screen; an archived year has no week ahead
-              if (y !== liveYear && tab === 'week') setTab('fixtures');
+              // an archived year has no week ahead and no live club dashboard
+              if (y !== liveYear && isLiveOnly(tab)) setTab('fixtures');
               if (tab === 'seasons') setTab('ladder');
             }}
             onOpenHub={() => setTab('seasons')}
@@ -272,6 +309,12 @@ export default function App() {
               how much there is to watch — how close the model has them, what each result would
               settle mathematically, and what history the clubs bring — and shows its reasoning on
               every card.
+            </p>
+            <p>
+              <strong>My club</strong> is your club&apos;s whole season on one screen — position,
+              next game, chances, the run home, what it would take to lock a spot, and what the
+              results archive knows about them. Change which club that is from the button on that
+              page.
             </p>
             <p>
               The season switcher above browses past seasons; <strong>All seasons…</strong> opens
@@ -340,30 +383,16 @@ export default function App() {
       )}
 
       <div ref={sentinelRef} className="tabs-sentinel" aria-hidden="true" />
-      <nav className={tabsStuck ? 'tabs stuck' : 'tabs'} role="tablist">
-        {(
-          [
-            ...(isLive ? ([['week', 'This week']] as Array<[Tab, string]>) : []),
-            ['fixtures', isLive ? 'Fixtures' : 'Results'],
-            ['ladder', 'Ladder'],
-            ['bracket', isLive ? 'Bracket' : 'Finals'],
-            ['odds', isLive ? 'Odds' : 'Summary']
-          ] as Array<[Tab, string]>
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            role="tab"
-            aria-selected={tab === key}
-            className={tab === key ? 'tab active' : 'tab'}
-            onClick={() => setTab(key)}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
+      <PrimaryNav
+        items={navItems}
+        active={shownTab}
+        onSelect={setTab}
+        stuck={tabsStuck}
+        extra={[{ label: 'All seasons', onSelect: () => setTab('seasons') }]}
+      />
 
       <main>
-        {tab === 'seasons' ? (
+        {shownTab === 'seasons' ? (
           <SeasonsHub
             index={historyIndex}
             seasons={seasons}
@@ -378,16 +407,26 @@ export default function App() {
           </div>
         ) : (
           <>
-            {tab === 'week' && isLive && (
-              <ThisWeekView snapshot={active} history={historyCorpus} />
+            {shownTab === 'week' && <ThisWeekView snapshot={active} history={historyCorpus} />}
+            {shownTab === 'club' && (
+              <MyClubView
+                teamId={favouriteId}
+                snapshot={active}
+                sim={sim}
+                locks={locks}
+                bracket={bracket}
+                history={historyCorpus}
+                seasons={seasons}
+                liveYear={liveYear!}
+              />
             )}
-            {tab === 'bracket' &&
+            {shownTab === 'bracket' &&
               (supportsProjectedBracket(active.meta) && isLive ? (
                 <BracketView bracket={bracket} finalsStarted={liveFinalsStarted} simReady={sim != null} />
               ) : (
                 <FinalsResults snapshot={active} />
               ))}
-            {tab === 'fixtures' && (
+            {shownTab === 'fixtures' && (
               <FixturesView
                 snapshot={active}
                 bracket={isLive ? bracket : []}
@@ -395,7 +434,7 @@ export default function App() {
                 history={historyCorpus}
               />
             )}
-            {tab === 'ladder' && (
+            {shownTab === 'ladder' && (
               <LadderView
                 snapshot={active}
                 locks={isLive ? locks : []}
@@ -403,7 +442,7 @@ export default function App() {
                 historical={!isLive}
               />
             )}
-            {tab === 'odds' &&
+            {shownTab === 'odds' &&
               (isLive ? (
                 <PremiershipView snapshot={active} sim={sim} />
               ) : (
@@ -419,6 +458,7 @@ export default function App() {
           snapshot={active}
           sim={isLive ? sim : null}
           locks={isLive ? locks : []}
+          history={historyCorpus}
           onClose={() => setSelectedTeam(null)}
         />
       )}

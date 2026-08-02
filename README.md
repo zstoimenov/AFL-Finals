@@ -7,6 +7,11 @@ and you can browse past seasons:
 - 👀 **This week** — the games still to be played this round, ranked by how much there is
   to watch. Each card leads with the case for watching it and shows the reasons behind its
   ranking, so the order is arguable rather than mysterious.
+- ⭐ **My club** — your club's whole season on one screen: ladder position and form, the
+  next game, simulated chances, **what it would take** to lock a spot, the run home, the
+  likely route through the finals, who's around you on the ladder, and what the results
+  archive knows about them. Pick your club from the page itself — the choice is stored in
+  your browser and highlights that club everywhere in the app.
 - 🗂 **Bracket** — the full five-week bracket (Wildcard Round → Qualifying/Elimination →
   Semis → Prelims → Grand Final), projected from the live ladder until finals begin,
   then filled with real results. Wildcard winners are re-seeded per the AFL rules
@@ -52,6 +57,34 @@ season in). Until it runs, the hub shows an empty state and the app behaves exac
 as a single-season tracker (fail-soft loaders, no carry-over prior). History is
 normalised through the same shared module (`scripts/squiggle.mjs`) as the live
 season, so a 2023 game and a 2026 game are the exact same shape the model expects.
+
+## Getting around
+
+Navigation takes the shape each screen wants (`src/components/PrimaryNav.tsx`): a **bottom
+bar** on phones — inside the thumb's reach, off the top edge where the content is — and the
+**pill row** on wider screens, which has room to show every destination at once. Both are
+rendered and CSS picks one, so there's no resize listener and no flash of the wrong nav on
+first paint. The bar carries four destinations plus **More**; when the screen you're on
+lives in the More sheet, More takes its name and highlight so you always know where you are.
+The bar stays live above the sheet, so another destination is still one tap away.
+
+Screens are **hash routes** (`#/week`, `#/club`, …), so every screen is linkable, the back
+button steps between screens instead of leaving the app, and an installed PWA can open
+straight onto one. The season is a header control, not part of the route.
+
+## What it would take
+
+The club dashboard answers "what do we actually need?" with a **guarantee, not a
+projection** (`winsToGuarantee`, `src/domain/club.ts`). A club doesn't get to choose which
+games it wins, so "3 wins is enough" only holds if *every* way of winning 3 of them locks the
+spot. That's what it checks: each of the 2^M ways the club's own remaining games could fall
+goes through the same conservative locks engine as the ladder's 🔒 badges, with every other
+club still free to win everything left. Draws only help, so the guarantee survives them.
+Beyond eight games left it declines to answer, because nothing is guaranteed that far out.
+
+The record book underneath is built from the archive the app actually holds, labelled with
+the year it starts from — no hand-entered honour roll, so it can't claim a piece of club
+history the app can't show you.
 
 ## Ranking the week
 

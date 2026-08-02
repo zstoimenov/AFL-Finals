@@ -1,31 +1,32 @@
-import { useEffect, useMemo } from 'react';
-import type { Snapshot, TeamLocks } from '../domain/types';
+import { useEffect } from 'react';
+import type { Game, Snapshot, TeamLocks } from '../domain/types';
 import type { SimOutput } from '../domain/simulate';
 import { TEAMS } from '../domain/teams';
 import { isFavourite } from '../domain/favourite';
 import { sortedStandings } from '../domain/ladder';
-import { computeRatings, squiggleProb, blendedHomeProb } from '../domain/predict';
 import { lockLabel } from '../domain/locks';
-import { formatGameDateTime } from '../domain/format';
 import TeamChip from './TeamChip';
 import LockBadge from './LockBadge';
+import { RunHome, SimStrip, gamesLeft } from './ClubBlocks';
 
 /**
- * Bottom-sheet with a club's season position, simulated chances and its
- * run home: every remaining regular-season game with date, time, venue and
- * the model's win probability.
+ * Bottom-sheet with a club's season position, simulated chances and its run
+ * home. The same blocks the My Club dashboard is built from, in a sheet — so any
+ * club chip in the app opens a compact version of the dashboard for that club.
  */
 export default function TeamDetail({
   teamId,
   snapshot,
   sim,
   locks,
+  history = [],
   onClose
 }: {
   teamId: number;
   snapshot: Snapshot;
   sim: SimOutput | null;
   locks: TeamLocks[];
+  history?: Game[];
   onClose: () => void;
 }) {
   const team = TEAMS[teamId];
@@ -44,22 +45,13 @@ export default function TeamDetail({
     };
   }, [onClose]);
 
-  const ratings = useMemo(
-    () => computeRatings(snapshot.standings, snapshot.games),
-    [snapshot]
-  );
   const ladder = sortedStandings(snapshot.standings);
   const rank = ladder.findIndex((s) => s.id === teamId) + 1;
   const standing = ladder.find((s) => s.id === teamId);
   const lock = locks.find((l) => l.teamId === teamId);
   const label = lock ? lockLabel(lock) : null;
   const probs = sim?.teams[teamId];
-
-  const runHome = snapshot.games
-    .filter(
-      (g) => g.is_final === 0 && !g.complete && (g.hteamid === teamId || g.ateamid === teamId)
-    )
-    .sort((a, b) => a.round - b.round);
+  const left = gamesLeft(snapshot, teamId);
 
   if (!team || !standing) return null;
 
@@ -91,70 +83,14 @@ export default function TeamDetail({
           </p>
         </header>
 
-        {probs && (
-          <div className="simstrip" aria-label="Simulated season chances">
-            <Stat label="Finals" value={probs.makeFinals} />
-            <Stat label="Top 6" value={probs.top6} />
-            <Stat label="Top 4" value={probs.top4} />
-            <Stat label="Grand Final" value={probs.reachGF} />
-            <Stat label="Premiers" value={probs.premier} />
-          </div>
-        )}
+        {probs && <SimStrip probs={probs} />}
 
         <h3 className="runhome-title">
-          Run home {runHome.length > 0 && <span className="muted">· {runHome.length} games left</span>}
+          Run home {left > 0 && <span className="muted">· {left} games left</span>}
         </h3>
-        {runHome.length === 0 ? (
-          <p className="sectionnote">Regular season complete.</p>
-        ) : (
-          <ol className="runhome">
-            {runHome.map((g) => {
-              const isHome = g.hteamid === teamId;
-              const oppId = isHome ? g.ateamid : g.hteamid;
-              const pHome = blendedHomeProb(snapshot, ratings, snapshot.games, g);
-              const p = isHome ? pHome : 1 - pHome;
-              const sq = squiggleProb(snapshot, g.hteamid, g.ateamid);
-              const sqTeam = sq != null ? (isHome ? sq : 1 - sq) : null;
-              return (
-                <li key={g.id} className="runhome-row">
-                  <div className="runhome-main">
-                    <span className="roundtag">R{g.round}</span>
-                    <span className="runhome-opp">
-                      <span className={isHome ? 'ha home' : 'ha away'}>
-                        {isHome ? 'vs' : '@'}
-                      </span>
-                      <TeamChip teamId={oppId} />
-                    </span>
-                    <span className="runhome-prob" title="Model win probability">
-                      <span
-                        className="runhome-prob-fill"
-                        style={{ width: `${Math.round(p * 100)}%` }}
-                      />
-                      <strong>{Math.round(p * 100)}%</strong>
-                    </span>
-                  </div>
-                  <div className="runhome-meta">
-                    {formatGameDateTime(g.date, g.unixtime)}
-                    {g.venue ? ` · ${g.venue}` : ''}
-                    {sqTeam != null && ` · Squiggle ${Math.round(sqTeam * 100)}%`}
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-        )}
+        <RunHome snapshot={snapshot} teamId={teamId} history={history} />
         <p className="legendnote">Win % = in-app model estimate · times AWST</p>
       </section>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: number }) {
-  const pct = value * 100;
-  return (
-    <div className="stat">
-      <span className="stat-num">{pct >= 99.95 ? '100' : pct >= 10 ? Math.round(pct) : pct.toFixed(1)}%</span>
-      <span className="stat-label">{label}</span>
     </div>
   );
 }
