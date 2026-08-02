@@ -18,6 +18,7 @@ export default function SeasonSwitcher({
   activeYear,
   history,
   loading,
+  liveLabel = 'Live',
   hubOpen = false,
   onChange,
   onOpenHub
@@ -26,6 +27,8 @@ export default function SeasonSwitcher({
   activeYear: number;
   history: HistoryIndexEntry[];
   loading: boolean;
+  /** what the live year is called — "Live", or "Finals" once the series is on */
+  liveLabel?: string;
   /** the hub is the screen currently showing, so the control reflects it */
   hubOpen?: boolean;
   onChange: (year: number) => void;
@@ -45,7 +48,7 @@ export default function SeasonSwitcher({
       >
         {years.map((y) => (
           <option key={y} value={y}>
-            {y === liveYear ? `${y} · Live` : y}
+            {y === liveYear ? `${y} · ${liveLabel}` : y}
           </option>
         ))}
         <option value={HUB}>All seasons…</option>

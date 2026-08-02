@@ -12,7 +12,7 @@ import { buildBracket } from './domain/buildBracket';
 import { finalsGames } from './domain/ladder';
 import { completedGames } from './domain/features';
 import { supportsProjectedBracket } from './domain/season';
-import { formatUpdatedAt } from './domain/format';
+import { formatUpdatedAt, formatUpdatedShort } from './domain/format';
 import BracketView from './components/BracketView';
 import FixturesView from './components/FixturesView';
 import LadderView from './components/LadderView';
@@ -211,6 +211,8 @@ export default function App() {
 
   const liveFinalsStarted = finalsGames(live.games).length > 0;
   const viewingArchive = !isLive;
+  const sampleData = live.meta.source === 'seed';
+  const updatedLong = formatUpdatedAt(live.meta.fetchedAt);
 
   // "This week" and "My club" are live-season screens; an archived year falls
   // back to its results rather than rendering a week that has already happened.
@@ -251,6 +253,9 @@ export default function App() {
             activeYear={activeYear}
             history={historyIndex}
             loading={seasonLoading}
+            // the old header carried a separate "Finals series ·" flag; the
+            // switcher already names the live year, so it says it there instead
+            liveLabel={liveFinalsStarted ? 'Finals' : 'Live'}
             hubOpen={tab === 'seasons'}
             onChange={(y) => {
               ensureSeason(y);
@@ -261,33 +266,28 @@ export default function App() {
             }}
             onOpenHub={() => setTab('seasons')}
           />
-          <p className="datastamp">
-            {isLive ? (
-              <>
-                {live.meta.source === 'seed' ? 'Sample data · ' : ''}
-                {liveFinalsStarted ? 'Finals series · ' : ''}
-                updated {formatUpdatedAt(live.meta.fetchedAt)}
-              </>
-            ) : (
-              <>Archived season · final</>
-            )}
-          </p>
+          {/* The stamp and the refresh action are the same control: the header
+              spends one short pill on "when this data is from", and tapping it
+              re-checks. The long form lives in the tooltip / a11y label. */}
           {isLive && (
             <button
               type="button"
-              className="refreshbtn"
+              className={sampleData ? 'updatedbtn sample' : 'updatedbtn'}
               onClick={refresh}
               disabled={refreshing}
-              aria-label="Refresh data"
-              title="Check for the latest published data"
+              aria-busy={refreshing}
+              title={`${sampleData ? 'Sample data · ' : ''}Updated ${updatedLong} — check for the latest`}
+              aria-label={`Data updated ${updatedLong}. Check for the latest published data.`}
             >
+              {/* the stamp stays put while checking — only the icon spins, so the
+                  header doesn't reflow mid-refresh */}
               <span className={refreshing ? 'refreshicon spinning' : 'refreshicon'} aria-hidden="true">
                 ⟳
               </span>
-              <span className="refreshlabel">{refreshing ? 'Refreshing…' : 'Refresh'}</span>
+              <span>{formatUpdatedShort(live.meta.fetchedAt)}</span>
             </button>
           )}
-          <InfoButton title="About this app" label="About">
+          <InfoButton title="About this app">
             <p>
               A tracker for the AFL finals (the 2026 top-ten Wildcard format). It projects the
               live bracket from the ladder, estimates each match and the premiership
@@ -302,7 +302,8 @@ export default function App() {
               Projections come from an in-app model (ladder, percentage, form, home advantage,
               and a cross-season carry-over prior) plus a {SIM_ITERATIONS.toLocaleString()}-run
               Monte Carlo of the finals series. Ladder, fixtures, results and consensus tips are
-              from <a href="https://squiggle.com.au">Squiggle</a>. All times are AWST.
+              from <a href="https://squiggle.com.au">Squiggle</a>. All times are AWST, on a 24-hour
+              clock.
             </p>
             <p>
               <strong>This week</strong> ranks the games still to be played in the current round by
@@ -319,8 +320,9 @@ export default function App() {
             <p>
               The season switcher above browses past seasons; <strong>All seasons…</strong> opens
               the hub, with the model&apos;s per-season accuracy and a cross-season head-to-head.
-              New results are fetched from Squiggle automatically every day and published here;{' '}
-              <strong>Refresh</strong> re-checks for the latest.
+              New results are fetched from Squiggle automatically every day and published here; the{' '}
+              <strong>⟳ time</strong> beside the switcher is when the data you&apos;re looking at was
+              published — tap it to re-check.
             </p>
             <p className="disclaimer">
               Unofficial fan project — not affiliated with, authorised or endorsed by the
@@ -349,7 +351,7 @@ export default function App() {
         </div>
       )}
 
-      {isLive && live.meta.source === 'seed' && !dismissed.has('seed') && (
+      {isLive && sampleData && !dismissed.has('seed') && (
         <div className="banner" role="note">
           <span>
             Showing generated sample data — live Squiggle data replaces this after the first

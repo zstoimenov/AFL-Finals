@@ -100,11 +100,11 @@ body {
 
 .topbar {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 4px;
-  padding: 18px 0 6px;
+  gap: 2px 10px;
+  padding: 10px 0 2px;
 }
 
 .topbar h1 {
@@ -112,6 +112,11 @@ body {
   font-weight: 800;
   margin: 0;
   letter-spacing: -0.025em;
+  /* let the title give way to the controls before the row wraps */
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .logo {
@@ -124,41 +129,45 @@ body {
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
+  flex: none;
+  /* stays hard right, on its own line too once the header wraps on a phone */
+  margin-left: auto;
 }
 
-.datastamp {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.78rem;
-  text-align: right;
-  line-height: 1.35;
-}
-
-.refreshbtn {
+/* "updated at" and "refresh" are one pill: the time is the button. */
+.updatedbtn {
   appearance: none;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: var(--surface2);
   border: 1px solid var(--border);
-  color: var(--text);
+  color: var(--muted);
   border-radius: 999px;
-  padding: 4px 12px 4px 9px;
+  padding: 4px 10px 4px 8px;
   font: inherit;
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   cursor: pointer;
 }
 
-.refreshbtn:hover:not(:disabled) {
+.updatedbtn:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--accent);
 }
 
-.refreshbtn:disabled {
+.updatedbtn:disabled {
   opacity: 0.7;
   cursor: default;
+}
+
+/* sample data flags itself on the stamp rather than costing a header line */
+.updatedbtn.sample {
+  color: var(--gold);
+  border-color: color-mix(in srgb, var(--gold) 55%, var(--border));
 }
 
 .refreshicon {
@@ -182,15 +191,6 @@ body {
   color: var(--text);
 }
 
-@media (max-width: 560px) {
-  .refreshlabel {
-    display: none;
-  }
-
-  .refreshbtn {
-    padding: 5px 9px;
-  }
-}
 
 .banner {
   background: var(--surface2);
