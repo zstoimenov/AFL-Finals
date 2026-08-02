@@ -60,6 +60,17 @@ function luminance(hex: string): number {
 }
 
 /**
+ * White or near-black ink for text sitting on a club colour, so a monogram is
+ * legible on Collingwood's black and Richmond's yellow alike. Shared by every
+ * surface that paints a club colour — chips, crests, the club picker — because
+ * getting it right in one place and wrong in another is how "CAR" ends up
+ * invisible on Carlton navy.
+ */
+export function inkOn(hex: string): string {
+  return luminance(hex) > 150 ? '#101418' : '#ffffff';
+}
+
+/**
  * A display-friendly highlight colour for a club: its most vivid identity colour
  * that still reads against the app surface (skips near-white and near-black so
  * black-and-white clubs fall back to a neutral). Used for the predicted-winner

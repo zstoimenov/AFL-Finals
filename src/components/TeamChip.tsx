@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { TEAMS } from '../domain/teams';
+import { TEAMS, inkOn } from '../domain/teams';
 import { isFavourite } from '../domain/favourite';
 import { TeamSelectContext } from '../teamSelect';
 
@@ -58,7 +58,7 @@ export default function TeamChip({
       className="monogram"
       style={{
         background: team.color,
-        color: pickInk(team.color),
+        color: inkOn(team.color),
         // secondary club colour as a trim ring so two-tone identities read
         // (e.g. West Coast's gold on navy, Hawthorn's gold on brown)
         boxShadow: `inset 0 0 0 2px ${team.color2}`
@@ -104,14 +104,4 @@ export default function TeamChip({
     );
   }
   return <span className={fav ? 'teamchip fav' : 'teamchip'}>{body}</span>;
-}
-
-/** White or near-black ink depending on the chip color's luminance. */
-function pickInk(hex: string): string {
-  const n = parseInt(hex.slice(1), 16);
-  const r = (n >> 16) & 255;
-  const g = (n >> 8) & 255;
-  const b = n & 255;
-  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return lum > 150 ? '#101418' : '#ffffff';
 }
