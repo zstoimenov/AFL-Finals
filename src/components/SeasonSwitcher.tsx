@@ -1,32 +1,46 @@
 import type { HistoryIndexEntry } from '../domain/types';
 
+/** Sentinel option value for the seasons hub, which isn't a year. */
+const HUB = 'hub';
+
 /**
  * Header control that switches which season the Ladder / Fixtures / Bracket /
- * Odds tabs render. The live season is always first; archived seasons follow,
- * newest first. Purely presentational — the parent owns the active year and the
- * lazy loading behind a change.
+ * Odds tabs render, and opens the multi-season hub. The live season is always
+ * first; archived seasons follow, newest first, with the hub last.
+ *
+ * The hub lives here rather than in the main nav because it is a *season*
+ * control, like the years above it — which keeps the nav row for the screens you
+ * move between during a round. Purely presentational: the parent owns the active
+ * year and the lazy loading behind a change.
  */
 export default function SeasonSwitcher({
   liveYear,
   activeYear,
   history,
   loading,
-  onChange
+  hubOpen = false,
+  onChange,
+  onOpenHub
 }: {
   liveYear: number;
   activeYear: number;
   history: HistoryIndexEntry[];
   loading: boolean;
+  /** the hub is the screen currently showing, so the control reflects it */
+  hubOpen?: boolean;
   onChange: (year: number) => void;
+  onOpenHub: () => void;
 }) {
-  if (history.length === 0) return null;
   const years = [liveYear, ...history.map((h) => h.year).filter((y) => y !== liveYear)];
   return (
     <label className="season-switch">
       <span className="visually-hidden">Season</span>
       <select
-        value={activeYear}
-        onChange={(e) => onChange(Number(e.target.value))}
+        value={hubOpen ? HUB : activeYear}
+        onChange={(e) => {
+          if (e.target.value === HUB) onOpenHub();
+          else onChange(Number(e.target.value));
+        }}
         aria-label="Choose season"
       >
         {years.map((y) => (
@@ -34,6 +48,7 @@ export default function SeasonSwitcher({
             {y === liveYear ? `${y} · Live` : y}
           </option>
         ))}
+        <option value={HUB}>All seasons…</option>
       </select>
       {loading && <span className="season-switch-spin" aria-hidden="true">⟳</span>}
     </label>

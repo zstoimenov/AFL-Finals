@@ -4,6 +4,9 @@ An installable PWA that tracks the AFL finals under the **2026 top-ten wildcard
 format**, and keeps a **multi-season archive** so the model learns across years
 and you can browse past seasons:
 
+- 👀 **This week** — the games still to be played this round, ranked by how much there is
+  to watch. Each card leads with the case for watching it and shows the reasons behind its
+  ranking, so the order is arguable rather than mysterious.
 - 🗂 **Bracket** — the full five-week bracket (Wildcard Round → Qualifying/Elimination →
   Semis → Prelims → Grand Final), projected from the live ladder until finals begin,
   then filled with real results. Wildcard winners are re-seeded per the AFL rules
@@ -17,7 +20,9 @@ and you can browse past seasons:
 - 🏆 **Odds** — premiership projections from a 10,000-run Monte Carlo simulation of the
   remaining season and the entire finals series, including wildcard games and
   re-seeding.
-- 🗄 **Seasons** — a multi-season hub. A season switcher browses past seasons' ladders,
+- 🗄 **Seasons** — a multi-season hub, opened from **All seasons…** in the header's season
+  switcher (it's a season control, so it sits with the years rather than in the nav row,
+  which stays for the screens you move between during a round). The switcher browses past seasons' ladders,
   results and finals (rendered under each era's own format — past finals show as
   results, not a 2026-style bracket). Per-season scorecards grade how the in-app model
   and the Squiggle consensus actually tipped each year, and a cross-season **head-to-head**
@@ -47,6 +52,28 @@ season in). Until it runs, the hub shows an empty state and the app behaves exac
 as a single-season tracker (fail-soft loaders, no carry-over prior). History is
 normalised through the same shared module (`scripts/squiggle.mjs`) as the live
 season, so a 2023 game and a 2026 game are the exact same shape the model expects.
+
+## Ranking the week
+
+`src/domain/interest.ts` decides what's worth watching. The app updates itself daily with
+nobody at the wheel, so "the interesting games this week" has to be **computed** rather than
+curated. Every game still to be played in the current round is scored by independent signals —
+how evenly the model splits it, what the result would settle on the ladder, where the clubs
+sit relative to the finals cut lines, standing rivalries, recent head-to-head and current
+streaks — and each signal states its own case in plain English. **The score is exactly the sum
+of the reasons shown on the card**, so a ranking can always be argued with on the evidence.
+The weights are editorial, not fitted: there is no ground truth for "interesting" to backtest
+against, so they only encode an ordering — what a game *decides* outranks how close it is,
+which outranks who is playing.
+
+The stakes signals are **mathematical, not projected**. "Win and they're in" re-runs the same
+conservative locks engine as the ladder badges over the season as it *would* stand after each
+result, so a clinch shown here is guaranteed by that result alone, whichever way every other
+game falls. Rivalries that hold every year are curated in `src/domain/rivalries.ts` (Squiggle's
+feed has no rivalry field — a derby looks like any other fixture in the data); the ones a
+season *earns* — clubs whose recent meetings have all been tight, or a rematch of last year's
+finals — are read straight out of the results archive, so that table never needs editing to
+keep up.
 
 ## Prediction model
 

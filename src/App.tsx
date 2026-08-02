@@ -22,10 +22,16 @@ import SeasonSummary from './components/SeasonSummary';
 import SeasonsHub from './components/SeasonsHub';
 import SeasonSwitcher from './components/SeasonSwitcher';
 import TeamDetail from './components/TeamDetail';
+import ThisWeekView from './components/ThisWeekView';
 import InfoButton from './components/InfoButton';
 import { TeamSelectContext } from './teamSelect';
 
-type Tab = 'bracket' | 'fixtures' | 'ladder' | 'odds' | 'seasons';
+/**
+ * The screens in the nav row, plus the seasons hub — which is reached from the
+ * season switcher in the header rather than the nav, since it's a season control
+ * and the nav row is for the screens you move between during a round.
+ */
+type Tab = 'week' | 'bracket' | 'fixtures' | 'ladder' | 'odds' | 'seasons';
 
 const SIM_ITERATIONS = 10000;
 
@@ -38,7 +44,7 @@ export default function App() {
   const [seasonLoading, setSeasonLoading] = useState(false);
   const [sim, setSim] = useState<SimOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>('fixtures');
+  const [tab, setTab] = useState<Tab>('week');
   const [selectedTeam, setSelectedTeam] = useState<number | null>(null);
   const [tabsStuck, setTabsStuck] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -208,10 +214,15 @@ export default function App() {
             activeYear={activeYear}
             history={historyIndex}
             loading={seasonLoading}
+            hubOpen={tab === 'seasons'}
             onChange={(y) => {
               ensureSeason(y);
               setActiveYear(y);
+              // "This week" is a live-season screen; an archived year has no week ahead
+              if (y !== liveYear && tab === 'week') setTab('fixtures');
+              if (tab === 'seasons') setTab('ladder');
             }}
+            onOpenHub={() => setTab('seasons')}
           />
           <p className="datastamp">
             {isLive ? (
@@ -257,9 +268,16 @@ export default function App() {
               from <a href="https://squiggle.com.au">Squiggle</a>. All times are AWST.
             </p>
             <p>
-              The <strong>Seasons</strong> tab browses past seasons and shows the model&apos;s
-              per-season accuracy. New results are fetched from Squiggle automatically every day
-              and published here; <strong>Refresh</strong> re-checks for the latest.
+              <strong>This week</strong> ranks the games still to be played in the current round by
+              how much there is to watch — how close the model has them, what each result would
+              settle mathematically, and what history the clubs bring — and shows its reasoning on
+              every card.
+            </p>
+            <p>
+              The season switcher above browses past seasons; <strong>All seasons…</strong> opens
+              the hub, with the model&apos;s per-season accuracy and a cross-season head-to-head.
+              New results are fetched from Squiggle automatically every day and published here;{' '}
+              <strong>Refresh</strong> re-checks for the latest.
             </p>
             <p className="disclaimer">
               Unofficial fan project — not affiliated with, authorised or endorsed by the
@@ -307,8 +325,8 @@ export default function App() {
       {isLive && !liveFinalsStarted && !dismissed.has('prefinals') && (
         <div className="banner subtle" role="note">
           <span>
-            Finals haven&apos;t started yet — the bracket below is projected from the current
-            ladder and updates automatically as results come in.
+            Finals haven&apos;t started yet — the bracket is projected from the current ladder and
+            updates automatically as results come in.
           </span>
           <button
             type="button"
@@ -325,11 +343,11 @@ export default function App() {
       <nav className={tabsStuck ? 'tabs stuck' : 'tabs'} role="tablist">
         {(
           [
+            ...(isLive ? ([['week', 'This week']] as Array<[Tab, string]>) : []),
             ['fixtures', isLive ? 'Fixtures' : 'Results'],
             ['ladder', 'Ladder'],
             ['bracket', isLive ? 'Bracket' : 'Finals'],
-            ['odds', isLive ? 'Odds' : 'Summary'],
-            ['seasons', 'Seasons']
+            ['odds', isLive ? 'Odds' : 'Summary']
           ] as Array<[Tab, string]>
         ).map(([key, label]) => (
           <button
@@ -360,6 +378,9 @@ export default function App() {
           </div>
         ) : (
           <>
+            {tab === 'week' && isLive && (
+              <ThisWeekView snapshot={active} history={historyCorpus} />
+            )}
             {tab === 'bracket' &&
               (supportsProjectedBracket(active.meta) && isLive ? (
                 <BracketView bracket={bracket} finalsStarted={liveFinalsStarted} simReady={sim != null} />

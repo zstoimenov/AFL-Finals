@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
 import type { BracketMatch, Game, Snapshot } from '../domain/types';
 import {
   squiggleProb,
@@ -8,14 +7,14 @@ import {
   blendedHomeProb,
   preGameHomeProb
 } from '../domain/predict';
-import { formatGameDateTime, isGameToday } from '../domain/format';
+import { isGameToday } from '../domain/format';
 import { currentHomeAwayRound, homeAwayRounds } from '../domain/ladder';
 import { teamAbbrev } from '../domain/teams';
 import { gameHasFavourite } from '../domain/favourite';
-import TeamChip from './TeamChip';
 import ProbBar from './ProbBar';
 import MatchCard from './MatchCard';
 import InfoButton from './InfoButton';
+import { CardFoot, CardMeta, TeamLine } from './FixtureCardParts';
 
 const roundLabel = (r: number) => (r === 0 ? 'Opening Round' : `Round ${r}`);
 
@@ -139,59 +138,6 @@ export default function FixturesView({
         )}
       </div>
     </section>
-  );
-}
-
-/** Top line of every card: kickoff date/time, plus an optional status chip. */
-function CardMeta({ game, tag }: { game: Game; tag?: ReactNode }) {
-  return (
-    <div className="fx-meta">
-      <span className="fx-when">{formatGameDateTime(game.date, game.unixtime)}</span>
-      {tag}
-    </div>
-  );
-}
-
-/** Bottom line of every card: venue on the left, extra info on the right. */
-function CardFoot({ venue, children }: { venue: string | null; children?: ReactNode }) {
-  if (!venue && !children) return null;
-  return (
-    <div className="fx-foot">
-      {venue && <span className="fx-venue">{venue}</span>}
-      {children && <span className="fx-foot-end">{children}</span>}
-    </div>
-  );
-}
-
-/**
- * One club on a card: crest + short name on the left, a value (win % or final
- * score) pinned to a fixed right-hand column so the numbers line up across every
- * card in the grid. `tone` drives the emphasis — leading side, winner, or the
- * dimmed loser.
- */
-function TeamLine({
-  teamId,
-  value,
-  tone,
-  won = false
-}: {
-  teamId: number;
-  value: ReactNode;
-  tone: 'lead' | 'trail' | 'win' | 'loss' | 'flat';
-  won?: boolean;
-}) {
-  return (
-    <div className={`teamline tone-${tone}`}>
-      <TeamChip teamId={teamId} short />
-      <span className="teamline-end">
-        {won && (
-          <span className="teamline-tick" title="Winner" aria-label="Winner">
-            ✓
-          </span>
-        )}
-        <span className="teamline-val">{value}</span>
-      </span>
-    </div>
   );
 }
 

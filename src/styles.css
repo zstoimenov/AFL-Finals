@@ -1926,3 +1926,159 @@ button.teamchip:focus-visible {
     grid-template-columns: 64px 1fr;
   }
 }
+
+/* ---------- this week ---------- */
+
+.week-sub {
+  margin: 0 0 14px;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.week-heading {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 20px 0 8px;
+}
+
+.week-heading:first-of-type {
+  margin-top: 12px;
+}
+
+.weekcard {
+  margin-bottom: 10px;
+}
+
+/* the case for watching, in the card's own voice */
+.week-headline {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 750;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+.weekcard.compact .week-headline {
+  font-size: 0.86rem;
+  font-weight: 650;
+  color: var(--muted);
+}
+
+.week-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.week-badge {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
+  padding: 2px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.fav-game .week-badge {
+  color: var(--fav);
+  background: color-mix(in srgb, var(--fav) 16%, transparent);
+  border-color: color-mix(in srgb, var(--fav) 48%, transparent);
+}
+
+/* the supporting reasons behind the ranking — the headline is reason one */
+.reasons {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.reason {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 9px;
+}
+
+/* the mathematical ones carry the most weight, so they read strongest */
+.reason.r-clinch {
+  color: var(--good);
+  border-color: color-mix(in srgb, var(--good) 45%, transparent);
+  background: color-mix(in srgb, var(--good) 12%, transparent);
+}
+
+.reason.r-elimination {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
+.reason.r-sixpointer,
+.reason.r-cutline {
+  color: var(--gold);
+  border-color: color-mix(in srgb, var(--gold) 40%, transparent);
+  background: color-mix(in srgb, var(--gold) 10%, transparent);
+}
+
+.reason.r-rivalry,
+.reason.r-rematch {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.stakes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stake {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  font-size: 0.87rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+}
+
+.stake.clinch {
+  border-left-color: var(--good);
+}
+
+.stake.elimination {
+  border-left-color: var(--danger);
+}
+
+.stake-mark {
+  font-weight: 800;
+  flex: none;
+}
+
+.stake.clinch .stake-mark {
+  color: var(--good);
+}
+
+.stake.elimination .stake-mark {
+  color: var(--danger);
+}
