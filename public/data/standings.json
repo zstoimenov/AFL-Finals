@@ -84,8 +84,20 @@
   "against": 1739
  },
  {
-  "id": 18,
+  "id": 4,
   "rank": 8,
+  "played": 21,
+  "wins": 12,
+  "losses": 8,
+  "draws": 1,
+  "pts": 50,
+  "percentage": 106.384213580963,
+  "for": 1833,
+  "against": 1723
+ },
+ {
+  "id": 18,
+  "rank": 9,
   "played": 21,
   "wins": 12,
   "losses": 9,
@@ -96,52 +108,40 @@
   "against": 1823
  },
  {
-  "id": 4,
-  "rank": 9,
-  "played": 20,
-  "wins": 11,
-  "losses": 8,
-  "draws": 1,
-  "pts": 46,
-  "percentage": 105.6,
-  "for": 1716,
-  "against": 1625
- },
- {
   "id": 3,
   "rank": 10,
-  "played": 20,
-  "wins": 10,
+  "played": 21,
+  "wins": 11,
   "losses": 10,
   "draws": 0,
-  "pts": 40,
-  "percentage": 97.0319634703196,
-  "for": 1700,
-  "against": 1752
+  "pts": 44,
+  "percentage": 99.5589856670342,
+  "for": 1806,
+  "against": 1814
  },
  {
   "id": 15,
   "rank": 11,
-  "played": 20,
+  "played": 21,
   "wins": 9,
-  "losses": 11,
+  "losses": 12,
   "draws": 0,
   "pts": 36,
-  "percentage": 104.302325581395,
-  "for": 1794,
-  "against": 1720
+  "percentage": 101.642935377875,
+  "for": 1856,
+  "against": 1826
  },
  {
   "id": 9,
   "rank": 12,
-  "played": 20,
+  "played": 21,
   "wins": 9,
-  "losses": 11,
+  "losses": 12,
   "draws": 0,
   "pts": 36,
-  "percentage": 99.0011098779134,
-  "for": 1784,
-  "against": 1802
+  "percentage": 98.936735778841,
+  "for": 1861,
+  "against": 1881
  },
  {
   "id": 12,
@@ -158,14 +158,14 @@
  {
   "id": 8,
   "rank": 14,
-  "played": 20,
-  "wins": 7,
+  "played": 21,
+  "wins": 8,
   "losses": 13,
   "draws": 0,
-  "pts": 28,
-  "percentage": 94.6695095948827,
-  "for": 1776,
-  "against": 1876
+  "pts": 32,
+  "percentage": 94.9820788530466,
+  "for": 1855,
+  "against": 1953
  },
  {
   "id": 13,
@@ -182,14 +182,14 @@
  {
   "id": 17,
   "rank": 16,
-  "played": 20,
+  "played": 21,
   "wins": 4,
-  "losses": 16,
+  "losses": 17,
   "draws": 0,
   "pts": 16,
-  "percentage": 70.8208208208208,
-  "for": 1415,
-  "against": 1998
+  "percentage": 71.5366430260047,
+  "for": 1513,
+  "against": 2115
  },
  {
   "id": 14,

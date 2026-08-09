@@ -1467,8 +1467,8 @@
   "gameid": 38676,
   "hteamid": 9,
   "ateamid": 8,
-  "hconfidence": 0.646,
-  "hmargin": 13.1,
+  "hconfidence": 0.651,
+  "hmargin": 13.5,
   "models": 31
  },
  {
@@ -1483,7 +1483,7 @@
   "gameid": 38678,
   "hteamid": 15,
   "ateamid": 3,
-  "hconfidence": 0.511,
+  "hconfidence": 0.512,
   "hmargin": 0.6,
   "models": 31
  },
@@ -1500,7 +1500,7 @@
   "hteamid": 17,
   "ateamid": 4,
   "hconfidence": 0.28,
-  "hmargin": -21,
+  "hmargin": -21.1,
   "models": 31
  },
  {
@@ -1515,144 +1515,144 @@
   "gameid": 38683,
   "hteamid": 2,
   "ateamid": 8,
-  "hconfidence": 0.761,
-  "hmargin": 26.1,
-  "models": 23
+  "hconfidence": 0.75,
+  "hmargin": 24.7,
+  "models": 25
  },
  {
   "gameid": 38684,
   "hteamid": 5,
   "ateamid": 16,
-  "hconfidence": 0.129,
-  "hmargin": -41.5,
-  "models": 23
+  "hconfidence": 0.124,
+  "hmargin": -42.2,
+  "models": 25
  },
  {
   "gameid": 38691,
   "hteamid": 6,
   "ateamid": 1,
-  "hconfidence": 0.736,
-  "hmargin": 22.2,
-  "models": 24
+  "hconfidence": 0.711,
+  "hmargin": 19,
+  "models": 26
  },
  {
   "gameid": 38685,
   "hteamid": 9,
   "ateamid": 17,
-  "hconfidence": 0.842,
-  "hmargin": 36.1,
-  "models": 23
+  "hconfidence": 0.836,
+  "hmargin": 35.4,
+  "models": 25
  },
  {
   "gameid": 38686,
   "hteamid": 10,
   "ateamid": 4,
-  "hconfidence": 0.645,
-  "hmargin": 12.5,
-  "models": 23
+  "hconfidence": 0.619,
+  "hmargin": 10.1,
+  "models": 25
  },
  {
   "gameid": 38687,
   "hteamid": 12,
   "ateamid": 7,
-  "hconfidence": 0.251,
-  "hmargin": -24.3,
-  "models": 23
+  "hconfidence": 0.242,
+  "hmargin": -26.1,
+  "models": 25
  },
  {
   "gameid": 38690,
   "hteamid": 13,
   "ateamid": 11,
-  "hconfidence": 0.416,
-  "hmargin": -7.9,
-  "models": 23
+  "hconfidence": 0.401,
+  "hmargin": -9.1,
+  "models": 24
  },
  {
   "gameid": 38688,
   "hteamid": 14,
   "ateamid": 15,
-  "hconfidence": 0.188,
-  "hmargin": -31,
-  "models": 24
+  "hconfidence": 0.208,
+  "hmargin": -28.7,
+  "models": 26
  },
  {
   "gameid": 38689,
   "hteamid": 18,
   "ateamid": 3,
-  "hconfidence": 0.5,
-  "hmargin": 0.4,
-  "models": 23
+  "hconfidence": 0.512,
+  "hmargin": 1.5,
+  "models": 25
  },
  {
   "gameid": 38699,
   "hteamid": 1,
   "ateamid": 9,
-  "hconfidence": 0.636,
-  "hmargin": 12.7,
+  "hconfidence": 0.638,
+  "hmargin": 12.9,
   "models": 22
  },
  {
   "gameid": 38693,
   "hteamid": 3,
   "ateamid": 6,
-  "hconfidence": 0.352,
-  "hmargin": -13.2,
+  "hconfidence": 0.357,
+  "hmargin": -12.8,
   "models": 22
  },
  {
   "gameid": 38692,
   "hteamid": 4,
   "ateamid": 2,
-  "hconfidence": 0.475,
-  "hmargin": -1.8,
+  "hconfidence": 0.469,
+  "hmargin": -2.3,
   "models": 22
  },
  {
   "gameid": 38694,
   "hteamid": 5,
   "ateamid": 13,
-  "hconfidence": 0.322,
-  "hmargin": -16.6,
+  "hconfidence": 0.323,
+  "hmargin": -16.3,
   "models": 22
  },
  {
   "gameid": 38695,
   "hteamid": 7,
   "ateamid": 14,
-  "hconfidence": 0.931,
-  "hmargin": 56.4,
+  "hconfidence": 0.929,
+  "hmargin": 55.8,
   "models": 22
  },
  {
   "gameid": 38696,
   "hteamid": 11,
   "ateamid": 18,
-  "hconfidence": 0.582,
-  "hmargin": 7.5,
+  "hconfidence": 0.591,
+  "hmargin": 8.4,
   "models": 22
  },
  {
   "gameid": 38697,
   "hteamid": 15,
   "ateamid": 8,
-  "hconfidence": 0.646,
-  "hmargin": 13.5,
+  "hconfidence": 0.634,
+  "hmargin": 12.3,
   "models": 22
  },
  {
   "gameid": 38698,
   "hteamid": 16,
   "ateamid": 12,
-  "hconfidence": 0.832,
-  "hmargin": 34.9,
+  "hconfidence": 0.836,
+  "hmargin": 35.5,
   "models": 22
  },
  {
   "gameid": 38700,
   "hteamid": 17,
   "ateamid": 10,
-  "hconfidence": 0.168,
-  "hmargin": -35.3,
+  "hconfidence": 0.17,
+  "hmargin": -35.2,
   "models": 22
  }
 ]
