@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import type { Game, Snapshot, TeamLocks } from '../domain/types';
 import type { SimOutput } from '../domain/simulate';
 import { TEAMS } from '../domain/teams';
@@ -6,7 +7,8 @@ import { sortedStandings } from '../domain/ladder';
 import { lockLabel } from '../domain/locks';
 import TeamChip from './TeamChip';
 import LockBadge from './LockBadge';
-import { RunHome, SimStrip, SimStripSkeleton, gamesLeft } from './ClubBlocks';
+import { ResultRows, RunHome, SimStrip, SimStripSkeleton, gamesLeft } from './ClubBlocks';
+import { clubResults } from '../domain/club';
 import { useDialog } from '../useDialog';
 
 /**
@@ -31,6 +33,12 @@ export default function TeamDetail({
 }) {
   const team = TEAMS[teamId];
   const sheet = useDialog<HTMLElement>(onClose);
+  // the season so far, newest first — the same reading order as the game sheet's
+  // form rows, so a result means the same thing wherever you meet it
+  const played = useMemo(
+    () => [...clubResults(snapshot.games, teamId)].reverse(),
+    [snapshot, teamId]
+  );
 
   const ladder = sortedStandings(snapshot.standings);
   const rank = ladder.findIndex((s) => s.id === teamId) + 1;
@@ -80,11 +88,34 @@ export default function TeamDetail({
 
         {probs ? <SimStrip probs={probs} /> : <SimStripSkeleton />}
 
-        <h3 className="runhome-title">
-          Run home {left > 0 && <span className="muted">· {left} games left</span>}
-        </h3>
-        <RunHome snapshot={snapshot} teamId={teamId} history={history} />
-        <p className="legendnote">Win % = in-app model estimate · times AWST</p>
+        {left > 0 && (
+          <>
+            <h3 className="runhome-title">
+              Run home{' '}
+              <span className="muted">
+                · {left} game{left === 1 ? '' : 's'} left
+              </span>
+            </h3>
+            <RunHome snapshot={snapshot} teamId={teamId} history={history} />
+            <p className="legendnote">Win % = in-app model estimate · times AWST</p>
+          </>
+        )}
+
+        {played.length > 0 && (
+          <>
+            <h3 className="runhome-title">
+              This season{' '}
+              <span className="muted">
+                · {played.filter((r) => r.won).length}–{played.filter((r) => r.won === false).length}
+                {played.some((r) => r.won == null)
+                  ? `–${played.filter((r) => r.won == null).length}`
+                  : ''}
+              </span>
+            </h3>
+            <ResultRows results={played} showRound />
+            <p className="legendnote">Every game played, most recent at the top · margin in points</p>
+          </>
+        )}
       </section>
     </div>
   );

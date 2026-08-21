@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
 import type { Game, Snapshot } from '../domain/types';
+import type { ClubResult } from '../domain/club';
 import type { SimOutput } from '../domain/simulate';
 import { computeRatings, squiggleProb, blendedHomeProb } from '../domain/predict';
 import { formatGameDateTime, formatProbability } from '../domain/format';
+import { teamAbbrev, teamShortName } from '../domain/teams';
 import TeamChip from './TeamChip';
 
 /**
@@ -26,6 +28,61 @@ export function SimStripSkeleton() {
         </div>
       ))}
     </div>
+  );
+}
+
+/**
+ * A club's results as one line each, most recent at the top.
+ *
+ * Green for a win, red for a loss, with the opponent and the margin on every
+ * line. Colour never carries it alone — the W/L letter and the signed margin
+ * say the same thing in text, so it survives a monochrome screen and a
+ * colour-blind reader.
+ *
+ * Shared by the game sheet (where the two clubs' recent form sits side by side
+ * in narrow columns) and the team sheet (where the whole season runs down the
+ * page). `showRound` is the only difference: the narrow columns have no room
+ * for a round number, and side by side the rows are read against each other
+ * rather than looked up by round.
+ */
+export function ResultRows({
+  results,
+  showRound = false
+}: {
+  results: ClubResult[];
+  /** prefix each line with its round — for the full-width season list */
+  showRound?: boolean;
+}) {
+  return (
+    <ol className={showRound ? 'formrows with-round' : 'formrows'}>
+      {results.map((r) => (
+        <li key={r.game.id} className={`formrow ${r.won == null ? 'd' : r.won ? 'w' : 'l'}`}>
+          {showRound && (
+            <span className="formrow-round">
+              {r.game.is_final > 0 ? `F${r.game.is_final}` : `R${r.game.round}`}
+            </span>
+          )}
+          <span className="formrow-res" aria-hidden="true">
+            {r.won == null ? 'D' : r.won ? 'W' : 'L'}
+          </span>
+          <span className="formrow-opp">
+            {r.home ? 'v ' : '@ '}
+            {teamAbbrev(r.opponentId)}
+          </span>
+          <span className="formrow-margin">
+            {r.margin > 0 ? '+' : ''}
+            {r.margin}
+          </span>
+          <span className="visually-hidden">
+            {` ${r.game.is_final > 0 ? `Final week ${r.game.is_final}` : `Round ${r.game.round}`}, ${
+              r.won == null ? 'drew with' : r.won ? 'beat' : 'lost to'
+            } ${teamShortName(r.opponentId)} ${r.home ? 'at home' : 'away'} by ${Math.abs(
+              r.margin
+            )}. `}
+          </span>
+        </li>
+      ))}
+    </ol>
   );
 }
 
