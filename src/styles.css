@@ -1619,19 +1619,45 @@ button.teamchip:focus-visible {
   color: var(--muted);
 }
 
+/* The two blocks share row tracks — identity, ladder line, form — so a club
+   name that wraps to two lines, or an away side carrying a "travelling" note,
+   can't push its form out of step with the other side's. Comparing two clubs
+   only works if the rows sit level. */
 .gamesheet-teams {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-rows: auto auto auto;
+  column-gap: 10px;
+  row-gap: 0;
   margin: 12px 0 14px;
 }
 
 .gameside {
+  display: grid;
+  grid-row: span 3;
+  grid-template-rows: subgrid;
+  align-content: start;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 10px;
   min-width: 0;
+}
+
+/* Without subgrid the tracks can't be shared, so hold the ladder line at the
+   two lines the longest of them needs and the form still starts level. */
+@supports not (grid-template-rows: subgrid) {
+  .gamesheet-teams {
+    grid-template-rows: none;
+  }
+
+  .gameside {
+    display: block;
+  }
+
+  .gameside-line {
+    min-height: 2.5em;
+  }
 }
 
 .gameside.won {
