@@ -232,7 +232,11 @@ function Dashboard({
               {streak > 0 ? `${streak} straight wins` : `${-streak} straight losses`}
             </span>
           )}
-          {left > 0 && <span className="muted">{left} games left</span>}
+          {left > 0 && (
+            <span className="muted">
+              {left} game{left === 1 ? '' : 's'} left
+            </span>
+          )}
         </div>
       </header>
 

@@ -1725,6 +1725,18 @@ button.teamchip:focus-visible {
   font-weight: 700;
 }
 
+/* the full-width season list has room for the round each result belongs to */
+.formrows.with-round .formrow {
+  grid-template-columns: 34px 14px 1fr auto;
+  padding: 5px 8px;
+  font-size: 0.76rem;
+}
+
+.formrow-round {
+  color: var(--muted);
+  font-weight: 700;
+}
+
 /* result carries the colour, but never alone — the W/L letter and the signed
    margin say the same thing in text */
 .formrow.w {

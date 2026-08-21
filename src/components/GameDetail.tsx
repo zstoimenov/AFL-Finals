@@ -8,6 +8,7 @@ import { isFavourite } from '../domain/favourite';
 import { useDialog } from '../useDialog';
 import TeamChip from './TeamChip';
 import ProbBar from './ProbBar';
+import { ResultRows } from './ClubBlocks';
 
 /**
  * One game, in full.
@@ -191,36 +192,9 @@ function SideBlock({
         {side.pts != null && ` · ${side.pts} pts`}
         {side.travelling && ' · travelling'}
       </p>
-      {side.form.length > 0 && (
-        // One result per line, newest at the top. As a wrapped row of chips
-        // there was no way to tell last week's game from a month ago — reading
-        // order was left-to-right then down, which nobody should have to infer.
-        <ol className="formrows">
-          {side.form.map((r) => (
-            <li
-              key={r.game.id}
-              className={`formrow ${r.won == null ? 'd' : r.won ? 'w' : 'l'}`}
-            >
-              <span className="formrow-res" aria-hidden="true">
-                {r.won == null ? 'D' : r.won ? 'W' : 'L'}
-              </span>
-              <span className="formrow-opp">
-                {r.home ? 'v ' : '@ '}
-                {teamAbbrev(r.opponentId)}
-              </span>
-              <span className="formrow-margin">
-                {r.margin > 0 ? '+' : ''}
-                {r.margin}
-              </span>
-              <span className="visually-hidden">
-                {` Round ${r.game.round}, ${
-                  r.won == null ? 'drew' : r.won ? 'beat' : 'lost to'
-                } ${teamShortName(r.opponentId)} by ${Math.abs(r.margin)}. `}
-              </span>
-            </li>
-          ))}
-        </ol>
-      )}
+      {/* one result per line, newest at the top — a wrapped row of chips left
+          the order to be guessed */}
+      {side.form.length > 0 && <ResultRows results={side.form} />}
     </div>
   );
 }
