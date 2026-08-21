@@ -61,7 +61,7 @@ export interface GameDetail {
 }
 
 /** How many recent results each side brings to the sheet. */
-const FORM_GAMES = 4;
+const FORM_GAMES = 5;
 /** How many past meetings are worth listing before it stops being context. */
 const MEETINGS_SHOWN = 6;
 
