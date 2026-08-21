@@ -14,6 +14,12 @@
   --fav-ink: #2a0d54;
   /* soft mix used to darken the predicted-winner edge on cards */
   --edge-dim: #0c0f14;
+  /* the band behind the ladder's Pts column. A lightness step rather than a
+     hue: the ladder already spends --accent on the finals cut, --gold on the
+     bye cut and --fav on the club, and a fourth colour there would read as a
+     fourth meaning rather than as emphasis. */
+  --band: rgb(255 255 255 / 6%);
+  --band-edge: rgb(255 255 255 / 12%);
 
   /* the padlock used by lock badges and the bracket legend */
   --lock-glyph: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 1 1 6 0v3H9Z"/></svg>');
@@ -39,6 +45,8 @@
     --gold: #b8860b;
     --fav: #6d28d9;
     --fav-ink: #ffffff;
+    --band: rgb(16 33 51 / 5%);
+    --band-edge: rgb(16 33 51 / 12%);
     --shadow-1: 0 1px 2px rgb(16 33 51 / 8%);
     --shadow-2: 0 8px 24px -12px rgb(16 33 51 / 22%);
     color-scheme: light;
@@ -1217,12 +1225,43 @@ table.ladder {
   font-variant-numeric: tabular-nums;
 }
 
-/* primary numbers read strongest; the running P/W/L/D count is context */
-.ladder td.pts {
-  font-weight: 800;
+/* Points are what the table is sorted on, so the column is lifted out of the
+   row rather than merely bolded: a band with hairline edges runs the full
+   height of the table, header included, and the number is a size larger than
+   everything around it. The size and the edges carry the emphasis on their own,
+   so the column still reads as the column with the tint removed — which is what
+   forced-colours mode and a printed page both do to it.
+
+   The tint is painted as a background *image* so it layers over whatever the
+   row is painted (hover, the club's own tint) instead of competing for the same
+   property; that is also why the row rules set background-color, not the
+   background shorthand, which would blank the image out. */
+.ladder .pts {
+  /* auto table layout hands spare width to whichever column will take it; left
+     alone the band swallows it and reads as an empty panel with a number stuck
+     to one edge. Asking for 1% makes it shrink to its content instead, so the
+     band hugs the number and the slack goes back to the columns that were
+     already loose. */
+  width: 1%;
+  background-image: linear-gradient(var(--band), var(--band));
+  border-left: 1px solid var(--band-edge);
+  border-right: 1px solid var(--band-edge);
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.ladder thead th.pts {
   color: var(--text);
 }
 
+.ladder td.pts {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+/* the other number people came for reads strongly too; the running P/W/L/D
+   count behind both of them is context */
 .ladder td.finalspct {
   font-weight: 700;
   color: var(--text);
@@ -1276,6 +1315,18 @@ table.ladder {
   .ladder th,
   .ladder td {
     padding: 9px 4px;
+  }
+
+  /* the band still needs room to read as a band, but the phone table is
+     already at its width budget — a couple of pixels either side is enough
+     once the number is the largest thing in the row */
+  .ladder .pts {
+    padding-left: 7px;
+    padding-right: 7px;
+  }
+
+  .ladder td.pts {
+    font-size: 0.9rem;
   }
 
   /* the name gives way before the numbers do */
@@ -1365,7 +1416,7 @@ table.ladder {
 }
 
 .ladder tbody tr:hover td {
-  background: var(--surface2);
+  background-color: var(--surface2);
 }
 
 .ladder tr.cut td {
@@ -1837,6 +1888,13 @@ button.teamchip:focus-visible {
 .sheet-head {
   position: sticky;
   top: 0;
+  /* The head pins while the sheet scrolls under it, so it has to win the paint
+     order against everything below. Without a z-index it doesn't: the run-home
+     win-probability pills and the card hit-areas are positioned too, and a
+     positioned element with z-index:auto paints in DOM order — later wins — so
+     the percentages slid over the pinned header on the way past. 3 clears the
+     card overlay's 2 as well. */
+  z-index: 3;
   background: var(--surface);
   padding: 14px 0 8px;
   border-top: 4px solid var(--accent);
@@ -2190,13 +2248,13 @@ button.teamchip:focus-visible {
 
 /* ladder + odds rows for the club: tinted band with a purple edge */
 .ladder tbody tr.fav-row td {
-  background: color-mix(in srgb, var(--fav) 12%, var(--surface));
+  background-color: color-mix(in srgb, var(--fav) 12%, var(--surface));
 }
 .ladder tbody tr.fav-row td:first-child {
   box-shadow: inset 3px 0 0 var(--fav);
 }
 .ladder tbody tr.fav-row:hover td {
-  background: color-mix(in srgb, var(--fav) 18%, var(--surface));
+  background-color: color-mix(in srgb, var(--fav) 18%, var(--surface));
 }
 
 .oddsrow.fav-row {

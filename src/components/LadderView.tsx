@@ -83,7 +83,7 @@ export default function LadderView({
               <th className="num sec">L</th>
               <th className="num sec">D</th>
               <th className="num wl">W–L</th>
-              <th className="num">Pts</th>
+              <th className="num pts">Pts</th>
               <th className="num">%</th>
               {showChance && (
                 <th className="num finalspct">
