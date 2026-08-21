@@ -6,8 +6,10 @@ import { TEAMS } from './teams';
  * matches are easy to spot, and the subject of the My Club dashboard.
  *
  * The choice is stored in the browser, so it follows the person rather than the
- * build. `DEFAULT_FAVOURITE_TEAM_ID` is only the starting point for someone who
- * has never picked.
+ * build. Nobody starts out following a club: the app used to hand every new
+ * visitor the same default, which meant a stranger's first screen highlighted a
+ * club they may have no time for and My Club was somebody else's dashboard.
+ * Until the person says otherwise there is no club, and the app asks once.
  *
  * `isFavourite` / `gameHasFavourite` are deliberately plain functions, not
  * hooks: they're called from deep inside chips, rows and cards all over the app,
@@ -17,8 +19,6 @@ import { TEAMS } from './teams';
  * everything below it when the club changes.
  */
 
-export const DEFAULT_FAVOURITE_TEAM_ID = 6; // Fremantle
-
 const STORAGE_KEY = 'afl-favourite';
 /** Stored value meaning "I chose to follow no club" — distinct from unset. */
 const NONE = 'none';
@@ -26,13 +26,27 @@ const NONE = 'none';
 function load(): number | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw == null) return DEFAULT_FAVOURITE_TEAM_ID;
-    if (raw === NONE) return null;
+    if (raw == null || raw === NONE) return null;
     const id = Number(raw);
-    return TEAMS[id] ? id : DEFAULT_FAVOURITE_TEAM_ID;
+    return TEAMS[id] ? id : null;
   } catch {
-    // storage unavailable (private mode, embedded webview) — use the default
-    return DEFAULT_FAVOURITE_TEAM_ID;
+    // storage unavailable (private mode, embedded webview) — follow no club
+    return null;
+  }
+}
+
+/**
+ * Whether the person has ever answered the question — including answering "no
+ * club". Distinct from "follows nobody", which is a real answer; this is what
+ * stops the app asking a second time.
+ */
+export function hasChosenFavourite(): boolean {
+  try {
+    return localStorage.getItem(STORAGE_KEY) != null;
+  } catch {
+    // no storage means no memory of asking; asking every launch would be worse
+    // than not asking, so treat it as answered
+    return true;
   }
 }
 

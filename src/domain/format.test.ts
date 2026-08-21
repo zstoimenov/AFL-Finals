@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatGameDateTime, formatUpdatedAt, formatUpdatedShort, isGameToday } from './format';
+import { formatGameDateTime, formatUpdatedAt, formatUpdatedShort, isGameToday, formatProbability } from './format';
 
 describe('formatUpdatedAt', () => {
   it('renders an ISO instant as an AWST date + 24-hour time', () => {
@@ -82,5 +82,27 @@ describe('isGameToday', () => {
   it('falls back to the date string when unixtime is absent', () => {
     expect(isGameToday(null, '2026-07-24 19:40:00', now)).toBe(true);
     expect(isGameToday(null, '2026-07-25 19:40:00', now)).toBe(false);
+  });
+});
+
+describe('formatProbability', () => {
+  it('rounds contenders to whole points', () => {
+    expect(formatProbability(0.62)).toBe('62%');
+    expect(formatProbability(0.105)).toBe('11%');
+  });
+
+  it('keeps a decimal for longshots so a real chance is still visible', () => {
+    expect(formatProbability(0.042)).toBe('4.2%');
+    expect(formatProbability(0.004)).toBe('0.4%');
+  });
+
+  it('never rounds a live chance down to nothing', () => {
+    expect(formatProbability(0.0004)).toBe('<0.1%');
+    expect(formatProbability(0)).toBe('0%');
+  });
+
+  it('reads a settled outcome as 100%', () => {
+    expect(formatProbability(1)).toBe('100%');
+    expect(formatProbability(0.9999)).toBe('100%');
   });
 });

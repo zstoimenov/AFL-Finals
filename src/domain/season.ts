@@ -1,4 +1,6 @@
-import type { FinalsFormat, Meta } from './types';
+import type { FinalsFormat, Game, Meta } from './types';
+import { gameStart } from './features';
+import { finalsGames } from './ladder';
 
 /**
  * The finals format the app currently models end-to-end (bracket projection,
@@ -43,4 +45,30 @@ export function ladderCutLines(meta: Pick<Meta, 'year' | 'format'>): {
 /** Human label for a finals format, for headings and hub cards. */
 export function formatLabel(meta: Pick<Meta, 'year' | 'format'>): string {
   return finalsFormatFor(meta) === 'top10-wildcard' ? 'Top-10 wildcard' : 'Top-8 final eight';
+}
+
+/**
+ * The premier of a season, read from its results: the winner of the last, and
+ * highest, final played. Archived seasons carry `meta.premier`, but the live
+ * season doesn't — and between the Grand Final and next March that is exactly
+ * the season people are looking at.
+ */
+export function premierOf(games: Game[]): number | null {
+  const decided = finalsGames(games).filter((g) => g.complete && g.winnerteamid != null);
+  if (decided.length === 0) return null;
+  const last = decided.reduce((best, g) => {
+    if (g.is_final > best.is_final) return g;
+    if (g.is_final === best.is_final && gameStart(g) > gameStart(best)) return g;
+    return best;
+  });
+  return last.winnerteamid;
+}
+
+/**
+ * Whether a season has run its course — no game left anywhere in the fixture.
+ * The screens built around "what's next" have nothing to show once this is true,
+ * which is four months of every year, so they check rather than emptying out.
+ */
+export function seasonComplete(games: Game[]): boolean {
+  return games.length > 0 && games.every((g) => Boolean(g.complete));
 }

@@ -15,15 +15,17 @@ import {
 import { TEAMS, inkOn, teamAbbrev, teamShortName } from '../domain/teams';
 import { setFavourite } from '../domain/favourite';
 import { sortedStandings } from '../domain/ladder';
+import { premierOf } from '../domain/season';
 import { lockLabel } from '../domain/locks';
 import { computeRatings, blendedHomeProb, squiggleProb } from '../domain/predict';
-import { formatGameDateTime } from '../domain/format';
+import { formatGameDateTime, formatProbability } from '../domain/format';
 import TeamChip from './TeamChip';
 import LockBadge from './LockBadge';
 import ProbBar from './ProbBar';
 import InfoButton from './InfoButton';
 import ClubPicker from './ClubPicker';
-import { RunHome, SimStrip, gamesLeft } from './ClubBlocks';
+import { CardOpen } from './FixtureCardParts';
+import { RunHome, SimStrip, SimStripSkeleton, gamesLeft } from './ClubBlocks';
 
 /** The tiers worth reporting a target for, strongest last. */
 const TIERS: Array<{ tier: Tier; label: string }> = [
@@ -153,6 +155,7 @@ function Dashboard({
     [snapshot, teamId]
   );
   const path = useMemo(() => projectedPath(bracket, teamId), [bracket, teamId]);
+  const premier = useMemo(() => premierOf(snapshot.games), [snapshot]);
 
   // the record book: every completed game the app holds, this season included
   const allGames = useMemo(
@@ -233,19 +236,22 @@ function Dashboard({
         </div>
       </header>
 
-      <h3 className="club-heading">Next up</h3>
+      <h3 className="club-heading">{next ? 'Next up' : 'How it finished'}</h3>
       {next ? (
         <NextGame game={next} snapshot={snapshot} teamId={teamId} history={history} />
       ) : (
-        <p className="sectionnote">No games scheduled — the season is complete.</p>
+        // the off-season: there is no next game for four months, so the season
+        // just gone is what this block is for
+        <p className="sectionnote">
+          {club.name} finished <strong>{ordinal(rank)}</strong> in {snapshot.meta.year} —{' '}
+          {standing.wins}–{standing.losses}
+          {standing.draws > 0 ? `–${standing.draws}` : ''}, {standing.percentage.toFixed(1)}%
+          {premier === teamId ? '. Premiers.' : '.'}
+        </p>
       )}
 
-      {probs && (
-        <>
-          <h3 className="club-heading">Season chances</h3>
-          <SimStrip probs={probs} />
-        </>
-      )}
+      <h3 className="club-heading">Season chances</h3>
+      {probs ? <SimStrip probs={probs} /> : <SimStripSkeleton />}
 
       {form.length > 0 && (
         <>
@@ -255,11 +261,13 @@ function Dashboard({
               <li
                 key={r.game.id}
                 className={`formchip ${r.won == null ? 'd' : r.won ? 'w' : 'l'}`}
-                title={`R${r.game.round} ${r.home ? 'vs' : '@'} ${teamShortName(r.opponentId)} — ${
-                  r.margin > 0 ? '+' : ''
-                }${r.margin}`}
               >
                 <span className="formchip-res">{r.won == null ? 'D' : r.won ? 'W' : 'L'}</span>
+                <span className="visually-hidden">
+                  {` Round ${r.game.round} ${r.home ? 'versus' : 'away to'} ${teamShortName(
+                    r.opponentId
+                  )}, ${r.margin > 0 ? 'won' : 'lost'} by ${Math.abs(r.margin)}. `}
+                </span>
                 <span className="formchip-opp">
                   {r.home ? '' : '@'}
                   {teamAbbrev(r.opponentId)}
@@ -298,6 +306,9 @@ function Dashboard({
 
       <h3 className="club-heading">Run home</h3>
       <RunHome snapshot={snapshot} teamId={teamId} history={history} />
+      <p className="legendnote">
+        The bar is the model&apos;s chance your club wins that game · times AWST
+      </p>
 
       {path.length > 0 && (
         <>
@@ -429,6 +440,7 @@ function NextGame({
 
   return (
     <article className="nextgame">
+      <CardOpen game={game} />
       <div className="nextgame-when">{formatGameDateTime(game.date, game.unixtime)}</div>
       <div className="nextgame-who">
         <span className={isHome ? 'ha home' : 'ha away'}>{isHome ? 'vs' : '@'}</span>
@@ -460,9 +472,9 @@ function opponentLabel(match: BracketMatch, teamId: number): string {
   return other.placeholder ? `v ${other.placeholder}` : 'opponent to be decided';
 }
 
+/** "in" reads better than "100%" for a club already through to that week. */
 function formatProb(p: number): string {
-  const pct = p * 100;
-  return pct >= 99.5 ? 'in' : `${pct >= 10 ? Math.round(pct) : pct.toFixed(1)}%`;
+  return p >= 0.995 ? 'in' : formatProbability(p);
 }
 
 function ordinal(n: number): string {

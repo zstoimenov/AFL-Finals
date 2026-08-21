@@ -1,14 +1,17 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { Game, Snapshot } from '../domain/types';
 import type { InterestReason, RatedGame } from '../domain/interest';
 import { rateGames, upcomingGames } from '../domain/interest';
 import { squiggleProb } from '../domain/predict';
 import { isGameToday } from '../domain/format';
-import { teamAbbrev } from '../domain/teams';
-import { gameHasFavourite } from '../domain/favourite';
+import { premierOf } from '../domain/season';
+import { sortedStandings } from '../domain/ladder';
+import { teamAbbrev, teamName } from '../domain/teams';
+import { favouriteTeamId, gameHasFavourite } from '../domain/favourite';
+import TeamChip from './TeamChip';
 import ProbBar from './ProbBar';
 import InfoButton from './InfoButton';
-import { CardFoot, CardMeta, TeamLine } from './FixtureCardParts';
+import { CardFoot, CardMeta, CardOpen, TeamLine } from './FixtureCardParts';
 
 /** How many games get the full treatment before the list turns compact. */
 const MUST_WATCH = 3;
@@ -81,10 +84,7 @@ export default function ThisWeekView({
       </div>
 
       {rated.length === 0 ? (
-        <p className="sectionnote">
-          No games left to play — the season is complete. The <strong>Seasons</strong> switcher in
-          the header browses past years.
-        </p>
+        <SeasonOver snapshot={snapshot} />
       ) : (
         <>
           <p className="week-sub">
@@ -147,6 +147,57 @@ export default function ThisWeekView({
   );
 }
 
+/**
+ * The off-season.
+ *
+ * This screen is built around what is on this week, and for four months of every
+ * year there is nothing — it used to say so in one line and leave. The season
+ * just finished is the thing worth showing then: who won it, and where your club
+ * ended up.
+ */
+function SeasonOver({ snapshot }: { snapshot: Snapshot }) {
+  const premier = premierOf(snapshot.games);
+  const ladder = sortedStandings(snapshot.standings);
+  const mine = favouriteTeamId();
+  const myRank = mine != null ? ladder.findIndex((s) => s.id === mine) + 1 : 0;
+  const myRow = myRank > 0 ? ladder[myRank - 1] : null;
+
+  return (
+    <div className="seasonover">
+      <p className="week-sub">The {snapshot.meta.year} season is complete.</p>
+      {premier != null && (
+        <div className="seasonover-premier">
+          <span className="premier-cup" aria-hidden="true">
+            🏆
+          </span>
+          <div>
+            <p className="seasonover-label">Premiers</p>
+            <TeamChip teamId={premier} />
+          </div>
+        </div>
+      )}
+      {myRow && mine != null && (
+        <p className="sectionnote">
+          {teamName(mine)} finished <strong>{ordinal(myRank)}</strong> — {myRow.wins}–
+          {myRow.losses}
+          {myRow.draws > 0 ? `–${myRow.draws}` : ''}
+          {premier === mine ? ', and won the flag.' : '.'}
+        </p>
+      )}
+      <p className="sectionnote">
+        The <strong>Bracket</strong> has the finals as they played out, and{' '}
+        <strong>All seasons</strong> in the header opens the archive.
+      </p>
+    </div>
+  );
+}
+
+function ordinal(n: number): string {
+  const v = n % 100;
+  if (v >= 11 && v <= 13) return `${n}th`;
+  return `${n}${['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'}`;
+}
+
 /** One ranked game: why it matters, then the usual match-card furniture. */
 function WeekCard({
   rated,
@@ -160,6 +211,10 @@ function WeekCard({
   compact?: boolean;
 }) {
   const { game, homeProb, headline, reasons } = rated;
+  // A compact card still has a case to make; hiding it entirely contradicts the
+  // premise that the ranking is arguable on the evidence. It's one tap away.
+  const [open, setOpen] = useState(false);
+  const showDetail = !compact || open;
   const hp = Math.round(homeProb * 100);
   const today = isGameToday(game.unixtime, game.date);
   const fav = gameHasFavourite(game);
@@ -172,6 +227,7 @@ function WeekCard({
 
   return (
     <article className={cls}>
+      <CardOpen game={game} />
       <CardMeta
         game={game}
         tag={
@@ -190,12 +246,12 @@ function WeekCard({
           tone={homeProb < 0.5 ? 'lead' : 'trail'}
         />
       </div>
-      {!compact && (
+      {showDetail && (
         <div className="fx-bar">
           <ProbBar homeId={game.hteamid} awayId={game.ateamid} homeProb={homeProb} bare />
         </div>
       )}
-      {!compact && chips.length > 0 && (
+      {showDetail && chips.length > 0 && (
         <ul className="reasons">
           {chips.map((r) => (
             <li key={r.kind + r.text} className={`reason r-${r.kind}`}>
@@ -203,6 +259,16 @@ function WeekCard({
             </li>
           ))}
         </ul>
+      )}
+      {compact && chips.length > 0 && (
+        <button
+          type="button"
+          className="week-more"
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+        >
+          {open ? 'Fewer reasons' : `${chips.length} more reason${chips.length === 1 ? '' : 's'}`}
+        </button>
       )}
       <CardFoot venue={game.venue}>
         {sq != null && (

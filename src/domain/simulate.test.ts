@@ -72,3 +72,41 @@ describe('simulateSeason', () => {
     expect(total).toBeCloseTo(1, 5);
   });
 });
+
+describe('progressive results', () => {
+  const snap = loadSeed();
+
+  it('reports partial runs without changing the final numbers', () => {
+    const seen: number[] = [];
+    const withProgress = simulateSeason(snap, 1000, 7, [], {
+      onProgress: (partial) => seen.push(partial.progress)
+    });
+    const withoutProgress = simulateSeason(snap, 1000, 7);
+
+    // watching a run must not perturb it
+    expect(withProgress.teams).toEqual(withoutProgress.teams);
+    expect(withProgress.progress).toBe(1);
+
+    // and it must actually report, in order, before finishing
+    expect(seen.length).toBeGreaterThan(0);
+    expect(seen).toEqual([...seen].sort((a, b) => a - b));
+    expect(Math.max(...seen)).toBeLessThan(1);
+  });
+
+  it('gives a partial result the same shape as a finished one', () => {
+    let first: ReturnType<typeof simulateSeason> | null = null;
+    simulateSeason(snap, 500, 7, [], {
+      onProgress: (partial) => {
+        first ??= partial;
+      }
+    });
+    expect(first).not.toBeNull();
+    const teams = Object.values(first!.teams);
+    expect(teams.length).toBeGreaterThan(0);
+    for (const t of teams) {
+      expect(t.premier).toBeGreaterThanOrEqual(0);
+      expect(t.premier).toBeLessThanOrEqual(1);
+      expect(t.makeFinals).toBeLessThanOrEqual(1);
+    }
+  });
+});

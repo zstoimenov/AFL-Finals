@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import type { Game, Snapshot, TeamLocks } from '../domain/types';
 import type { SimOutput } from '../domain/simulate';
 import { TEAMS } from '../domain/teams';
@@ -7,7 +6,8 @@ import { sortedStandings } from '../domain/ladder';
 import { lockLabel } from '../domain/locks';
 import TeamChip from './TeamChip';
 import LockBadge from './LockBadge';
-import { RunHome, SimStrip, gamesLeft } from './ClubBlocks';
+import { RunHome, SimStrip, SimStripSkeleton, gamesLeft } from './ClubBlocks';
+import { useDialog } from '../useDialog';
 
 /**
  * Bottom-sheet with a club's season position, simulated chances and its run
@@ -30,20 +30,7 @@ export default function TeamDetail({
   onClose: () => void;
 }) {
   const team = TEAMS[teamId];
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    // lock background scroll while the sheet is open so only it moves
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [onClose]);
+  const sheet = useDialog<HTMLElement>(onClose);
 
   const ladder = sortedStandings(snapshot.standings);
   const rank = ladder.findIndex((s) => s.id === teamId) + 1;
@@ -62,6 +49,7 @@ export default function TeamDetail({
         role="dialog"
         aria-modal="true"
         aria-label={`${team.name} details`}
+        ref={sheet}
         onClick={(e) => e.stopPropagation()}
       >
         <header
@@ -81,9 +69,16 @@ export default function TeamDetail({
             {standing.percentage.toFixed(1)}%{' '}
             {label && <LockBadge label={label} />}
           </p>
+          {lock && lock.minPts !== lock.maxPts && (
+            // the bounds the lock engine actually reasons about: lose every
+            // remaining game, or win them all
+            <p className="sheet-sub">
+              Can finish on <strong>{lock.minPts}</strong>–<strong>{lock.maxPts}</strong> points
+            </p>
+          )}
         </header>
 
-        {probs && <SimStrip probs={probs} />}
+        {probs ? <SimStrip probs={probs} /> : <SimStripSkeleton />}
 
         <h3 className="runhome-title">
           Run home {left > 0 && <span className="muted">· {left} games left</span>}

@@ -1,6 +1,7 @@
 import type { BracketMatch, BracketSide, Game, Snapshot, TeamLocks } from './types';
 import type { SimOutput } from './simulate';
 import {
+  FINALS_WEEKS,
   MATCH_NAMES,
   MATCH_ORDER,
   classifyFinalsGame,
@@ -105,4 +106,18 @@ export function buildBracket(
       locked
     } satisfies BracketMatch;
   });
+}
+
+/**
+ * The finals week the bracket should open on: the earliest week that still has
+ * an undecided match, or the Grand Final once everything is played. Arriving
+ * mid-series should land on the games still to come rather than on a Wildcard
+ * Round that finished a fortnight ago.
+ */
+export function currentBracketWeek(bracket: BracketMatch[]): number {
+  for (let week = 1; week <= 5; week++) {
+    const inWeek = bracket.filter((m) => FINALS_WEEKS[m.key] === week);
+    if (inWeek.length > 0 && inWeek.some((m) => m.winnerTeamId == null)) return week;
+  }
+  return 5;
 }

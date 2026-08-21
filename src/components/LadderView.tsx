@@ -9,6 +9,13 @@ import TeamChip from './TeamChip';
 import LockBadge from './LockBadge';
 import InfoButton from './InfoButton';
 
+/** 1st, 2nd, 3rd, 4th — a cut line can land anywhere a future format puts it. */
+function ordinal(n: number): string {
+  const v = n % 100;
+  if (v >= 11 && v <= 13) return `${n}th`;
+  return `${n}${['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'}`;
+}
+
 /**
  * The ladder with format-aware finals cut lines and, for the live season,
  * mathematical lock badges and simulated finals chances. For an archived season
@@ -69,13 +76,25 @@ export default function LadderView({
                 <span className="rank">#</span>
               </th>
               <th className="namecell">Team</th>
+              {/* the full record is desktop-only; a phone gets the W–L that
+                  matters and keeps the decisive columns on screen */}
               <th className="num sec">P</th>
               <th className="num sec">W</th>
               <th className="num sec">L</th>
               <th className="num sec">D</th>
+              <th className="num wl">W–L</th>
               <th className="num">Pts</th>
               <th className="num">%</th>
-              {showChance && <th className="num finalspct">Finals %</th>}
+              {showChance && (
+                <th className="num finalspct">
+                  {/* the column has to fit a phone; the full name stays for
+                      wider screens and for anything reading the markup */}
+                  <span className="lbl-long">Finals %</span>
+                  <span className="lbl-short" aria-hidden="true">
+                    Fin %
+                  </span>
+                </th>
+              )}
               <th>Status</th>
             </tr>
           </thead>
@@ -99,12 +118,18 @@ export default function LadderView({
                     <TeamChip teamId={s.id} part="icon" />
                   </td>
                   <td className="namecell">
-                    <TeamChip teamId={s.id} part="name" />
+                    {/* the place name, as ladders are printed — the nickname
+                        costs the width the decisive columns need */}
+                    <TeamChip teamId={s.id} part="name" short />
                   </td>
                   <td className="num sec">{s.played}</td>
                   <td className="num sec">{s.wins}</td>
                   <td className="num sec">{s.losses}</td>
                   <td className="num sec">{s.draws}</td>
+                  <td className="num wl">
+                    {s.wins}–{s.losses}
+                    {s.draws > 0 ? `–${s.draws}` : ''}
+                  </td>
                   <td className="num pts">{s.pts}</td>
                   <td className="num">{s.percentage.toFixed(1)}</td>
                   {showChance && (
@@ -112,21 +137,39 @@ export default function LadderView({
                       {finalsPct != null ? `${Math.round(finalsPct * 100)}%` : '…'}
                     </td>
                   )}
-                  <td>{label && <LockBadge label={label} />}</td>
+                  <td className="statuscell">
+                    {label && <LockBadge label={label} />}
+                    {lock && (
+                      // the working behind the badge: where this club can still
+                      // finish. A lock is "nobody can reach my floor" — showing
+                      // the floor and ceiling makes that checkable rather than
+                      // something the app just asserts.
+                      <span className="ptsrange">
+                        {lock.minPts === lock.maxPts
+                          ? `${lock.minPts} pts`
+                          : `${lock.minPts}–${lock.maxPts} pts`}
+                      </span>
+                    )}
+                  </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       </div>
+      {locks.length > 0 && (
+        <p className="legendnote">
+          The points range is what a club can still finish on — lose out, then win out. A badge
+          appears once that range settles the question on its own.
+        </p>
+      )}
       <p className="legendnote">
         {wildcard && (
           <>
             <span className="cutkey bye" /> bye line (6th) ·{' '}
           </>
         )}
-        <span className="cutkey fin" /> finals line ({finalsCutIndex + 1}
-        {finalsCutIndex + 1 === 8 ? 'th' : 'th'}) ·{' '}
+        <span className="cutkey fin" /> finals line ({ordinal(finalsCutIndex + 1)}) ·{' '}
         <span className="fav-star" aria-hidden="true">★</span> your club
       </p>
     </section>

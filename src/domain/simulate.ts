@@ -20,6 +20,24 @@ export interface SimOutput extends SimResult {
   slotOccupancy: Record<string, Record<number, number>>;
   /** P(home side wins) per bracket match, over iterations where the matchup occurred */
   matchHomeWin: Record<string, number>;
+  /**
+   * How much of the run these numbers are from, 0..1. A partial result is a
+   * real result over fewer iterations — the screen can show it converging
+   * instead of showing nothing until the whole run lands.
+   */
+  progress: number;
+}
+
+/** How often a run reports in, as a fraction of total iterations. */
+const PROGRESS_STEP = 0.1;
+
+export interface SimOptions {
+  /**
+   * Called with a partial result as the run proceeds. Read-only: it never
+   * touches the RNG stream, so a simulation produces the same final numbers
+   * whether anybody is watching or not.
+   */
+  onProgress?: (partial: SimOutput) => void;
 }
 
 /**
@@ -32,7 +50,8 @@ export function simulateSeason(
   snapshot: Snapshot,
   iterations = 10000,
   seed = 20260919,
-  history: Game[] = []
+  history: Game[] = [],
+  opts: SimOptions = {}
 ): SimOutput {
   const rng = makeRng(seed);
   // Only prior seasons feed the carry-over prior — never this season's own games.
@@ -63,6 +82,43 @@ export function simulateSeason(
   const slotCount: Record<string, Record<number, number>> = {};
   const matchHomeWins: Record<string, number> = {};
   const matchOccurrences: Record<string, number> = {};
+
+  /** The run so far, normalised — the same shape whether partial or final. */
+  const result = (done: number): SimOutput => {
+    const over = Math.max(done, 1);
+    const teams: SimResult['teams'] = {};
+    for (const id of teamIds) {
+      const t = tally[id];
+      teams[id] = {
+        makeFinals: t.makeFinals / over,
+        top6: t.top6 / over,
+        top4: t.top4 / over,
+        top2: t.top2 / over,
+        reachGF: t.reachGF / over,
+        premier: t.premier / over
+      };
+    }
+    const slotOccupancy: Record<string, Record<number, number>> = {};
+    for (const [slot, counts] of Object.entries(slotCount)) {
+      slotOccupancy[slot] = {};
+      for (const [id, n] of Object.entries(counts)) {
+        slotOccupancy[slot][Number(id)] = n / over;
+      }
+    }
+    const matchHomeWin: Record<string, number> = {};
+    for (const [key, n] of Object.entries(matchHomeWins)) {
+      matchHomeWin[key] = n / (matchOccurrences[key] ?? 1);
+    }
+    return {
+      iterations: done,
+      teams,
+      slotOccupancy,
+      matchHomeWin,
+      progress: done / iterations
+    };
+  };
+
+  const reportEvery = opts.onProgress ? Math.max(1, Math.round(iterations * PROGRESS_STEP)) : 0;
 
   for (let it = 0; it < iterations; it++) {
     // 1. simulate remaining H&A games
@@ -118,33 +174,16 @@ export function simulateSeason(
       if (gf.home != null) tally[gf.home].reachGF++;
       if (gf.away != null && gf.away !== gf.home) tally[gf.away].reachGF++;
     }
-  }
 
-  // normalise
-  const teams: SimResult['teams'] = {};
-  for (const id of teamIds) {
-    const t = tally[id];
-    teams[id] = {
-      makeFinals: t.makeFinals / iterations,
-      top6: t.top6 / iterations,
-      top4: t.top4 / iterations,
-      top2: t.top2 / iterations,
-      reachGF: t.reachGF / iterations,
-      premier: t.premier / iterations
-    };
-  }
-  const slotOccupancy: Record<string, Record<number, number>> = {};
-  for (const [slot, counts] of Object.entries(slotCount)) {
-    slotOccupancy[slot] = {};
-    for (const [id, n] of Object.entries(counts)) {
-      slotOccupancy[slot][Number(id)] = n / iterations;
+    // check in periodically so the screen can fill in rather than sit empty;
+    // the final iteration reports through the return value instead
+    const done = it + 1;
+    if (reportEvery && done < iterations && done % reportEvery === 0) {
+      opts.onProgress?.(result(done));
     }
   }
-  const matchHomeWin: Record<string, number> = {};
-  for (const [key, n] of Object.entries(matchHomeWins)) {
-    matchHomeWin[key] = n / (matchOccurrences[key] ?? 1);
-  }
-  return { iterations, teams, slotOccupancy, matchHomeWin };
+
+  return result(iterations);
 }
 
 function pairKey(a: number, b: number): string {

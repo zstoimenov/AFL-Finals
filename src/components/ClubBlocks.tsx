@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { Game, Snapshot } from '../domain/types';
 import type { SimOutput } from '../domain/simulate';
 import { computeRatings, squiggleProb, blendedHomeProb } from '../domain/predict';
-import { formatGameDateTime } from '../domain/format';
+import { formatGameDateTime, formatProbability } from '../domain/format';
 import TeamChip from './TeamChip';
 
 /**
@@ -11,6 +11,23 @@ import TeamChip from './TeamChip';
  * club chip, so the same numbers are presented the same way wherever you meet
  * them.
  */
+
+/**
+ * The simulated-chances strip before any numbers exist. Same shape and size as
+ * the real thing, so the page doesn't jump when the first partial run lands.
+ */
+export function SimStripSkeleton() {
+  return (
+    <div className="simstrip" aria-hidden="true">
+      {['Finals', 'Top 6', 'Top 4', 'Grand Final', 'Premiers'].map((label) => (
+        <div className="stat" key={label}>
+          <span className="stat-num skeleton-num" />
+          <span className="stat-label">{label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 /** A club's simulated chances across the season, as a row of percentages. */
 export function SimStrip({ probs }: { probs: SimOutput['teams'][number] }) {
@@ -26,12 +43,9 @@ export function SimStrip({ probs }: { probs: SimOutput['teams'][number] }) {
 }
 
 export function Stat({ label, value }: { label: string; value: number }) {
-  const pct = value * 100;
   return (
     <div className="stat">
-      <span className="stat-num">
-        {pct >= 99.95 ? '100' : pct >= 10 ? Math.round(pct) : pct.toFixed(1)}%
-      </span>
+      <span className="stat-num">{formatProbability(value)}</span>
       <span className="stat-label">{label}</span>
     </div>
   );

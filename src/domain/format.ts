@@ -108,3 +108,30 @@ export function formatGameDateTime(date: string, unixtime?: number | null): stri
   // the published string is already 24-hour, so it carries straight through
   return `${datePart} · ${hh}:${mm}`;
 }
+
+/**
+ * Whether the person has asked for less movement. Scroll animations are set
+ * from script rather than CSS, so the media query has to be read here too —
+ * a stylesheet rule can't reach a `scrollTo` call.
+ */
+export function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
+  );
+}
+
+/**
+ * A probability as a percentage, at the precision the number deserves: a
+ * contender rounds to whole points, a longshot keeps a decimal so a real chance
+ * doesn't collapse to "0%", and anything that has effectively happened reads as
+ * 100%. One rule, because three screens quoting the same simulation should not
+ * round it three different ways.
+ */
+export function formatProbability(p: number): string {
+  const pct = p * 100;
+  if (pct >= 99.95) return '100%';
+  if (pct <= 0) return '0%';
+  if (pct < 0.1) return '<0.1%';
+  return pct >= 10 ? `${Math.round(pct)}%` : `${pct.toFixed(1)}%`;
+}

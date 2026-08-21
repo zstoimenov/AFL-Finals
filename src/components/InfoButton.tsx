@@ -1,4 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
+import { useDialog } from '../useDialog';
 
 /**
  * A small ⓘ button that opens a popup with explanatory text, keeping the main
@@ -15,20 +16,7 @@ export default function InfoButton({
   label?: string;
 }) {
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    window.addEventListener('keydown', onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prev;
-    };
-  }, [open]);
+  const close = useCallback(() => setOpen(false), []);
 
   return (
     <>
@@ -45,29 +33,47 @@ export default function InfoButton({
         {label && <span className="infolabel">{label}</span>}
       </button>
       {open && (
-        <div className="info-backdrop" onClick={() => setOpen(false)}>
-          <div
-            className="info-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-label={title}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <header className="info-modal-head">
-              <h3>{title}</h3>
-              <button
-                type="button"
-                className="sheet-close"
-                aria-label="Close"
-                onClick={() => setOpen(false)}
-              >
-                ✕
-              </button>
-            </header>
-            <div className="info-modal-body">{children}</div>
-          </div>
-        </div>
+        <InfoModal title={title} onClose={close}>
+          {children}
+        </InfoModal>
       )}
     </>
+  );
+}
+
+/**
+ * The popup itself, split out so the dialog hook mounts and unmounts with it —
+ * focus is taken on open and handed back on close, which only works if the
+ * component's life matches the dialog's.
+ */
+function InfoModal({
+  title,
+  children,
+  onClose
+}: {
+  title: string;
+  children: ReactNode;
+  onClose: () => void;
+}) {
+  const modal = useDialog<HTMLDivElement>(onClose);
+  return (
+    <div className="info-backdrop" onClick={onClose}>
+      <div
+        className="info-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        ref={modal}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <header className="info-modal-head">
+          <h3>{title}</h3>
+          <button type="button" className="sheet-close" aria-label="Close" onClick={onClose}>
+            ✕
+          </button>
+        </header>
+        <div className="info-modal-body">{children}</div>
+      </div>
+    </div>
   );
 }
