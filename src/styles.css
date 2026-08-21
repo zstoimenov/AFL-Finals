@@ -1660,17 +1660,73 @@ button.teamchip:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 
-.formline.mini {
-  margin-top: 8px;
-  gap: 4px;
-  /* a narrow column can't hold five chips in a row — wrap rather than clip */
-  flex-wrap: wrap;
-  overflow: visible;
+/* the club's last five, one per line, newest first — a stack reads in one
+   direction, where a wrapped row of chips left the order to be guessed */
+.formrows {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
-.formline.mini .formchip {
-  font-size: 0.6rem;
-  padding: 3px 4px;
+.formrow {
+  display: grid;
+  grid-template-columns: 14px 1fr auto;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  border-left: 3px solid var(--border);
+  background: var(--surface);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.formrow-res {
+  font-weight: 800;
+}
+
+.formrow-opp {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.formrow-margin {
+  font-weight: 700;
+}
+
+/* result carries the colour, but never alone — the W/L letter and the signed
+   margin say the same thing in text */
+.formrow.w {
+  border-left-color: var(--good);
+  background: color-mix(in srgb, var(--good) 10%, var(--surface));
+}
+
+.formrow.w .formrow-res,
+.formrow.w .formrow-margin {
+  color: var(--good);
+}
+
+.formrow.l {
+  border-left-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface));
+}
+
+.formrow.l .formrow-res,
+.formrow.l .formrow-margin {
+  color: var(--danger);
+}
+
+.formrow.d {
+  border-left-color: var(--muted);
+}
+
+.formrows-key {
+  margin-top: 0;
 }
 
 .gamesheet-notes {

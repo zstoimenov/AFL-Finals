@@ -82,6 +82,8 @@ export default function GameDetail({
           />
         </div>
 
+        <p className="legendnote formrows-key">Last five — most recent at the top</p>
+
         <ProbBar homeId={game.hteamid} awayId={game.ateamid} homeProb={detail.modelHomeProb} />
         <p className="legendnote">
           {detail.complete
@@ -190,20 +192,30 @@ function SideBlock({
         {side.travelling && ' · travelling'}
       </p>
       {side.form.length > 0 && (
-        <ol className="formline mini">
+        // One result per line, newest at the top. As a wrapped row of chips
+        // there was no way to tell last week's game from a month ago — reading
+        // order was left-to-right then down, which nobody should have to infer.
+        <ol className="formrows">
           {side.form.map((r) => (
             <li
               key={r.game.id}
-              className={`formchip ${r.won == null ? 'd' : r.won ? 'w' : 'l'}`}
+              className={`formrow ${r.won == null ? 'd' : r.won ? 'w' : 'l'}`}
             >
-              <span className="formchip-res">{r.won == null ? 'D' : r.won ? 'W' : 'L'}</span>
-              <span className="formchip-opp">
-                {r.home ? '' : '@'}
+              <span className="formrow-res" aria-hidden="true">
+                {r.won == null ? 'D' : r.won ? 'W' : 'L'}
+              </span>
+              <span className="formrow-opp">
+                {r.home ? 'v ' : '@ '}
                 {teamAbbrev(r.opponentId)}
               </span>
-              <span className="formchip-margin">
+              <span className="formrow-margin">
                 {r.margin > 0 ? '+' : ''}
                 {r.margin}
+              </span>
+              <span className="visually-hidden">
+                {` Round ${r.game.round}, ${
+                  r.won == null ? 'drew' : r.won ? 'beat' : 'lost to'
+                } ${teamShortName(r.opponentId)} by ${Math.abs(r.margin)}. `}
               </span>
             </li>
           ))}
