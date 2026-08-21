@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { currentHomeAwayRound, homeAwayRounds } from './ladder';
+import { currentHomeAwayRound, homeAwayRounds, roundProgress } from './ladder';
 import type { Game } from './types';
 
 function g(round: number, complete: boolean, isFinal = 0): Game {
@@ -41,5 +41,18 @@ describe('currentHomeAwayRound', () => {
     const games = [g(24, true), g(25, false, 1)];
     expect(currentHomeAwayRound(games)).toBe(24);
     expect(homeAwayRounds(games)).toEqual([24]);
+  });
+});
+
+describe('roundProgress', () => {
+  it('reports each round as played/total, ascending', () => {
+    const progress = roundProgress([g(2, true), g(1, true), g(1, true), g(2, false)]);
+    expect(progress.map((p) => p.round)).toEqual([1, 2]);
+    expect(progress[0]).toMatchObject({ played: 2, total: 2, complete: true });
+    expect(progress[1]).toMatchObject({ played: 1, total: 2, complete: false });
+  });
+
+  it('ignores finals — the picker only steps through the home & away season', () => {
+    expect(roundProgress([g(1, true), g(25, true, 1)]).map((p) => p.round)).toEqual([1]);
   });
 });

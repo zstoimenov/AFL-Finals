@@ -1,9 +1,28 @@
 import { useMemo, useState } from 'react';
 import type { Game } from '../domain/types';
 import { TEAMS, teamName } from '../domain/teams';
+import { favouriteTeamId } from '../domain/favourite';
 import { headToHeadRecord } from '../domain/seasonStats';
+import { gameStart } from '../domain/features';
 import { formatGameDateTime } from '../domain/format';
 import TeamChip from './TeamChip';
+
+/**
+ * The two clubs the explorer opens on: the user's club and its most recent
+ * opponent, falling back to the first two clubs in the data when they follow
+ * nobody or the archive has never seen their club play.
+ */
+function openingPair(games: Game[], teams: number[]): [number, number] {
+  const fallback: [number, number] = [teams[0] ?? 0, teams[1] ?? teams[0] ?? 0];
+  const mine = favouriteTeamId();
+  if (mine == null || !teams.includes(mine)) return fallback;
+  const last = games
+    .filter((g) => g.hteamid === mine || g.ateamid === mine)
+    .sort((a, b) => gameStart(b) - gameStart(a))[0];
+  if (!last) return fallback;
+  const other = last.hteamid === mine ? last.ateamid : last.hteamid;
+  return teams.includes(other) ? [mine, other] : fallback;
+}
 
 /** Team ids that actually appear in the supplied games, sorted by club name. */
 function presentTeams(games: Game[]): number[] {
@@ -23,8 +42,12 @@ function presentTeams(games: Game[]): number[] {
  */
 export default function HeadToHead({ games }: { games: Game[] }) {
   const teams = useMemo(() => presentTeams(games), [games]);
-  const [aId, setAId] = useState<number>(teams[1] ?? teams[0] ?? 0);
-  const [bId, setBId] = useState<number>(teams[6] ?? teams[teams.length - 1] ?? 0);
+  // Opening on two arbitrary clubs asks the visitor to fix the question before
+  // they can read an answer. Their own club against whoever it last played is a
+  // record they might actually want.
+  const opening = useMemo(() => openingPair(games, teams), [games, teams]);
+  const [aId, setAId] = useState<number>(opening[0]);
+  const [bId, setBId] = useState<number>(opening[1]);
   const { meetings, aWins, bWins, draws } = useMemo(
     () => headToHeadRecord(games, aId, bId),
     [games, aId, bId]

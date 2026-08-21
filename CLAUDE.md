@@ -23,7 +23,7 @@ prose explanation of *why* each feature works the way it does.
 ```bash
 npm install
 npm run dev            # Vite dev server
-npm test               # vitest run — 15 files / 121 tests, all domain-level
+npm test               # vitest run — 17 files / 151 tests, all domain-level
 npm run build          # tsc -b && vite build  → dist/
 npm run preview        # serve the production build
 npm run fetch-data     # live Squiggle snapshot → public/data/
@@ -40,10 +40,14 @@ pushing. There is **no ESLint or Prettier config**; match the surrounding style 
 src/
   main.tsx            React root
   App.tsx             all app state, data loading, worker wiring, screen routing
-  nav.ts              Tab union + hash-route helpers (single source of screen truth)
+  nav.ts              Route (tab + open game) + hash helpers — the screen truth
   teamSelect.ts       context: "open the team sheet for club X"
-  simWorker.ts        Web Worker entry → domain/simulate
-  styles.css          the entire stylesheet (~2.6k lines, CSS variables, dark + light)
+  gameSelect.ts       context: "open the game sheet for fixture N"
+  useDialog.ts        focus trap / restore / Escape / scroll lock for every dialog
+  useOnline.ts        connection state, so a stale stamp says so
+  usePullToRefresh.ts the pull gesture behind the header's refresh
+  simWorker.ts        Web Worker entry → domain/simulate, posts partial runs
+  styles.css          the entire stylesheet (~3k lines, CSS variables, dark + light)
   api/loadData.ts     fetches the static JSON snapshots (fail-soft for history)
   domain/             pure TypeScript — all logic, all tests live here
   components/         presentational React; no data fetching, minimal logic
@@ -68,6 +72,7 @@ scripts/              Node ESM data + build scripts (squiggle.mjs is shared)
 | `backtest.ts` | Hindsight-free evaluation harness (hit-rate, Brier, log-loss) with one exported model per generation. |
 | `seasonStats.ts` | Per-season model-vs-Squiggle scorecards, cross-season head-to-head. |
 | `interest.ts` | Scores "what's worth watching this round" as a sum of explained reasons. |
+| `gameDetail.ts` | Assembles everything known about one fixture for the game sheet (hindsight-free). |
 | `rivalries.ts` | Curated standing rivalries (Squiggle has no rivalry field). |
 | `club.ts` | My Club numbers: form, streaks, `winsToGuarantee`, record book, projected path. |
 | `season.ts` | The finals-format seam (`top8` vs `top10-wildcard`, cut lines, labels). |
@@ -83,13 +88,30 @@ computed values as props. New logic goes in `domain/` with a test, not inside a
 component.
 
 **`App.tsx` owns all state.** Snapshot loading, the archived-season map, the worker,
-the selected screen and the selected team all live there and flow down as props. There
-is no state library and no context beyond `TeamSelectContext` and the favourite store.
+the selected screen, the selected team and the open game all live there and flow down as
+props. There is no state library and no context beyond `TeamSelectContext`,
+`GameSelectContext` and the favourite store.
+
+**Archived seasons load on arrival, not at startup.** The four season snapshots are
+~400KB and only two screens read them (the hub's scorecards, My Club's record book), so
+they're fetched when one of those screens opens. `history/games.json` still loads at
+startup — the model's carry-over prior needs it.
 
 **Screens are hash routes.** `src/nav.ts` is the single source of truth for the `Tab`
 union, the default screen, live-only screens and `#/<tab>` hashes. Adding a screen means
 touching `nav.ts`, `App.tsx`'s `navItems` + render switch, and a component — nothing else.
 The season is a header control, **not** part of the route.
+
+An open game sheet *is* part of the route (`#/week/g1234`), so a fixture is linkable and
+the back button closes the sheet rather than leaving the app. `routeFromHash` ignores a
+game segment it can't read instead of rejecting the whole route, so a stale link still
+lands on a real screen. Changing screen always clears the sheet.
+
+**Dialogs use `useDialog`.** Every sheet and popup (`InfoButton`, `ClubPicker`,
+`TeamDetail`, `GameDetail`, the More sheet) takes focus on open, traps Tab, restores focus
+to whatever opened it, handles Escape and locks background scroll. It only works if the
+component mounts and unmounts with the dialog — hence the split-out `InfoModal` /
+`MoreSheet` inner components. Don't hand-roll a fifth copy.
 
 **The browser never calls the Squiggle API.** Per Squiggle's usage policy only
 `scripts/*.mjs` fetch it, with an identifying `User-Agent` from `scripts/squiggle.mjs`.
@@ -134,7 +156,10 @@ ground truth for "interesting".
 
 **Simulation is deterministic.** `makeRng` (mulberry32) with a fixed seed, so tests and
 renders are reproducible. Per-fixture probabilities are computed once outside the
-10,000-iteration loop.
+10,000-iteration loop. `simulateSeason` reports partial runs through `opts.onProgress`
+(carrying `progress`, 0..1) so the screen can fill in and converge; the callback is
+read-only and never touches the RNG stream — a watched run and an unwatched one produce
+identical numbers, and a test asserts it.
 
 **Adding a finals format** (e.g. 2028, 19 clubs) starts in `domain/season.ts` +
 `scripts/squiggle.mjs:finalsFormatForYear`. `supportsProjectedBracket` is the seam that
@@ -215,6 +240,19 @@ as optional (`?: T | null`) so older committed snapshots keep working.
 - Times are **AWST, 24-hour**, via `domain/format.ts` — never `toLocaleString` inline.
 - `localStorage` keys in use: `afl-favourite`, `afl-dismissed`. Every read/write is
   wrapped in `try/catch` (private mode / embedded webviews) with a working fallback.
+  Nobody starts out following a club: an absent `afl-favourite` means "never asked", and
+  the app asks once on first launch. Declining writes `none`, which is a real answer — so
+  the question is asked once, not every launch.
+- **Percentages go through `formatProbability`** (`domain/format.ts`), so the same
+  simulation isn't rounded three different ways on three screens.
+- Anything a `title` tooltip would carry has to exist somewhere a touch device can reach
+  it — a visible label, a legend note, or the game/team sheet. `title` is a bonus, never
+  the only copy.
+- Wide layouts that can't fit a phone (the bracket's five weeks, the ladder's ten columns)
+  get a mobile form rather than a horizontal scrollbar: the bracket snaps one week per
+  screen with a pager, and the ladder swaps P/W/L/D for a single W–L column.
+- Motion is decorative throughout — `@media (prefers-reduced-motion: reduce)` disables it,
+  and script-driven smooth scrolling checks `prefersReducedMotion()` from `domain/format`.
 - Mobile-first: bottom nav bar on phones, pill row on wide screens — both rendered, CSS
   picks one (no resize listeners, no first-paint flash).
 

@@ -70,7 +70,10 @@ function FinalCard({ game, premier }: { game: Game; premier: number | null }) {
           <TeamChip teamId={game.hteamid} short />
           <span className="teamline-end">
             {game.winnerteamid === premier && homeWon && (
-              <span className="teamline-tick" title="Premier" aria-label="Premier">🏆</span>
+              <span className="teamline-tick">
+                  <span aria-hidden="true">🏆</span>
+                  <span className="visually-hidden">Premier</span>
+                </span>
             )}
             <span className="teamline-val">{game.hscore}</span>
           </span>
@@ -79,7 +82,10 @@ function FinalCard({ game, premier }: { game: Game; premier: number | null }) {
           <TeamChip teamId={game.ateamid} short />
           <span className="teamline-end">
             {game.winnerteamid === premier && awayWon && (
-              <span className="teamline-tick" title="Premier" aria-label="Premier">🏆</span>
+              <span className="teamline-tick">
+                  <span aria-hidden="true">🏆</span>
+                  <span className="visually-hidden">Premier</span>
+                </span>
             )}
             <span className="teamline-val">{game.ascore}</span>
           </span>

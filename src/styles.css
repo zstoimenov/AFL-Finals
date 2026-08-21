@@ -15,6 +15,9 @@
   /* soft mix used to darken the predicted-winner edge on cards */
   --edge-dim: #0c0f14;
 
+  /* the padlock used by lock badges and the bracket legend */
+  --lock-glyph: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 1 1 6 0v3H9Z"/></svg>');
+
   /* shape & elevation */
   --radius: 14px;
   --radius-sm: 10px;
@@ -44,6 +47,56 @@
 
 * {
   box-sizing: border-box;
+}
+
+/* ---------- focus & motion ---------- */
+
+/* Every control gets the same visible ring. The app is dark by default and the
+   browser's own focus ring all but disappears on `--bg`, so keyboard users had
+   almost nothing to go on outside the one place that styled it by hand. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* A dialog takes focus when it opens so screen readers announce it. That focus
+   is programmatic, not the keyboard's doing, so it shouldn't draw a ring. */
+.info-modal:focus,
+.sheet:focus,
+.more-sheet:focus {
+  outline: none;
+}
+
+/*
+ * Respect a stated preference for less movement: spinners, shimmer, the sheet
+ * slide and the odds bars growing are all decoration. Nothing here carries
+ * meaning that the motion alone conveys, so all of it can stop.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* a spinner that can't spin should at least still read as "working" */
+  .spinner,
+  .season-switch-spin,
+  .refreshicon.spinning {
+    opacity: 0.6;
+  }
+
+  /* the shimmer is the only cue a skeleton is loading; keep it as a flat tone */
+  .skeleton-chip,
+  .skeleton-bar,
+  .skeleton-num,
+  .skeleton-tile {
+    background: var(--surface2);
+  }
 }
 
 body {
@@ -164,6 +217,12 @@ body {
   cursor: default;
 }
 
+/* offline: the stamp stops implying the data is current */
+.updatedbtn.offline {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 50%, var(--border));
+}
+
 /* sample data flags itself on the stamp rather than costing a header line */
 .updatedbtn.sample {
   color: var(--gold);
@@ -178,6 +237,23 @@ body {
 
 .refreshicon.spinning {
   animation: spin 0.8s linear infinite;
+}
+
+/* the pull-to-refresh indicator grows with the gesture rather than appearing
+   at full size, so the page reads as being dragged */
+.pull-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.pull-hint.armed {
+  color: var(--accent);
 }
 
 .refresh-toast {
@@ -407,6 +483,10 @@ h2 {
   margin: 0 -16px;
   padding-left: 16px;
   padding-right: 16px;
+  /* a week at a time: the columns snap so a swipe lands square on the next
+     week rather than halfway between two */
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 16px;
 }
 
 .bracket {
@@ -415,6 +495,97 @@ h2 {
   gap: 14px;
   min-width: 1120px;
   align-items: stretch;
+}
+
+.bracket-col {
+  scroll-snap-align: start;
+}
+
+/* the pager names the week you're on; on a wide screen every column is already
+   visible, so it hides rather than duplicating what you can see */
+.bracket-pager,
+.bracket-dots {
+  display: none;
+}
+
+.bracket-pager-label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 0;
+}
+
+.bracket-pager-label strong {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.bracket-pager-sub {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.bracket-dot {
+  appearance: none;
+  border: none;
+  padding: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--border);
+  cursor: pointer;
+}
+
+.bracket-dot.on {
+  background: var(--accent);
+  width: 20px;
+}
+
+@media (max-width: 640px) {
+  /* one week per screen: a column is the viewport minus the shell's padding,
+     so a snapped week sits square in the window */
+  .bracket {
+    grid-template-columns: repeat(5, calc(100vw - 32px));
+    min-width: 0;
+    gap: 16px;
+  }
+
+  .bracket-pager {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 14px 0 8px;
+  }
+
+  .bracket-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    list-style: none;
+    margin: 0 0 10px;
+    padding: 0;
+  }
+
+  /* the pager already names the week — the in-column heading would say it twice */
+  .bracket-col h2,
+  .bracket-col .colsub {
+    display: none;
+  }
+
+  /* one column per screen, so the cards sit at the top instead of spreading to
+     match the tallest week */
+  .bracket {
+    align-items: start;
+  }
+
+  .bracket-col-matches {
+    height: auto;
+    justify-content: flex-start;
+  }
 }
 
 .bracket-col h2 {
@@ -929,6 +1100,76 @@ h2 {
   border: 1px solid color-mix(in srgb, var(--good) 45%, transparent);
 }
 
+
+/* the whole season as pills: two arrows can't cross 24 rounds */
+.round-strip {
+  display: flex;
+  /* positioned so a pill's offsetLeft is measured against the strip itself */
+  position: relative;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 2px 16px 10px;
+  margin: 0 -16px;
+}
+
+.round-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.round-pill {
+  appearance: none;
+  flex: none;
+  min-width: 34px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+/* played rounds recede, the live round is marked, the selected one leads */
+.round-pill.done {
+  opacity: 0.55;
+}
+
+.round-pill.live {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  color: var(--accent);
+}
+
+.round-pill.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  opacity: 1;
+}
+
+.round-back {
+  appearance: none;
+  display: block;
+  margin: 0 auto 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.round-back:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 /* ---------- ladder ---------- */
 
 .tablewrap {
@@ -990,6 +1231,78 @@ table.ladder {
 .ladder td.sec {
   color: var(--muted);
   font-weight: 500;
+}
+
+/* the combined record stands in for P/W/L/D where there isn't room for four
+   columns; only one of the two ever shows */
+.ladder .wl {
+  display: none;
+}
+
+.lbl-short {
+  display: none;
+}
+
+.statuscell {
+  white-space: nowrap;
+}
+
+/* the bounds behind a lock: quiet, but there to be checked */
+.ptsrange {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.66rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  /* P/W/L/D pushed Pts, percentage and Finals % off a phone screen — the
+     numbers people came for. The record collapses to one W–L column and the
+     table stops forcing a sideways scroll to reach anything that matters. */
+  table.ladder {
+    min-width: 0;
+    font-size: 0.82rem;
+  }
+
+  .ladder .sec {
+    display: none;
+  }
+
+  .ladder .wl {
+    display: table-cell;
+  }
+
+  .ladder th,
+  .ladder td {
+    padding: 9px 4px;
+  }
+
+  /* the name gives way before the numbers do */
+  .ladder .namecell {
+    max-width: 96px;
+  }
+
+  .ladder .namecell .teamname {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* the badge already says it; the bounds stay for the wider table and the
+     club's own sheet, where there's room to read them */
+  .ptsrange {
+    display: none;
+  }
+
+  .lbl-long {
+    display: none;
+  }
+
+  .lbl-short {
+    display: inline;
+  }
 }
 
 /* frozen identity: only the rank number + club crest stay put; the name and
@@ -1182,6 +1495,17 @@ table.ladder {
   font-size: 0.7rem;
 }
 
+/* a padlock the same size as the one on the cards, for the bracket's legend */
+.sidelock-key {
+  display: inline-block;
+  width: 10px;
+  height: 11px;
+  vertical-align: -1px;
+  background: currentColor;
+  -webkit-mask: var(--lock-glyph) center / contain no-repeat;
+  mask: var(--lock-glyph) center / contain no-repeat;
+}
+
 /* ---------- match card extras ---------- */
 
 .gamewhen {
@@ -1244,6 +1568,136 @@ button.teamchip:focus-visible .teamname {
 button.teamchip:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* ---------- opening a game ---------- */
+
+/* a transparent hit area over the whole card. It sits ABOVE the card's text and
+   BELOW its club chips, so tapping the card opens the game and tapping a club
+   name still opens that club. */
+.card-open {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  border-radius: inherit;
+  cursor: pointer;
+}
+
+.fixturerow,
+.matchcard,
+.nextgame {
+  position: relative;
+}
+
+/* anything genuinely interactive climbs above the overlay */
+.fixturerow button:not(.card-open),
+.matchcard button:not(.card-open),
+.nextgame button:not(.card-open),
+.fixturerow a,
+.matchcard a,
+.nextgame a {
+  position: relative;
+  z-index: 2;
+}
+
+.fixturerow:hover,
+.matchcard:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+}
+
+/* ---------- game sheet ---------- */
+
+.gamesheet-round {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.gamesheet-teams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 12px 0 14px;
+}
+
+.gameside {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  min-width: 0;
+}
+
+.gameside.won {
+  border-color: color-mix(in srgb, var(--good) 45%, var(--border));
+}
+
+.gameside-id {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.gameside-val {
+  font-size: 1.35rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+
+.gameside-line {
+  margin: 4px 0 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.formline.mini {
+  margin-top: 8px;
+  gap: 4px;
+  /* a narrow column can't hold five chips in a row — wrap rather than clip */
+  flex-wrap: wrap;
+  overflow: visible;
+}
+
+.formline.mini .formchip {
+  font-size: 0.6rem;
+  padding: 3px 4px;
+}
+
+.gamesheet-notes {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gamesheet-notes li {
+  font-size: 0.82rem;
+  color: var(--muted);
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+.gamesheet-record {
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  margin: 0 0 8px;
+}
+
+.reasons.open {
+  max-height: none;
 }
 
 /* ---------- team detail sheet ---------- */
@@ -1472,6 +1926,99 @@ button.teamchip:focus-visible {
   .runhome-prob {
     width: 88px;
   }
+}
+
+.seasonover-premier {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin: 10px 0;
+}
+
+.seasonover-label {
+  margin: 0 0 4px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.week-more {
+  appearance: none;
+  align-self: flex-start;
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+/* ---------- loading skeletons ---------- */
+
+/* Placeholders that hold the real layout while the simulation runs, so numbers
+   land in place instead of pushing the page around as they arrive. */
+.skeleton-chip,
+.skeleton-bar,
+.skeleton-num,
+.skeleton-tile {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    var(--surface2) 0%,
+    color-mix(in srgb, var(--surface2) 60%, var(--border)) 50%,
+    var(--surface2) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 999px;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-row {
+  align-items: center;
+}
+
+.skeleton-chip {
+  width: 62px;
+  height: 20px;
+}
+
+.skeleton-bar {
+  height: 14px;
+  border-radius: 6px;
+}
+
+.skeleton-num {
+  width: 42px;
+  height: 17px;
+}
+
+.skeleton-tile {
+  display: block;
+  height: 96px;
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+}
+
+.simnote.converging {
+  color: var(--accent);
 }
 
 /* ---------- footer ---------- */

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { BracketMatch, Game, Snapshot } from '../domain/types';
 import {
   squiggleProb,
@@ -7,14 +7,15 @@ import {
   blendedHomeProb,
   preGameHomeProb
 } from '../domain/predict';
-import { isGameToday } from '../domain/format';
-import { currentHomeAwayRound, homeAwayRounds } from '../domain/ladder';
+import { isGameToday, prefersReducedMotion } from '../domain/format';
+import { currentHomeAwayRound, homeAwayRounds, roundProgress } from '../domain/ladder';
+import type { RoundProgress } from '../domain/ladder';
 import { teamAbbrev } from '../domain/teams';
 import { gameHasFavourite } from '../domain/favourite';
 import ProbBar from './ProbBar';
 import MatchCard from './MatchCard';
 import InfoButton from './InfoButton';
-import { CardFoot, CardMeta, TeamLine } from './FixtureCardParts';
+import { CardFoot, CardMeta, CardOpen, TeamLine } from './FixtureCardParts';
 
 const roundLabel = (r: number) => (r === 0 ? 'Opening Round' : `Round ${r}`);
 
@@ -44,6 +45,7 @@ export default function FixturesView({
     [snapshot, priorHistory]
   );
   const rounds = useMemo(() => homeAwayRounds(snapshot.games), [snapshot]);
+  const progress = useMemo(() => roundProgress(snapshot.games), [snapshot]);
   const current = useMemo(() => currentHomeAwayRound(snapshot.games), [snapshot]);
   const [round, setRound] = useState(current);
   // follow the current round whenever fresh data shifts it (auto-advance)
@@ -128,6 +130,14 @@ export default function FixturesView({
         </button>
       </div>
 
+      <RoundStrip progress={progress} round={round} current={current} onPick={setRound} />
+
+      {round !== current && (
+        <button type="button" className="round-back" onClick={() => setRound(current)}>
+          ← Back to {roundLabel(current).toLowerCase()}
+        </button>
+      )}
+
       <div className="fixturelist">
         {games.map((g) =>
           g.complete ? (
@@ -138,6 +148,69 @@ export default function FixturesView({
         )}
       </div>
     </section>
+  );
+}
+
+/**
+ * Every round in the season as a scrollable strip. Two arrows are a poor way to
+ * cross a 24-round season — going back to round 3 in September took twenty-one
+ * taps — so the whole season is here, each round showing whether it is done,
+ * live or still to come. The active round is scrolled into view as it changes.
+ */
+function RoundStrip({
+  progress,
+  round,
+  current,
+  onPick
+}: {
+  progress: RoundProgress[];
+  round: number;
+  current: number;
+  onPick: (round: number) => void;
+}) {
+  const strip = useRef<HTMLDivElement>(null);
+  const settled = useRef(false);
+
+  // centre the active round in the strip. Deliberately not scrollIntoView: that
+  // walks up and scrolls every ancestor, and the strip is deliberately wider
+  // than the viewport, so it drags the whole page sideways with it.
+  useEffect(() => {
+    const el = strip.current;
+    const active = el?.querySelector<HTMLElement>('.round-pill.on');
+    if (!el || !active) return;
+    const left = active.offsetLeft - el.clientWidth / 2 + active.clientWidth / 2;
+    el.scrollTo({
+      left: Math.max(0, left),
+      behavior: settled.current && !prefersReducedMotion() ? 'smooth' : 'auto'
+    });
+    settled.current = true;
+  }, [round]);
+
+  if (progress.length < 2) return null;
+
+  return (
+    <div className="round-strip" ref={strip} role="tablist" aria-label="Round">
+      {progress.map((p) => {
+        const state = p.round === current ? 'live' : p.complete ? 'done' : 'soon';
+        return (
+          <button
+            key={p.round}
+            type="button"
+            role="tab"
+            aria-selected={p.round === round}
+            className={`round-pill ${state}${p.round === round ? ' on' : ''}`}
+            onClick={() => onPick(p.round)}
+          >
+            {p.round === 0 ? 'OR' : p.round}
+            <span className="visually-hidden">
+              {` — ${roundLabel(p.round)}, ${
+                p.round === current ? 'current round' : p.complete ? 'complete' : 'not yet played'
+              }`}
+            </span>
+          </button>
+        );
+      })}
+    </div>
   );
 }
 
@@ -190,6 +263,7 @@ function ResultRow({
   const squiggle = tipVerdict(squiggleProb(snapshot, game.hteamid, game.ateamid), game);
   return (
     <article className={fav ? 'fixturerow done fav-game' : 'fixturerow done'}>
+      <CardOpen game={game} />
       <CardMeta game={game} tag={<span className="final-tag">Final</span>} />
       <div className="fx-teams">
         <TeamLine
@@ -232,6 +306,7 @@ function FixtureRow({
   const cls = `fixturerow${fav ? ' fav-game' : ''}${today ? ' today' : ''}`;
   return (
     <article className={cls}>
+      <CardOpen game={game} />
       <CardMeta
         game={game}
         tag={today ? <span className="today-tag">Today</span> : undefined}

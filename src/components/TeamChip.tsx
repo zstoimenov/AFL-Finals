@@ -72,7 +72,7 @@ export default function TeamChip({
     <>
       <span className="teamname">{compact ? team.abbrev : short ? team.short : team.name}</span>
       {fav && (
-        <span className="fav-star" title="Your club" aria-label="Your club">
+        <span className="fav-star" aria-label="Your club" role="img">
           ★
         </span>
       )}

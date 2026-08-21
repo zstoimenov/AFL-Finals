@@ -1,4 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useDialog } from '../useDialog';
 import type { Tab } from '../nav';
 
 /**
@@ -42,18 +43,10 @@ export default function PrimaryNav({
   extra?: Array<{ label: string; onSelect: () => void }>;
 }) {
   const [moreOpen, setMoreOpen] = useState(false);
+  const closeMore = useCallback(() => setMoreOpen(false), []);
 
   // never leave the sheet hanging over a screen you've already moved to
   useEffect(() => setMoreOpen(false), [active]);
-
-  useEffect(() => {
-    if (!moreOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMoreOpen(false);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [moreOpen]);
 
   const needsMore = items.length > PRIMARY_SLOTS || extra.length > 0;
   const primary = needsMore ? items.slice(0, PRIMARY_SLOTS) : items;
@@ -107,44 +100,68 @@ export default function PrimaryNav({
       </nav>
 
       {moreOpen && (
-        <div className="more-backdrop" onClick={() => setMoreOpen(false)}>
-          <div
-            className="more-sheet"
-            role="dialog"
-            aria-modal="true"
-            aria-label="More screens"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {overflow.map(({ key, label }) => (
-              <button
-                key={key}
-                type="button"
-                className={active === key ? 'more-item active' : 'more-item'}
-                aria-current={active === key ? 'page' : undefined}
-                onClick={() => onSelect(key)}
-              >
-                <Icon name={key} />
-                {label}
-              </button>
-            ))}
-            {extra.map((action) => (
-              <button
-                key={action.label}
-                type="button"
-                className="more-item"
-                onClick={() => {
-                  setMoreOpen(false);
-                  action.onSelect();
-                }}
-              >
-                <Icon name="seasons" />
-                {action.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <MoreSheet items={overflow} extra={extra} active={active} onSelect={onSelect} onClose={closeMore} />
       )}
     </>
+  );
+}
+
+/**
+ * The overflow sheet, split out so the dialog hook lives and dies with it and
+ * focus lands inside the sheet rather than staying on the bar behind it.
+ */
+function MoreSheet({
+  items,
+  extra,
+  active,
+  onSelect,
+  onClose
+}: {
+  items: NavItem[];
+  extra: Array<{ label: string; onSelect: () => void }>;
+  active: Tab;
+  onSelect: (tab: Tab) => void;
+  onClose: () => void;
+}) {
+  const sheet = useDialog<HTMLDivElement>(onClose);
+  return (
+    <div className="more-backdrop" onClick={onClose}>
+      <div
+        className="more-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label="More screens"
+        ref={sheet}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {items.map(({ key, label }) => (
+          <button
+            key={key}
+            type="button"
+            className={active === key ? 'more-item active' : 'more-item'}
+            aria-current={active === key ? 'page' : undefined}
+            onClick={() => onSelect(key)}
+          >
+            <Icon name={key} />
+            {label}
+          </button>
+        ))}
+        {extra.map((action) => (
+          <button
+            key={action.label}
+            type="button"
+            className="more-item"
+            onClick={() => {
+              onClose();
+              action.onSelect();
+            }}
+          >
+            <Icon name="seasons" />
+            {action.label}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 

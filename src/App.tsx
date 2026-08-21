@@ -26,9 +26,15 @@ import ThisWeekView from './components/ThisWeekView';
 import MyClubView from './components/MyClubView';
 import PrimaryNav, { type NavItem } from './components/PrimaryNav';
 import InfoButton from './components/InfoButton';
-import { useFavourite } from './domain/favourite';
-import { DEFAULT_TAB, hashFor, isLiveOnly, tabFromHash, type Tab } from './nav';
+import { hasChosenFavourite, setFavourite, useFavourite } from './domain/favourite';
+import { DEFAULT_TAB, hashFor, isLiveOnly, routeFromHash, type Tab } from './nav';
 import { TeamSelectContext } from './teamSelect';
+import { useOnline } from './useOnline';
+import { usePullToRefresh } from './usePullToRefresh';
+import { GameSelectContext } from './gameSelect';
+import { findGame } from './domain/gameDetail';
+import GameDetail from './components/GameDetail';
+import ClubPicker from './components/ClubPicker';
 
 const SIM_ITERATIONS = 10000;
 
@@ -41,9 +47,19 @@ export default function App() {
   const [seasonLoading, setSeasonLoading] = useState(false);
   const [sim, setSim] = useState<SimOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>(() => tabFromHash(window.location.hash) ?? DEFAULT_TAB);
+  const [tab, setTab] = useState<Tab>(
+    () => routeFromHash(window.location.hash)?.tab ?? DEFAULT_TAB
+  );
+  const [openGameId, setOpenGameId] = useState<number | null>(
+    () => routeFromHash(window.location.hash)?.gameId ?? null
+  );
   const [selectedTeam, setSelectedTeam] = useState<number | null>(null);
   const favouriteId = useFavourite();
+  const online = useOnline();
+  // asked once, on the first launch only: nobody starts out following a club,
+  // and choosing for them means a stranger's first screen highlights a club
+  // they may have no time for
+  const [askClub, setAskClub] = useState(() => !hasChosenFavourite());
   const [tabsStuck, setTabsStuck] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -79,8 +95,14 @@ export default function App() {
     loadHistoryCorpus().then(setHistoryCorpus).catch(() => setHistoryCorpus([]));
   }, []);
 
-  // eagerly load every archived season so the hub can score them
+  // Two screens read the archived seasons in full: the hub scores every one of
+  // them, and My Club's record book reads each season's final table. Neither is
+  // the screen the app opens on, and pulling ~400KB of snapshots at startup made
+  // every visitor pay for a page they might never see. They load on arrival
+  // instead, one at a time, so each season's scorecard is computed on its own
+  // tick rather than as one long block.
   useEffect(() => {
+    if (tab !== 'seasons' && tab !== 'club') return;
     let cancelled = false;
     for (const { year } of historyIndex) {
       if (seasons.has(year)) continue;
@@ -91,17 +113,22 @@ export default function App() {
     return () => {
       cancelled = true;
     };
+    // seasons is deliberately not a dependency: it is what this effect fills in
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [historyIndex]);
+  }, [historyIndex, tab]);
 
   // Screens are hash routes, so back/forward step between them instead of
   // leaving the app, and any screen can be linked or opened directly.
   useEffect(() => {
-    const fromUrl = () => setTab(tabFromHash(window.location.hash) ?? DEFAULT_TAB);
+    const fromUrl = () => {
+      const route = routeFromHash(window.location.hash);
+      setTab(route?.tab ?? DEFAULT_TAB);
+      setOpenGameId(route?.gameId ?? null);
+    };
     // pushState alone doesn't notify, but history navigation fires both of these
     window.addEventListener('hashchange', fromUrl);
     window.addEventListener('popstate', fromUrl);
-    if (!tabFromHash(window.location.hash)) {
+    if (!routeFromHash(window.location.hash)) {
       // land on a real route without leaving an empty entry behind us
       window.history.replaceState(null, '', hashFor(DEFAULT_TAB));
     }
@@ -111,11 +138,19 @@ export default function App() {
     };
   }, []);
 
+  // The open game lives in the route, so back closes the sheet rather than
+  // leaving the app — what a phone user expects from anything sliding up over
+  // the page. Changing screen always drops the sheet with it.
   useEffect(() => {
-    if (window.location.hash !== hashFor(tab)) {
-      window.history.pushState(null, '', hashFor(tab));
-    }
-  }, [tab]);
+    const want = hashFor(tab, openGameId);
+    if (window.location.hash !== want) window.history.pushState(null, '', want);
+  }, [tab, openGameId]);
+
+  const selectGame = (id: number | null) => setOpenGameId(id);
+  const selectTab = (next: Tab) => {
+    setOpenGameId(null);
+    setTab(next);
+  };
 
   // shadow under the nav pills only once they've stuck to the top
   useEffect(() => {
@@ -150,7 +185,7 @@ export default function App() {
   const openSeason = (year: number) => {
     ensureSeason(year);
     setActiveYear(year);
-    setTab('ladder');
+    selectTab('ladder');
   };
 
   const refresh = async () => {
@@ -166,12 +201,18 @@ export default function App() {
         fresh.meta.fetchedAt !== prev ? 'Updated to the latest data' : 'Already up to date'
       );
     } catch {
-      setRefreshMsg('Could not refresh — check your connection');
+      setRefreshMsg(
+        online ? 'Could not refresh — check your connection' : 'You are offline — showing saved data'
+      );
     } finally {
       setRefreshing(false);
       window.setTimeout(() => setRefreshMsg(null), 4000);
     }
   };
+
+  // the same refresh the header pill runs, under the thumb where a phone user
+  // expects to find it
+  const { pull, armed } = usePullToRefresh(refresh, !refreshing);
 
   const liveYear = live?.meta.year ?? null;
   const isLive = activeYear != null && activeYear === liveYear;
@@ -209,6 +250,10 @@ export default function App() {
     );
   }
 
+  // the sheet reads from the season currently on screen, so a link into an
+  // archived season's game still resolves
+  const openGame = findGame(active?.games ?? live.games, openGameId);
+
   const liveFinalsStarted = finalsGames(live.games).length > 0;
   const viewingArchive = !isLive;
   const sampleData = live.meta.source === 'seed';
@@ -232,6 +277,7 @@ export default function App() {
 
   return (
     <TeamSelectContext.Provider value={setSelectedTeam}>
+    <GameSelectContext.Provider value={selectGame}>
     <div className="shell">
       <header className="topbar">
         <h1>
@@ -261,10 +307,10 @@ export default function App() {
               ensureSeason(y);
               setActiveYear(y);
               // an archived year has no week ahead and no live club dashboard
-              if (y !== liveYear && isLiveOnly(tab)) setTab('fixtures');
-              if (tab === 'seasons') setTab('ladder');
+              if (y !== liveYear && isLiveOnly(tab)) selectTab('fixtures');
+              if (tab === 'seasons') selectTab('ladder');
             }}
-            onOpenHub={() => setTab('seasons')}
+            onOpenHub={() => selectTab('seasons')}
           />
           {/* The stamp and the refresh action are the same control: the header
               spends one short pill on "when this data is from", and tapping it
@@ -272,17 +318,31 @@ export default function App() {
           {isLive && (
             <button
               type="button"
-              className={sampleData ? 'updatedbtn sample' : 'updatedbtn'}
+              className={
+                [
+                  'updatedbtn',
+                  sampleData ? 'sample' : '',
+                  online ? '' : 'offline'
+                ]
+                  .filter(Boolean)
+                  .join(' ')
+              }
               onClick={refresh}
               disabled={refreshing}
               aria-busy={refreshing}
-              title={`${sampleData ? 'Sample data · ' : ''}Updated ${updatedLong} — check for the latest`}
-              aria-label={`Data updated ${updatedLong}. Check for the latest published data.`}
+              title={`${sampleData ? 'Sample data · ' : ''}${
+                online ? 'Updated' : 'Offline — saved data from'
+              } ${updatedLong}${online ? ' — check for the latest' : ''}`}
+              aria-label={
+                online
+                  ? `Data updated ${updatedLong}. Check for the latest published data.`
+                  : `Offline. Showing saved data from ${updatedLong}.`
+              }
             >
               {/* the stamp stays put while checking — only the icon spins, so the
                   header doesn't reflow mid-refresh */}
               <span className={refreshing ? 'refreshicon spinning' : 'refreshicon'} aria-hidden="true">
-                ⟳
+                {online ? '⟳' : '⚠'}
               </span>
               <span>{formatUpdatedShort(live.meta.fetchedAt)}</span>
             </button>
@@ -333,6 +393,16 @@ export default function App() {
           </InfoButton>
         </div>
       </header>
+      {(pull > 0 || refreshing) && (
+        <div
+          className={armed || refreshing ? 'pull-hint armed' : 'pull-hint'}
+          style={{ height: refreshing ? 44 : pull }}
+          aria-hidden="true"
+        >
+          <span className={refreshing ? 'refreshicon spinning' : 'refreshicon'}>⟳</span>
+          {!refreshing && <span>{armed ? 'Release to refresh' : 'Pull to refresh'}</span>}
+        </div>
+      )}
       {refreshMsg && (
         <div className="refresh-toast" role="status">
           {refreshMsg}
@@ -388,9 +458,9 @@ export default function App() {
       <PrimaryNav
         items={navItems}
         active={shownTab}
-        onSelect={setTab}
+        onSelect={selectTab}
         stuck={tabsStuck}
-        extra={[{ label: 'All seasons', onSelect: () => setTab('seasons') }]}
+        extra={[{ label: 'All seasons', onSelect: () => selectTab('seasons') }]}
       />
 
       <main>
@@ -454,6 +524,32 @@ export default function App() {
         )}
       </main>
 
+      {askClub && (
+        <ClubPicker
+          intro
+          current={null}
+          onPick={(id) => {
+            setFavourite(id);
+            setAskClub(false);
+          }}
+          // dismissing is an answer too — "no club", which the picker offers in
+          // as many words, so the question isn't asked again next launch
+          onClose={() => {
+            setFavourite(null);
+            setAskClub(false);
+          }}
+        />
+      )}
+
+      {openGame != null && active != null && (
+        <GameDetail
+          game={openGame}
+          snapshot={active}
+          history={historyCorpus}
+          onClose={() => setOpenGameId(null)}
+        />
+      )}
+
       {selectedTeam != null && active != null && (
         <TeamDetail
           teamId={selectedTeam}
@@ -465,6 +561,7 @@ export default function App() {
         />
       )}
     </div>
+    </GameSelectContext.Provider>
     </TeamSelectContext.Provider>
   );
 }

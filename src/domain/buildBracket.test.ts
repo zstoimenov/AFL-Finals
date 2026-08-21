@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildBracket } from './buildBracket';
+import { buildBracket, currentBracketWeek } from './buildBracket';
 import { computeLocks } from './locks';
 import type { Game, Snapshot, Standing } from './types';
 
@@ -87,5 +87,28 @@ describe('buildBracket lock semantics', () => {
     // EF pairings still open: WC2 not yet played
     const ef2 = bracket.find((m) => m.key === 'EF2')!;
     expect(ef2.away.teamId).toBeNull();
+  });
+});
+
+describe('currentBracketWeek', () => {
+  it('opens on week 1 before any final is played', () => {
+    const s = snap([]);
+    expect(currentBracketWeek(buildBracket(s, null, computeLocks(s.standings, s.games)))).toBe(1);
+  });
+
+  it('moves on once a week is fully decided', () => {
+    // both wildcards played → week 1 has nothing left to watch
+    const played = [
+      game({ hteamid: 7, ateamid: 10, is_final: 1, complete: 100, hscore: 90, ascore: 70, winnerteamid: 7 }),
+      game({ hteamid: 8, ateamid: 9, is_final: 1, complete: 100, hscore: 60, ascore: 80, winnerteamid: 9 })
+    ];
+    const s = snap(played);
+    expect(currentBracketWeek(buildBracket(s, null, computeLocks(s.standings, s.games)))).toBe(2);
+  });
+
+  it('rests on the Grand Final once the series is complete', () => {
+    // a bracket with every match decided has no week left to advance to
+    const decided = buildBracket(snap([]), null, []).map((m) => ({ ...m, winnerTeamId: 1 }));
+    expect(currentBracketWeek(decided)).toBe(5);
   });
 });

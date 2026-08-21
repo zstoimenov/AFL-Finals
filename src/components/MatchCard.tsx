@@ -4,6 +4,7 @@ import { TEAMS, teamAbbrev, teamAccent } from '../domain/teams';
 import { isFavourite } from '../domain/favourite';
 import { formatGameDateTime } from '../domain/format';
 import TeamChip from './TeamChip';
+import { CardOpen } from './FixtureCardParts';
 
 /** One bracket slot: matchup name, both sides, result or probabilities. */
 export default function MatchCard({ match }: { match: BracketMatch }) {
@@ -37,6 +38,7 @@ export default function MatchCard({ match }: { match: BracketMatch }) {
       }`}
       style={winStyle}
     >
+      {game && <CardOpen game={game} />}
       <header>
         <span className="matchname">{match.name}</span>
         {fav && <span className="fav-tag">Your club</span>}

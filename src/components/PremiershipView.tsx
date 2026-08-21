@@ -5,6 +5,7 @@ import { isFavourite } from '../domain/favourite';
 import { sortedStandings } from '../domain/ladder';
 import TeamChip from './TeamChip';
 import InfoButton from './InfoButton';
+import { formatProbability } from '../domain/format';
 
 /**
  * Premiership projection: simulated P(premier) per team as labeled horizontal
@@ -18,11 +19,26 @@ export default function PremiershipView({
   snapshot: Snapshot;
   sim: SimOutput | null;
 }) {
+  // The simulation reports as it runs, so this only shows before the first
+  // partial arrives. It holds the real layout rather than a line of text, so
+  // nothing jumps when the numbers land.
   if (!sim) {
     return (
-      <section>
+      <section className="oddsview">
         <h2>Premiership odds</h2>
-        <p className="simnote">Running {`10,000`}-season simulation…</p>
+        <p className="simnote">Simulating the rest of the season…</p>
+        <div className="hero-tile skeleton-tile" aria-hidden="true" />
+        <div className="oddslist" aria-hidden="true">
+          {Array.from({ length: 10 }, (_, i) => (
+            <div className="oddsrow skeleton-row" key={i}>
+              <span className="skeleton-chip" />
+              <span className="skeleton-bar" style={{ width: `${92 - i * 8}%` }} />
+            </div>
+          ))}
+        </div>
+        <span className="visually-hidden" role="status">
+          Running the premiership simulation.
+        </span>
       </section>
     );
   }
@@ -32,7 +48,12 @@ export default function PremiershipView({
     .map((s) => ({ teamId: s.id, ...sim.teams[s.id] }))
     .filter((r) => r.premier != null)
     .sort((a, b) => b.premier - a.premier);
-  const max = Math.max(...rows.map((r) => r.premier), 0.01);
+  // Bars were scaled to the leader, which drew the favourite at full width
+  // whether they were on 60% or 14% — flattering the top of the list. They are
+  // scaled to an absolute axis instead, stretched only when nobody is close to
+  // it, so the length means the same thing from week to week.
+  const leader = Math.max(...rows.map((r) => r.premier), 0);
+  const axis = Math.max(0.35, Math.min(1, Math.ceil(leader * 10) / 10));
   const favourite = rows[0];
 
   return (
@@ -46,21 +67,29 @@ export default function PremiershipView({
             including the Wildcard Round and winner re-seeding.
           </p>
           <p>
-            Bars show P(premier); the smaller figures are the chances of reaching the Grand
-            Final and of playing finals at all.
+            Bars show P(premier) on a fixed scale — a full-width bar means a genuinely dominant
+            favourite, not simply the best of a close field. The smaller figures are the chances
+            of reaching the Grand Final and of playing finals at all.
           </p>
         </InfoButton>
       </div>
+      {sim.progress < 1 && (
+        <p className="simnote converging" role="status">
+          Simulating… {Math.round(sim.progress * 100)}% — the numbers are still settling.
+        </p>
+      )}
       {favourite && TEAMS[favourite.teamId] && (
         <div className="hero-tile">
-          <p className="hero-label">Projected premier</p>
+          {/* "projected premier" overstated a club the model has at one chance
+              in seven; it is the shortest price, and says so */}
+          <p className="hero-label">Shortest price</p>
           <div className="hero-team">
             <TeamChip teamId={favourite.teamId} />
-            <span className="hero-num">{(favourite.premier * 100).toFixed(1)}%</span>
+            <span className="hero-num">{formatProbability(favourite.premier)}</span>
           </div>
           <p className="hero-sub">
-            {Math.round(favourite.reachGF * 100)}% to reach the Grand Final ·{' '}
-            {Math.round(favourite.makeFinals * 100)}% to play finals
+            {formatProbability(favourite.reachGF)} to reach the Grand Final ·{' '}
+            {formatProbability(favourite.makeFinals)} to play finals
           </p>
         </div>
       )}
@@ -87,12 +116,12 @@ export default function PremiershipView({
               <span className="oddsbar" role="cell">
                 <span
                   className="oddsfill"
-                  style={{ width: `${(r.premier / max) * 100}%`, background: team.color }}
+                  style={{ width: `${(r.premier / axis) * 100}%`, background: team.color }}
                 />
-                <span className="oddsval">{pct >= 10 ? Math.round(pct) : pct.toFixed(1)}%</span>
+                <span className="oddsval">{formatProbability(r.premier)}</span>
               </span>
               <span className="oddsminor" role="cell">
-                GF {Math.round(r.reachGF * 100)}% · Finals {Math.round(r.makeFinals * 100)}%
+                GF {formatProbability(r.reachGF)} · Finals {formatProbability(r.makeFinals)}
               </span>
             </div>
           );
