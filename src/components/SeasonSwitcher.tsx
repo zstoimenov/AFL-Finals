@@ -4,7 +4,7 @@ import type { HistoryIndexEntry } from '../domain/types';
 const HUB = 'hub';
 
 /**
- * Header control that switches which season the Ladder / Fixtures / Bracket /
+ * Header control that switches which season the Ladder / Fixtures / Finals /
  * Odds tabs render, and opens the multi-season hub. The live season is always
  * first; archived seasons follow, newest first, with the hub last.
  *

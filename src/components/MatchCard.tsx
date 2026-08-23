@@ -1,13 +1,28 @@
-import type { CSSProperties } from 'react';
-import type { BracketMatch, BracketSide } from '../domain/types';
-import { TEAMS, teamAbbrev, teamAccent } from '../domain/teams';
+import type { CSSProperties, ReactNode } from 'react';
+import type { BracketMatch, BracketSide, Game } from '../domain/types';
+import type { FinalsContext, FinalsSide } from '../domain/finalsContext';
+import { TEAMS, teamAbbrev, teamAccent, teamShortName } from '../domain/teams';
 import { isFavourite } from '../domain/favourite';
 import { formatGameDateTime } from '../domain/format';
 import TeamChip from './TeamChip';
 import { CardOpen } from './FixtureCardParts';
 
-/** One bracket slot: matchup name, both sides, result or probabilities. */
-export default function MatchCard({ match }: { match: BracketMatch }) {
+/**
+ * One bracket slot: matchup name, both sides, result or probabilities — and,
+ * when the participants are known, the case the app can make for the game.
+ *
+ * A final is the most consequential game of the year and the card used to say
+ * less about it than a Round 7 card on the Fixtures screen did. The context is
+ * optional because the same card draws a slot that is still two placeholders,
+ * where there is nothing yet to say.
+ */
+export default function MatchCard({
+  match,
+  context
+}: {
+  match: BracketMatch;
+  context?: FinalsContext;
+}) {
   const { game } = match;
   const decided = match.winnerTeamId != null;
   // highlight a bracket card once the user's club is confirmed in it (either
@@ -44,12 +59,7 @@ export default function MatchCard({ match }: { match: BracketMatch }) {
         {fav && <span className="fav-tag">Your club</span>}
         {match.locked && !decided && <span className="matchupset">Matchup set</span>}
       </header>
-      {game && (
-        <p className="gamewhen">
-          {game.venue && <span>{game.venue} · </span>}
-          {formatGameDateTime(game.date, game.unixtime)}
-        </p>
-      )}
+      <WhenLine game={game} />
       <SideRow
         side={match.home}
         score={game?.complete ? game.hscore : null}
@@ -62,6 +72,7 @@ export default function MatchCard({ match }: { match: BracketMatch }) {
         winner={decided && match.winnerTeamId === match.away.teamId}
         prob={match.homeWinProb != null ? 1 - match.homeWinProb : null}
       />
+      {context && !decided && <MatchContext match={match} context={context} />}
       {match.squiggleHomeProb != null && match.home.teamId != null && (
         <footer className="consensus">
           Squiggle consensus: {teamAbbrev(
@@ -71,6 +82,101 @@ export default function MatchCard({ match }: { match: BracketMatch }) {
         </footer>
       )}
     </article>
+  );
+}
+
+/**
+ * When and where.
+ *
+ * A final without a date is the one thing a finals screen must not be, so the
+ * line is always drawn: once the AFL schedules the game it carries the kickoff
+ * in AWST and the ground, and until then it says so in as many words rather
+ * than leaving a gap the reader has to interpret.
+ */
+function WhenLine({ game }: { game: Game | null }) {
+  if (!game) {
+    return <p className="gamewhen tbc">Scheduled once the matchup is set</p>;
+  }
+  return (
+    <p className="gamewhen">
+      {formatGameDateTime(game.date, game.unixtime)}
+      {game.venue && <span className="whenvenue">{game.venue}</span>}
+    </p>
+  );
+}
+
+/**
+ * What the two clubs bring with them: the head-to-head record across every
+ * season the archive holds, how many of those meetings were finals, and the
+ * last few results between them. This is the "past meetings" a finals card is
+ * expected to carry, and it is read straight out of the results corpus rather
+ * than curated, so it can never claim history the app can't show.
+ */
+function MatchContext({ match, context }: { match: BracketMatch; context: FinalsContext }) {
+  const { record, meetings, finalsMeetings } = context;
+  const homeId = match.home.teamId;
+  const awayId = match.away.teamId;
+  // a slot with one club seeded and one still to be decided has no record to
+  // give, but the club that is there still has a season behind it
+  const sides = [context.home, context.away].filter(
+    (s): s is FinalsSide => s != null && s.form.length > 0
+  );
+  if (!record || homeId == null || awayId == null) {
+    return sides.length > 0 ? (
+      <div className="matchhistory">
+        <FormRuns sides={sides} />
+      </div>
+    ) : null;
+  }
+
+  const total = record.homeWins + record.awayWins + record.draws;
+  const notes: ReactNode[] = [];
+  if (context.away?.travelling) {
+    notes.push(<span key="travel">{teamShortName(awayId)} travelling</span>);
+  }
+  if (finalsMeetings > 0) {
+    notes.push(
+      <span key="finals">
+        {finalsMeetings} of them in finals
+      </span>
+    );
+  }
+
+  return (
+    <div className="matchhistory">
+      {sides.length > 0 && <FormRuns sides={sides} />}
+      {total === 0 ? (
+        <p className="h2hline">No meeting on record between these clubs.</p>
+      ) : (
+        <>
+          <p className="h2hline">
+            <span className="h2hlabel">Head to head</span>
+            <strong>
+              {teamAbbrev(homeId)} {record.homeWins}–{record.awayWins} {teamAbbrev(awayId)}
+            </strong>
+            {record.draws > 0 && <span className="h2hdraws"> · {record.draws} drawn</span>}
+          </p>
+          <ol className="meetings">
+            {meetings.map((m) => {
+              const margin = Math.abs((m.game.hscore ?? 0) - (m.game.ascore ?? 0));
+              return (
+                <li key={m.game.id}>
+                  <span className="meeting-when">
+                    {m.game.year} {m.game.is_final > 0 ? 'finals' : `R${m.game.round}`}
+                  </span>
+                  <span className="meeting-what">
+                    {m.winnerId == null
+                      ? 'drawn'
+                      : `${teamAbbrev(m.winnerId)} by ${margin}`}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+        </>
+      )}
+      {notes.length > 0 && <p className="matchnotes">{notes}</p>}
+    </div>
   );
 }
 
@@ -121,6 +227,43 @@ function SideRow({
       ) : (
         prob != null && <span className="sideprob">{Math.round(prob * 100)}%</span>
       )}
+    </div>
+  );
+}
+
+/**
+ * Both clubs' recent results, one line each.
+ *
+ * The run sits under the sides rather than inside them: a bracket column is
+ * barely wider than a club name, and five results crammed onto the same line
+ * squeezed the name down to an initial. Colour never carries a result on its
+ * own — every tick has its letter — and the whole run has a spoken label for
+ * anyone not reading the colours.
+ */
+function FormRuns({ sides }: { sides: FinalsSide[] }) {
+  return (
+    <div className="matchform">
+      {sides.map((s) => (
+        <div className="matchform-row" key={s.teamId}>
+          <span className="matchform-team">{teamAbbrev(s.teamId)}</span>
+          <span
+            className="sideform"
+            aria-label={`${teamShortName(s.teamId)} last ${s.form.length}, most recent first: ${s.form
+              .map((r) => (r.won == null ? 'drew' : r.won ? 'won' : 'lost'))
+              .join(', ')}`}
+          >
+            {s.form.map((r) => (
+              <span
+                key={r.game.id}
+                className={`formtick ${r.won == null ? 'd' : r.won ? 'w' : 'l'}`}
+                aria-hidden="true"
+              >
+                {r.won == null ? 'D' : r.won ? 'W' : 'L'}
+              </span>
+            ))}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }

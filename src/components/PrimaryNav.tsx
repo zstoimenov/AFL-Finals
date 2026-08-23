@@ -208,7 +208,7 @@ const GLYPHS: Record<Tab | 'more', ReactNode> = {
   // a bar chart: the standings
   ladder: <path d="M5 20V11M12 20V4M19 20v-6" />,
   // a knockout tree: two ties joining into one
-  bracket: <path d="M3.5 6.5h6M3.5 17.5h6M9.5 6.5v11M9.5 12h11" />,
+  finals: <path d="M3.5 6.5h6M3.5 17.5h6M9.5 6.5v11M9.5 12h11" />,
   // a cup: the premiership
   odds: (
     <>

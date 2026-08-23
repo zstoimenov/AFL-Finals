@@ -12,16 +12,21 @@ and you can browse past seasons:
   likely route through the finals, who's around you on the ladder, and what the results
   archive knows about them. Pick your club from the page itself — the choice is stored in
   your browser and highlights that club everywhere in the app.
-- 🗂 **Bracket** — the full five-week bracket (Wildcard Round → Qualifying/Elimination →
+- 🗂 **Finals** — the full five-week bracket (Wildcard Round → Qualifying/Elimination →
   Semis → Prelims → Grand Final), projected from the live ladder until finals begin,
   then filled with real results. Wildcard winners are re-seeded per the AFL rules
-  (higher-ranked winner takes the 7 seed).
+  (higher-ranked winner takes the 7 seed). The screen leads with where the series is up
+  to — the next game, its kickoff in AWST and its ground, or the premier once there is
+  one — and every card carries what the app knows about the matchup: both clubs' recent
+  form and every previous meeting the archive holds.
 - 📅 **Fixtures** — upcoming games with win-probability bars from the in-app model,
   plus the Squiggle model-consensus tip where available.
-- 🪜 **Ladder** — live standings with the wildcard-bye (top 6) and finals (top 10) cut
-  lines, and 🔒 badges when a team's fate is **mathematically settled** (locked into a
-  tier, locked to an exact position, or eliminated). The locks engine uses conservative
-  points bounds, so a badge is always a true certainty.
+- 🪜 **Ladder** — live standings (played, record, points, percentage and a five-game form
+  guide) with the wildcard-bye (top 6) and finals (top 10) cut lines, and 🔒 badges when a
+  team's fate is **mathematically settled** (locked into a tier, locked to an exact
+  position, or eliminated). The locks engine uses conservative points bounds, so a badge
+  is always a true certainty. On a phone the status badge moves under the club name so the
+  table still fits without a sideways scroll.
 - 🏆 **Odds** — premiership projections from a 10,000-run Monte Carlo simulation of the
   remaining season and the entire finals series, including wildcard games and
   re-seeding.

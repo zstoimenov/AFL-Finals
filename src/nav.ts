@@ -13,9 +13,19 @@
  * over the page.
  */
 
-export type Tab = 'week' | 'club' | 'fixtures' | 'ladder' | 'bracket' | 'odds' | 'seasons';
+export type Tab = 'week' | 'club' | 'fixtures' | 'ladder' | 'finals' | 'odds' | 'seasons';
 
-const TABS: Tab[] = ['week', 'club', 'fixtures', 'ladder', 'bracket', 'odds', 'seasons'];
+const TABS: Tab[] = ['week', 'club', 'fixtures', 'ladder', 'finals', 'odds', 'seasons'];
+
+/**
+ * Screens that have been renamed, old name → current one.
+ *
+ * The finals screen was called "bracket" — the shape it happened to be drawn
+ * in rather than the thing it is about — and the hash said so. Renaming it
+ * would break every link anyone has saved, an installed PWA's start URL among
+ * them, so the old name keeps resolving; it is simply never written again.
+ */
+const RENAMED: Record<string, Tab> = { bracket: 'finals' };
 
 /** The screen shown when there's no route, or an unrecognised one. */
 export const DEFAULT_TAB: Tab = 'week';
@@ -49,7 +59,8 @@ export function tabFromHash(hash: string): Tab | null {
  */
 export function routeFromHash(hash: string): Route | null {
   const [name, game] = hash.replace(/^#\/?/, '').split('/');
-  if (!(TABS as string[]).includes(name)) return null;
+  const tab = (TABS as string[]).includes(name) ? (name as Tab) : RENAMED[name];
+  if (!tab) return null;
   const id = /^g\d+$/.test(game ?? '') ? Number(game.slice(1)) : null;
-  return { tab: name as Tab, gameId: id };
+  return { tab, gameId: id };
 }

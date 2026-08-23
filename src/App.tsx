@@ -13,7 +13,7 @@ import { finalsGames } from './domain/ladder';
 import { completedGames } from './domain/features';
 import { supportsProjectedBracket } from './domain/season';
 import { formatUpdatedAt, formatUpdatedShort } from './domain/format';
-import BracketView from './components/BracketView';
+import FinalsView from './components/FinalsView';
 import FixturesView from './components/FixturesView';
 import LadderView from './components/LadderView';
 import PremiershipView from './components/PremiershipView';
@@ -271,7 +271,7 @@ export default function App() {
       : []),
     { key: 'fixtures', label: isLive ? 'Fixtures' : 'Results' },
     { key: 'ladder', label: 'Ladder' },
-    { key: 'bracket', label: isLive ? 'Bracket' : 'Finals' },
+    { key: 'finals', label: 'Finals' },
     { key: 'odds', label: isLive ? 'Odds' : 'Summary' }
   ];
 
@@ -492,9 +492,15 @@ export default function App() {
                 liveYear={liveYear!}
               />
             )}
-            {shownTab === 'bracket' &&
+            {shownTab === 'finals' &&
               (supportsProjectedBracket(active.meta) && isLive ? (
-                <BracketView bracket={bracket} finalsStarted={liveFinalsStarted} simReady={sim != null} />
+                <FinalsView
+                  bracket={bracket}
+                  snapshot={active}
+                  history={historyCorpus}
+                  finalsStarted={liveFinalsStarted}
+                  simReady={sim != null}
+                />
               ) : (
                 <FinalsResults snapshot={active} />
               ))}
@@ -510,7 +516,6 @@ export default function App() {
               <LadderView
                 snapshot={active}
                 locks={isLive ? locks : []}
-                sim={isLive ? sim : null}
                 historical={!isLive}
               />
             )}

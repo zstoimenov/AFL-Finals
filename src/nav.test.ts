@@ -27,7 +27,20 @@ describe('hashFor', () => {
   });
 
   it('round-trips a screen with an open game', () => {
-    expect(routeFromHash(hashFor('bracket', 77))).toEqual({ tab: 'bracket', gameId: 77 });
+    expect(routeFromHash(hashFor('finals', 77))).toEqual({ tab: 'finals', gameId: 77 });
+  });
+
+  it('only ever writes the current name for a renamed screen', () => {
+    expect(hashFor('finals')).toBe('#/finals');
+  });
+});
+
+describe('renamed screens', () => {
+  it('still resolves a link saved under the old name', () => {
+    // the finals screen used to be "bracket"; saved links and an installed
+    // PWA's start URL must not break because the app renamed a tab
+    expect(routeFromHash('#/bracket')).toEqual({ tab: 'finals', gameId: null });
+    expect(routeFromHash('#/bracket/g12')).toEqual({ tab: 'finals', gameId: 12 });
   });
 });
 
