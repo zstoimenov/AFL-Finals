@@ -1611,8 +1611,8 @@
   "gameid": 38694,
   "hteamid": 5,
   "ateamid": 13,
-  "hconfidence": 0.388,
-  "hmargin": -10.3,
+  "hconfidence": 0.39,
+  "hmargin": -10.2,
   "models": 31
  },
  {
@@ -1643,7 +1643,7 @@
   "gameid": 38698,
   "hteamid": 16,
   "ateamid": 12,
-  "hconfidence": 0.803,
+  "hconfidence": 0.804,
   "hmargin": 31.3,
   "models": 31
  },
@@ -1652,7 +1652,39 @@
   "hteamid": 17,
   "ateamid": 10,
   "hconfidence": 0.168,
-  "hmargin": -34.8,
+  "hmargin": -34.7,
   "models": 31
+ },
+ {
+  "gameid": 38719,
+  "hteamid": 11,
+  "ateamid": 3,
+  "hconfidence": 0.579,
+  "hmargin": 6.5,
+  "models": 4
+ },
+ {
+  "gameid": 38720,
+  "hteamid": 18,
+  "ateamid": 4,
+  "hconfidence": 0.428,
+  "hmargin": -5.7,
+  "models": 4
+ },
+ {
+  "gameid": 38723,
+  "hteamid": 6,
+  "ateamid": 10,
+  "hconfidence": 0.519,
+  "hmargin": 1.4,
+  "models": 3
+ },
+ {
+  "gameid": 38724,
+  "hteamid": 16,
+  "ateamid": 2,
+  "hconfidence": 0.438,
+  "hmargin": -4.8,
+  "models": 3
  }
 ]
