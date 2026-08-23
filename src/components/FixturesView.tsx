@@ -8,6 +8,7 @@ import {
   preGameHomeProb
 } from '../domain/predict';
 import { isGameToday, prefersReducedMotion } from '../domain/format';
+import { buildFinalsContexts } from '../domain/finalsContext';
 import { currentHomeAwayRound, homeAwayRounds, roundProgress } from '../domain/ladder';
 import type { RoundProgress } from '../domain/ladder';
 import { teamAbbrev } from '../domain/teams';
@@ -44,6 +45,12 @@ export default function FixturesView({
     () => computeRatings(snapshot.standings, snapshot.games, { history: priorHistory }),
     [snapshot, priorHistory]
   );
+  // the same match context the Finals screen draws, so a finals fixture reads
+  // the same wherever the app shows it
+  const finalsContexts = useMemo(
+    () => buildFinalsContexts(snapshot, bracket, history),
+    [snapshot, bracket, history]
+  );
   const rounds = useMemo(() => homeAwayRounds(snapshot.games), [snapshot]);
   const progress = useMemo(() => roundProgress(snapshot.games), [snapshot]);
   const current = useMemo(() => currentHomeAwayRound(snapshot.games), [snapshot]);
@@ -59,7 +66,7 @@ export default function FixturesView({
         <h2>Finals fixtures</h2>
         <div className="cardgrid">
           {upcoming.map((m) => (
-            <MatchCard key={m.key} match={m} />
+            <MatchCard key={m.key} match={m} context={finalsContexts.get(m.key)} />
           ))}
         </div>
         {played.length > 0 && (
@@ -67,7 +74,7 @@ export default function FixturesView({
             <h2>Completed finals</h2>
             <div className="cardgrid">
               {played.map((m) => (
-                <MatchCard key={m.key} match={m} />
+                <MatchCard key={m.key} match={m} context={finalsContexts.get(m.key)} />
               ))}
             </div>
           </>

@@ -92,7 +92,7 @@ export default function ThisWeekView({
             {played > 0 && (
               <span className="muted">
                 {' '}
-                · {played} already played — see {week.finals ? 'Bracket' : 'Fixtures'} for results
+                · {played} already played — see {week.finals ? 'Finals' : 'Fixtures'} for results
               </span>
             )}
           </p>
@@ -185,7 +185,7 @@ function SeasonOver({ snapshot }: { snapshot: Snapshot }) {
         </p>
       )}
       <p className="sectionnote">
-        The <strong>Bracket</strong> has the finals as they played out, and{' '}
+        The <strong>Finals</strong> screen has the series as it played out, and{' '}
         <strong>All seasons</strong> in the header opens the archive.
       </p>
     </div>

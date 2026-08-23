@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Snapshot, TeamLocks } from '../domain/types';
-import type { SimOutput } from '../domain/simulate';
+import type { ClubResult } from '../domain/club';
+import { recentResults } from '../domain/club';
 import { sortedStandings } from '../domain/ladder';
 import { lockLabel } from '../domain/locks';
 import { ladderCutLines, finalsFormatFor } from '../domain/season';
 import { isFavourite } from '../domain/favourite';
+import { teamShortName } from '../domain/teams';
 import TeamChip from './TeamChip';
 import LockBadge from './LockBadge';
 import InfoButton from './InfoButton';
@@ -16,30 +18,49 @@ function ordinal(n: number): string {
   return `${n}${['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'}`;
 }
 
+/** How many recent results the form column carries. */
+const FORM_GAMES = 5;
+
 /**
  * The ladder with format-aware finals cut lines and, for the live season,
- * mathematical lock badges and simulated finals chances. For an archived season
- * it shows the final table: the cut lines match that era's format and the
- * simulated column is dropped (the season is decided).
+ * mathematical lock badges. For an archived season it shows the final table:
+ * the cut lines match that era's format and the badges are dropped (the season
+ * is decided).
+ *
+ * The columns are the ones a ladder is read for. Played, the record and points
+ * answer "where is my club up to"; percentage breaks the ties the points can't;
+ * the form guide says which way a club is trending, which is the question the
+ * table itself can never answer; and the status column is the app's own
+ * contribution — what is mathematically settled. A simulated finals percentage
+ * used to sit between them, and it was the one number here that was a guess
+ * rather than a fact: it now lives where guesses belong, on the team sheet and
+ * the Odds screen, and the table stays a table of what has happened.
  */
 export default function LadderView({
   snapshot,
   locks,
-  sim,
   historical = false
 }: {
   snapshot: Snapshot;
   locks: TeamLocks[];
-  sim: SimOutput | null;
   historical?: boolean;
 }) {
   const ladder = sortedStandings(snapshot.standings);
   const lockByTeam = new Map(locks.map((l) => [l.teamId, l]));
   const { byeCutIndex, finalsCutIndex } = ladderCutLines(snapshot.meta);
   const wildcard = finalsFormatFor(snapshot.meta) === 'top10-wildcard';
-  const showChance = !historical;
   // a soft edge on the pinned crest column, shown only once scrolled sideways
   const [scrolled, setScrolled] = useState(false);
+
+  // the ladder is a home-and-away table, so the form line beside it has to be
+  // too — a September run doesn't belong in the column that explains a ladder
+  // position it had no part in setting
+  const formByTeam = useMemo(() => {
+    const homeAway = snapshot.games.filter((g) => g.is_final === 0);
+    return new Map(
+      snapshot.standings.map((s) => [s.id, recentResults(homeAway, s.id, FORM_GAMES)])
+    );
+  }, [snapshot]);
 
   return (
     <section className="ladderview">
@@ -59,9 +80,19 @@ export default function LadderView({
             </p>
           )}
           <p>
+            <strong>P</strong> is games played, <strong>W–L</strong> the record (a third number
+            is draws), <strong>Pts</strong> premiership points — four a win, two a draw — and{' '}
+            <strong>%</strong> is points scored against points conceded, which is what separates
+            clubs level on points.
+          </p>
+          <p>
+            <strong>Form</strong> is the last {FORM_GAMES} home-and-away results, most recent
+            first, with the winning or losing margin.
+          </p>
+          <p>
             {historical
               ? 'The final table for this season. Tap any team for its season and record.'
-              : 'Badges mark mathematically settled fates. “Finals %” is each team’s simulated chance of playing finals. Tap any team for its run home and odds.'}
+              : 'Badges mark mathematically settled fates — a guarantee, never a likelihood. Tap any team for its run home, its simulated chances and its record.'}
           </p>
         </InfoButton>
       </div>
@@ -76,33 +107,24 @@ export default function LadderView({
                 <span className="rank">#</span>
               </th>
               <th className="namecell">Team</th>
-              {/* the full record is desktop-only; a phone gets the W–L that
-                  matters and keeps the decisive columns on screen */}
-              <th className="num sec">P</th>
-              <th className="num sec">W</th>
-              <th className="num sec">L</th>
-              <th className="num sec">D</th>
+              <th className="num played">P</th>
+              {/* the record is one column at every width now: four columns of
+                  P/W/L/D never fitted a phone, and W–L is how a result is said
+                  out loud anyway */}
               <th className="num wl">W–L</th>
               <th className="num pts">Pts</th>
               <th className="num">%</th>
-              {showChance && (
-                <th className="num finalspct">
-                  {/* the column has to fit a phone; the full name stays for
-                      wider screens and for anything reading the markup */}
-                  <span className="lbl-long">Finals %</span>
-                  <span className="lbl-short" aria-hidden="true">
-                    Fin %
-                  </span>
-                </th>
-              )}
-              <th>Status</th>
+              {/* the form guide is the widest thing here and the first to go
+                  when the screen can't hold it — it is on the team sheet too */}
+              <th className="formcell">Form</th>
+              <th className="statuscell">Status</th>
             </tr>
           </thead>
           <tbody>
             {ladder.map((s, i) => {
               const lock = lockByTeam.get(s.id);
               const label = lock ? lockLabel(lock) : null;
-              const finalsPct = sim ? sim.teams[s.id]?.makeFinals : null;
+              const badge = label ? <LockBadge label={label} /> : null;
               return (
                 <tr
                   key={s.id}
@@ -121,24 +143,25 @@ export default function LadderView({
                     {/* the place name, as ladders are printed — the nickname
                         costs the width the decisive columns need */}
                     <TeamChip teamId={s.id} part="name" short />
+                    {/* A phone cannot hold eight columns, and the status pill is
+                        the one people scan for — so rather than push it off the
+                        edge behind a sideways scroll, it moves under the club
+                        name and its column goes. Same badge, same row, one width
+                        down; CSS picks which of the two is drawn. */}
+                    {badge && <span className="status-inline">{badge}</span>}
                   </td>
-                  <td className="num sec">{s.played}</td>
-                  <td className="num sec">{s.wins}</td>
-                  <td className="num sec">{s.losses}</td>
-                  <td className="num sec">{s.draws}</td>
+                  <td className="num played">{s.played}</td>
                   <td className="num wl">
                     {s.wins}–{s.losses}
                     {s.draws > 0 ? `–${s.draws}` : ''}
                   </td>
                   <td className="num pts">{s.pts}</td>
                   <td className="num">{s.percentage.toFixed(1)}</td>
-                  {showChance && (
-                    <td className="num finalspct">
-                      {finalsPct != null ? `${Math.round(finalsPct * 100)}%` : '…'}
-                    </td>
-                  )}
+                  <td className="formcell">
+                    <FormRun results={formByTeam.get(s.id) ?? []} teamId={s.id} />
+                  </td>
                   <td className="statuscell">
-                    {label && <LockBadge label={label} />}
+                    {badge}
                     {lock && (
                       // the working behind the badge: where this club can still
                       // finish. A lock is "nobody can reach my floor" — showing
@@ -164,6 +187,16 @@ export default function LadderView({
         </p>
       )}
       <p className="legendnote">
+        {/* the form column is dropped on a phone, and so is the key to it */}
+        <span className="formrun-note">
+          Form runs most recent first, with the margin{' '}
+          <span className="formrun-key" aria-hidden="true">
+            <span className="formpip w">W</span>
+            <span className="formpip l">L</span>
+            <span className="formpip d">D</span>
+          </span>{' '}
+          ·{' '}
+        </span>
         {wildcard && (
           <>
             <span className="cutkey bye" /> bye line (6th) ·{' '}
@@ -173,5 +206,38 @@ export default function LadderView({
         <span className="fav-star" aria-hidden="true">★</span> your club
       </p>
     </section>
+  );
+}
+
+/**
+ * A club's last few results as pips.
+ *
+ * Colour alone never carries a result: each pip has its letter in it, and the
+ * screen-reader text spells out the opponent and the margin — a colour-blind or
+ * non-visual reader gets the same run the sighted one does. The margin under
+ * each pip is what turns a run of five Ws into information: five by ten points
+ * is a different club from five by sixty.
+ */
+function FormRun({ results, teamId }: { results: ClubResult[]; teamId: number }) {
+  if (results.length === 0) return <span className="formrun-empty">—</span>;
+  return (
+    <ol className="formrun" aria-label={`${teamShortName(teamId)} recent form, most recent first`}>
+      {results.map((r) => (
+        <li key={r.game.id} className={`formpip ${r.won == null ? 'd' : r.won ? 'w' : 'l'}`}>
+          <span aria-hidden="true">{r.won == null ? 'D' : r.won ? 'W' : 'L'}</span>
+          <span className="formpip-margin" aria-hidden="true">
+            {r.margin > 0 ? '+' : ''}
+            {r.margin}
+          </span>
+          <span className="visually-hidden">
+            {`Round ${r.game.round} ${r.home ? 'versus' : 'away to'} ${teamShortName(
+              r.opponentId
+            )}: ${r.won == null ? 'drew' : r.won ? 'won' : 'lost'}${
+              r.won == null ? '' : ` by ${Math.abs(r.margin)}`
+            }.`}
+          </span>
+        </li>
+      ))}
+    </ol>
   );
 }

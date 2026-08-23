@@ -23,7 +23,7 @@ prose explanation of *why* each feature works the way it does.
 ```bash
 npm install
 npm run dev            # Vite dev server
-npm test               # vitest run — 17 files / 151 tests, all domain-level
+npm test               # vitest run — 18 files / 165 tests, all domain-level
 npm run build          # tsc -b && vite build  → dist/
 npm run preview        # serve the production build
 npm run fetch-data     # live Squiggle snapshot → public/data/
@@ -73,6 +73,7 @@ scripts/              Node ESM data + build scripts (squiggle.mjs is shared)
 | `seasonStats.ts` | Per-season model-vs-Squiggle scorecards, cross-season head-to-head. |
 | `interest.ts` | Scores "what's worth watching this round" as a sum of explained reasons. |
 | `gameDetail.ts` | Assembles everything known about one fixture for the game sheet (hindsight-free). |
+| `finalsContext.ts` | The same idea for a bracket *slot* rather than a fixture: head-to-head, form and travel for a matchup that may not be scheduled yet, plus `nextFinal` / `finalsProgress`. |
 | `rivalries.ts` | Curated standing rivalries (Squiggle has no rivalry field). |
 | `club.ts` | My Club numbers: form, streaks, `winsToGuarantee`, record book, projected path. |
 | `season.ts` | The finals-format seam (`top8` vs `top10-wildcard`, cut lines, labels). |
@@ -100,7 +101,10 @@ startup — the model's carry-over prior needs it.
 **Screens are hash routes.** `src/nav.ts` is the single source of truth for the `Tab`
 union, the default screen, live-only screens and `#/<tab>` hashes. Adding a screen means
 touching `nav.ts`, `App.tsx`'s `navItems` + render switch, and a component — nothing else.
-The season is a header control, **not** part of the route.
+The season is a header control, **not** part of the route. Renaming a screen means adding
+the old name to `nav.ts`'s `RENAMED` map (`bracket` → `finals` is the one entry): saved
+links and an installed PWA's start URL must keep resolving, and the old name is never
+written again.
 
 An open game sheet *is* part of the route (`#/week/g1234`), so a fixture is linkable and
 the back button closes the sheet rather than leaving the app. `routeFromHash` ignores a

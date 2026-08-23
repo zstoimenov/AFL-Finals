@@ -579,7 +579,7 @@ h2 {
   }
 
   /* the pager already names the week — the in-column heading would say it twice */
-  .bracket-col h2,
+  .bracket-col h3,
   .bracket-col .colsub {
     display: none;
   }
@@ -596,7 +596,7 @@ h2 {
   }
 }
 
-.bracket-col h2 {
+.bracket-col h3 {
   margin: 6px 0 0;
   font-size: 0.95rem;
 }
@@ -699,9 +699,78 @@ h2 {
   color: color-mix(in srgb, var(--text) 32%, var(--muted));
 }
 
-.premier-callout {
-  margin: 14px 0 0;
+/* ---------- the finals lead ---------- */
+
+/* Arriving on the Finals screen the question is "what's next, and when?", and
+   a grid of eleven slots answers it only if you already know which week is
+   live. The lead answers it in one line before any bracket is read: the next
+   scheduled game, or the premier once there is one. */
+.finals-lead {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+}
+
+.finals-lead p {
+  margin: 0;
+}
+
+.finals-lead-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.finals-lead-label {
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.finals-lead-head {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.finals-lead-teams {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
   font-weight: 700;
+}
+
+.finals-lead-v {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.finals-lead-sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* the next game is the live one, so it takes the accent; the premiership takes
+   the gold the app already spends on the flag everywhere else */
+.finals-lead.next {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.finals-lead.premier {
+  border-color: color-mix(in srgb, var(--gold) 50%, var(--border));
+  background: color-mix(in srgb, var(--gold) 8%, var(--surface));
 }
 
 /* ---------- team chip ---------- */
@@ -1193,7 +1262,7 @@ table.ladder {
   border-spacing: 0;
   width: 100%;
   font-size: 0.85rem;
-  min-width: 640px;
+  min-width: 700px;
 }
 
 .ladder th,
@@ -1223,6 +1292,16 @@ table.ladder {
 .ladder .num {
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+/* Auto table layout hands spare width to whichever column will take it, and a
+   stat column that has taken it reads as a gap with a number stuck to one edge.
+   Asking for 1% makes each of them shrink to its content, so the slack lands on
+   the club name — the only column that can use it. */
+.ladder .num,
+.ladder .formcell,
+.ladder .statuscell {
+  width: 1%;
 }
 
 /* Points are what the table is sorted on, so the column is lifted out of the
@@ -1260,30 +1339,93 @@ table.ladder {
   color: var(--text);
 }
 
-/* the other number people came for reads strongly too; the running P/W/L/D
-   count behind both of them is context */
-.ladder td.finalspct {
-  font-weight: 700;
-  color: var(--text);
-}
-
-.ladder td.sec {
+/* played is the context behind the record, and the record the context behind
+   the points — each reads a step quieter than the number it explains */
+.ladder td.played {
   color: var(--muted);
   font-weight: 500;
 }
 
-/* the combined record stands in for P/W/L/D where there isn't room for four
-   columns; only one of the two ever shows */
-.ladder .wl {
-  display: none;
+.ladder td.wl {
+  font-weight: 600;
 }
 
-.lbl-short {
-  display: none;
+/* ---------- the ladder's form guide ---------- */
+
+/* A ladder says where a club is; only the form guide says which way it is
+   going, which is the question people actually bring to the table in August.
+   Each pip carries its own letter and its margin, so the run reads without
+   colour and without a legend, and the whole column is dropped rather than
+   squeezed on a phone — the same five results are on the club's own sheet. */
+.formrun {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 3px;
+}
+
+.formpip {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 24px;
+  padding: 2px 3px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.formpip-margin {
+  font-size: 0.56rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.formpip.w {
+  border-color: color-mix(in srgb, var(--good) 45%, transparent);
+  background: color-mix(in srgb, var(--good) 16%, var(--surface));
+  color: var(--good);
+}
+
+.formpip.l {
+  border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface));
+  color: var(--danger);
+}
+
+.formpip.d {
+  color: var(--muted);
+}
+
+.formrun-empty {
+  color: var(--muted);
+}
+
+/* the same pips at legend size, so the key looks like the thing it explains */
+.formrun-key {
+  display: inline-flex;
+  gap: 3px;
+  vertical-align: middle;
+}
+
+.formrun-key .formpip {
+  min-width: 16px;
+  padding: 1px 3px;
 }
 
 .statuscell {
   white-space: nowrap;
+}
+
+/* the phone's copy of the status pill; the wide table draws the column instead */
+.status-inline {
+  display: none;
 }
 
 /* the bounds behind a lock: quiet, but there to be checked */
@@ -1296,20 +1438,18 @@ table.ladder {
 }
 
 @media (max-width: 640px) {
-  /* P/W/L/D pushed Pts, percentage and Finals % off a phone screen — the
-     numbers people came for. The record collapses to one W–L column and the
-     table stops forcing a sideways scroll to reach anything that matters. */
+  /* A phone gets played, the record, points, percentage and the status pills —
+     everything the table is actually read for — with no sideways scroll. The
+     form guide is the one column that can't be made narrow enough to keep, so
+     it goes rather than being squeezed; it is on the club's sheet in full. */
   table.ladder {
     min-width: 0;
     font-size: 0.82rem;
   }
 
-  .ladder .sec {
+  .ladder .formcell,
+  .formrun-note {
     display: none;
-  }
-
-  .ladder .wl {
-    display: table-cell;
   }
 
   .ladder th,
@@ -1329,9 +1469,19 @@ table.ladder {
     font-size: 0.9rem;
   }
 
-  /* the name gives way before the numbers do */
+  /* the status column is gone here, so the name has room again — enough for
+     the longest place name in the competition without an ellipsis */
   .ladder .namecell {
-    max-width: 96px;
+    max-width: 132px;
+  }
+
+  .ladder .statuscell {
+    display: none;
+  }
+
+  .status-inline {
+    display: block;
+    margin-top: 3px;
   }
 
   .ladder .namecell .teamname {
@@ -1345,14 +1495,6 @@ table.ladder {
      club's own sheet, where there's room to read them */
   .ptsrange {
     display: none;
-  }
-
-  .lbl-long {
-    display: none;
-  }
-
-  .lbl-short {
-    display: inline;
   }
 }
 
@@ -1563,6 +1705,140 @@ table.ladder {
   margin: 0;
   font-size: 0.72rem;
   color: var(--muted);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.whenvenue::before {
+  content: '·';
+  margin-right: 6px;
+}
+
+/* a fixture the AFL hasn't scheduled yet says so, rather than leaving a gap
+   the reader has to interpret */
+.gamewhen.tbc {
+  font-style: italic;
+}
+
+/* Both clubs' last five, one line each under the sides. Colour never carries a
+   result alone — every tick has its letter, and the run has a spoken label on
+   the group for anyone not reading the colours. */
+.matchform {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.matchform-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.matchform-team {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  min-width: 30px;
+}
+
+.sideform {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.formtick {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.55rem;
+  font-weight: 800;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.formtick.w {
+  border-color: color-mix(in srgb, var(--good) 45%, transparent);
+  background: color-mix(in srgb, var(--good) 18%, var(--surface));
+  color: var(--good);
+}
+
+.formtick.l {
+  border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+  color: var(--danger);
+}
+
+/* what the two clubs bring with them: the record, and the last few meetings */
+.matchhistory {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 6px;
+  border-top: 1px dashed color-mix(in srgb, var(--border) 80%, transparent);
+}
+
+.h2hline {
+  margin: 0;
+  font-size: 0.74rem;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.h2hlabel {
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.h2hdraws {
+  color: var(--muted);
+}
+
+.meetings {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.meetings li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.meeting-what {
+  color: color-mix(in srgb, var(--text) 55%, var(--muted));
+  font-variant-numeric: tabular-nums;
+}
+
+.matchnotes {
+  margin: 0;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 0.66rem;
+  color: var(--muted);
+}
+
+.matchnotes span + span::before {
+  content: '· ';
 }
 
 .matchupset {
