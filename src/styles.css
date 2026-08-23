@@ -374,12 +374,52 @@ h2 {
 .section-head {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin: 18px 0 10px;
 }
 
 .section-head h2 {
   margin: 0;
+}
+
+/* A control for the table below it, not a second row of navigation — so it
+   rides on the title's own line, pushed to the far end, and stays small enough
+   that it reads as a switch rather than a menu. The screen has no vertical
+   space to spend on saying "Ladder" and then saying it again. */
+.segmented {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface2);
+}
+
+.segment {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 5px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.segment:hover {
+  color: var(--text);
+}
+
+.segment.on {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow-1);
 }
 
 .infobtn {
@@ -1262,7 +1302,6 @@ table.ladder {
   border-spacing: 0;
   width: 100%;
   font-size: 0.85rem;
-  min-width: 700px;
 }
 
 .ladder th,
@@ -1298,6 +1337,7 @@ table.ladder {
    stat column that has taken it reads as a gap with a number stuck to one edge.
    Asking for 1% makes each of them shrink to its content, so the slack lands on
    the club name — the only column that can use it. */
+.ladder .idcell,
 .ladder .num,
 .ladder .formcell,
 .ladder .statuscell {
@@ -1339,14 +1379,18 @@ table.ladder {
   color: var(--text);
 }
 
-/* played is the context behind the record, and the record the context behind
-   the points — each reads a step quieter than the number it explains */
-.ladder td.played {
+/* played, the record and the raw points for/against are the context behind the
+   two numbers a ladder is sorted on — each reads a step quieter than the number
+   it explains */
+.ladder td.played,
+.ladder td.rec,
+.ladder td.pf {
   color: var(--muted);
   font-weight: 500;
 }
 
-.ladder td.wl {
+.ladder td.rec {
+  color: var(--text);
   font-weight: 600;
 }
 
@@ -1438,18 +1482,29 @@ table.ladder {
 }
 
 @media (max-width: 640px) {
-  /* A phone gets played, the record, points, percentage and the status pills —
-     everything the table is actually read for — with no sideways scroll. The
-     form guide is the one column that can't be made narrow enough to keep, so
-     it goes rather than being squeezed; it is on the club's sheet in full. */
+  /* Each view is built to fit a phone on its own, so none of them scrolls
+     sideways — but Extended carries nine columns and something has to give.
+     It gives up the club name: the crest in the pinned first column already
+     says which club the row is, and the name is the only thing here that is
+     duplicated rather than lost. */
   table.ladder {
-    min-width: 0;
     font-size: 0.82rem;
   }
 
-  .ladder .formcell,
-  .formrun-note {
+  .ladder.view-extended .namecell {
     display: none;
+  }
+
+  /* Form is the widest thing the table draws and the whole point of its view,
+     so percentage is what gives way here — it is a tap away in the other two
+     views, and the run beside it is what this view was opened for. The name
+     gives up its last few pixels to the same cause. */
+  .ladder.view-form .pct {
+    display: none;
+  }
+
+  .ladder.view-form .namecell {
+    max-width: 116px;
   }
 
   .ladder th,
@@ -1494,6 +1549,26 @@ table.ladder {
   /* the badge already says it; the bounds stay for the wider table and the
      club's own sheet, where there's room to read them */
   .ptsrange {
+    display: none;
+  }
+}
+
+/* The smallest phones still in use are 320px wide, where Extended and Form
+   each want ~30-70px more than there is. Rather than let either scroll
+   sideways, the switch tightens up and Form drops the club name the way
+   Extended already does — the pinned crest still says whose row it is. */
+@media (max-width: 380px) {
+  .segment {
+    padding: 5px 8px;
+    font-size: 0.64rem;
+  }
+
+  .ladder th,
+  .ladder td {
+    padding: 9px 3px;
+  }
+
+  .ladder.view-form .namecell {
     display: none;
   }
 }

@@ -18,8 +18,49 @@ function ordinal(n: number): string {
   return `${n}${['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'}`;
 }
 
-/** How many recent results the form column carries. */
+/** How many recent results the form view carries. */
 const FORM_GAMES = 5;
+
+/**
+ * The three ways to read the same table.
+ *
+ * Everything a ladder can say does not fit on a phone at once, and the usual
+ * answers — a sideways scroll, or dropping the columns that don't fit — either
+ * hide data behind a gesture nobody discovers or lose it outright. Splitting the
+ * table into views keeps every number reachable at any width, and each view is
+ * narrow enough to fit without scrolling: *Summary* is the ladder as it is
+ * quoted (played, points, percentage, and what is mathematically settled),
+ * *Extended* is the full accounting including points for and against, and *Form*
+ * is the one thing a table can never show — which way each club is trending.
+ */
+const VIEWS = [
+  { key: 'summary', label: 'Summary' },
+  { key: 'extended', label: 'Extended' },
+  { key: 'form', label: 'Form' }
+] as const;
+
+type LadderMode = (typeof VIEWS)[number]['key'];
+
+/** Remembering the choice costs one key and saves re-picking it every visit. */
+const VIEW_KEY = 'afl-ladder-view';
+
+function storedMode(): LadderMode {
+  try {
+    const saved = localStorage.getItem(VIEW_KEY);
+    if (VIEWS.some((v) => v.key === saved)) return saved as LadderMode;
+  } catch {
+    /* private mode / embedded webview — the default view is a fine fallback */
+  }
+  return 'summary';
+}
+
+function rememberMode(mode: LadderMode): void {
+  try {
+    localStorage.setItem(VIEW_KEY, mode);
+  } catch {
+    /* storage unavailable — the choice lasts the session only */
+  }
+}
 
 /**
  * The ladder with format-aware finals cut lines and, for the live season,
@@ -27,14 +68,12 @@ const FORM_GAMES = 5;
  * the cut lines match that era's format and the badges are dropped (the season
  * is decided).
  *
- * The columns are the ones a ladder is read for. Played, the record and points
- * answer "where is my club up to"; percentage breaks the ties the points can't;
- * the form guide says which way a club is trending, which is the question the
- * table itself can never answer; and the status column is the app's own
- * contribution — what is mathematically settled. A simulated finals percentage
- * used to sit between them, and it was the one number here that was a guess
- * rather than a fact: it now lives where guesses belong, on the team sheet and
- * the Odds screen, and the table stays a table of what has happened.
+ * The table has three column sets behind a switch in its heading (see `VIEWS`),
+ * so a phone gets all of the data without a sideways scroll and without the app
+ * deciding on the reader's behalf which half of a ladder matters. The switch is
+ * deliberately small and sits on the title's own line: it is a control for the
+ * table, not a second navigation bar, and the screen has no vertical space to
+ * spend on saying so twice.
  */
 export default function LadderView({
   snapshot,
@@ -49,18 +88,31 @@ export default function LadderView({
   const lockByTeam = new Map(locks.map((l) => [l.teamId, l]));
   const { byeCutIndex, finalsCutIndex } = ladderCutLines(snapshot.meta);
   const wildcard = finalsFormatFor(snapshot.meta) === 'top10-wildcard';
+  const [mode, setMode] = useState<LadderMode>(storedMode);
   // a soft edge on the pinned crest column, shown only once scrolled sideways
   const [scrolled, setScrolled] = useState(false);
 
-  // the ladder is a home-and-away table, so the form line beside it has to be
-  // too — a September run doesn't belong in the column that explains a ladder
+  const showMode = (next: LadderMode) => {
+    setMode(next);
+    rememberMode(next);
+  };
+
+  // the ladder is a home-and-away table, so the form beside it has to be too —
+  // a September run doesn't belong in the column that explains a ladder
   // position it had no part in setting
   const formByTeam = useMemo(() => {
+    if (mode !== 'form') return new Map<number, ClubResult[]>();
     const homeAway = snapshot.games.filter((g) => g.is_final === 0);
     return new Map(
       snapshot.standings.map((s) => [s.id, recentResults(homeAway, s.id, FORM_GAMES)])
     );
-  }, [snapshot]);
+  }, [snapshot, mode]);
+
+  const extended = mode === 'extended';
+  const form = mode === 'form';
+  // the status column is the app's own contribution rather than a ladder
+  // column, so it rides with the view the ladder is normally read in
+  const status = mode === 'summary';
 
   return (
     <section className="ladderview">
@@ -80,14 +132,18 @@ export default function LadderView({
             </p>
           )}
           <p>
-            <strong>P</strong> is games played, <strong>W–L</strong> the record (a third number
-            is draws), <strong>Pts</strong> premiership points — four a win, two a draw — and{' '}
-            <strong>%</strong> is points scored against points conceded, which is what separates
-            clubs level on points.
-          </p>
-          <p>
+            The switch beside the title changes what the table shows.{' '}
+            <strong>Summary</strong> is the ladder as it is quoted;{' '}
+            <strong>Extended</strong> adds the full record and points for and against;{' '}
             <strong>Form</strong> is the last {FORM_GAMES} home-and-away results, most recent
             first, with the winning or losing margin.
+          </p>
+          <p>
+            <strong>P</strong> is games played, <strong>W</strong>/<strong>L</strong>/
+            <strong>D</strong> the record, <strong>PF</strong> and <strong>PA</strong> points
+            scored and conceded, <strong>Pts</strong> premiership points — four a win, two a draw
+            — and <strong>%</strong> is PF against PA, which is what separates clubs level on
+            points.
           </p>
           <p>
             {historical
@@ -95,29 +151,45 @@ export default function LadderView({
               : 'Badges mark mathematically settled fates — a guarantee, never a likelihood. Tap any team for its run home, its simulated chances and its record.'}
           </p>
         </InfoButton>
+        <div className="segmented" role="group" aria-label="Ladder columns">
+          {VIEWS.map((v) => (
+            <button
+              key={v.key}
+              type="button"
+              className={v.key === mode ? 'segment on' : 'segment'}
+              aria-pressed={v.key === mode}
+              onClick={() => showMode(v.key)}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
       </div>
       <div
         className={scrolled ? 'tablewrap scrolled' : 'tablewrap'}
         onScroll={(e) => setScrolled(e.currentTarget.scrollLeft > 0)}
       >
-        <table className="ladder">
+        <table className={`ladder view-${mode}`}>
           <thead>
             <tr>
               <th className="idcell">
                 <span className="rank">#</span>
               </th>
               <th className="namecell">Team</th>
-              <th className="num played">P</th>
-              {/* the record is one column at every width now: four columns of
-                  P/W/L/D never fitted a phone, and W–L is how a result is said
-                  out loud anyway */}
-              <th className="num wl">W–L</th>
+              {!form && <th className="num played">P</th>}
+              {extended && (
+                <>
+                  <th className="num rec">W</th>
+                  <th className="num rec">L</th>
+                  <th className="num rec">D</th>
+                  <th className="num pf">PF</th>
+                  <th className="num pf">PA</th>
+                </>
+              )}
+              {form && <th className="formcell">Form</th>}
               <th className="num pts">Pts</th>
-              <th className="num">%</th>
-              {/* the form guide is the widest thing here and the first to go
-                  when the screen can't hold it — it is on the team sheet too */}
-              <th className="formcell">Form</th>
-              <th className="statuscell">Status</th>
+              <th className="num pct">%</th>
+              {status && <th className="statuscell">Status</th>}
             </tr>
           </thead>
           <tbody>
@@ -143,60 +215,70 @@ export default function LadderView({
                     {/* the place name, as ladders are printed — the nickname
                         costs the width the decisive columns need */}
                     <TeamChip teamId={s.id} part="name" short />
-                    {/* A phone cannot hold eight columns, and the status pill is
-                        the one people scan for — so rather than push it off the
-                        edge behind a sideways scroll, it moves under the club
-                        name and its column goes. Same badge, same row, one width
-                        down; CSS picks which of the two is drawn. */}
-                    {badge && <span className="status-inline">{badge}</span>}
+                    {/* A phone cannot hold the status column as well, and the
+                        pill is the one thing here people scan for — so rather
+                        than push it off the edge behind a sideways scroll, it
+                        moves under the club name. Same badge, same row, one
+                        width down; CSS picks which of the two is drawn. */}
+                    {status && badge && <span className="status-inline">{badge}</span>}
                   </td>
-                  <td className="num played">{s.played}</td>
-                  <td className="num wl">
-                    {s.wins}–{s.losses}
-                    {s.draws > 0 ? `–${s.draws}` : ''}
-                  </td>
+                  {!form && <td className="num played">{s.played}</td>}
+                  {extended && (
+                    <>
+                      <td className="num rec">{s.wins}</td>
+                      <td className="num rec">{s.losses}</td>
+                      <td className="num rec">{s.draws}</td>
+                      <td className="num pf">{s.for}</td>
+                      <td className="num pf">{s.against}</td>
+                    </>
+                  )}
+                  {form && (
+                    <td className="formcell">
+                      <FormRun results={formByTeam.get(s.id) ?? []} teamId={s.id} />
+                    </td>
+                  )}
                   <td className="num pts">{s.pts}</td>
-                  <td className="num">{s.percentage.toFixed(1)}</td>
-                  <td className="formcell">
-                    <FormRun results={formByTeam.get(s.id) ?? []} teamId={s.id} />
-                  </td>
-                  <td className="statuscell">
-                    {badge}
-                    {lock && (
-                      // the working behind the badge: where this club can still
-                      // finish. A lock is "nobody can reach my floor" — showing
-                      // the floor and ceiling makes that checkable rather than
-                      // something the app just asserts.
-                      <span className="ptsrange">
-                        {lock.minPts === lock.maxPts
-                          ? `${lock.minPts} pts`
-                          : `${lock.minPts}–${lock.maxPts} pts`}
-                      </span>
-                    )}
-                  </td>
+                  <td className="num pct">{s.percentage.toFixed(1)}</td>
+                  {status && (
+                    <td className="statuscell">
+                      {badge}
+                      {lock && (
+                        // the working behind the badge: where this club can
+                        // still finish. A lock is "nobody can reach my floor" —
+                        // showing the floor and ceiling makes that checkable
+                        // rather than something the app just asserts.
+                        <span className="ptsrange">
+                          {lock.minPts === lock.maxPts
+                            ? `${lock.minPts} pts`
+                            : `${lock.minPts}–${lock.maxPts} pts`}
+                        </span>
+                      )}
+                    </td>
+                  )}
                 </tr>
               );
             })}
           </tbody>
         </table>
       </div>
-      {locks.length > 0 && (
+      {status && locks.length > 0 && (
         <p className="legendnote">
           The points range is what a club can still finish on — lose out, then win out. A badge
           appears once that range settles the question on its own.
         </p>
       )}
       <p className="legendnote">
-        {/* the form column is dropped on a phone, and so is the key to it */}
-        <span className="formrun-note">
-          Form runs most recent first, with the margin{' '}
-          <span className="formrun-key" aria-hidden="true">
-            <span className="formpip w">W</span>
-            <span className="formpip l">L</span>
-            <span className="formpip d">D</span>
-          </span>{' '}
-          ·{' '}
-        </span>
+        {form && (
+          <>
+            Most recent first, with the margin{' '}
+            <span className="formrun-key" aria-hidden="true">
+              <span className="formpip w">W</span>
+              <span className="formpip l">L</span>
+              <span className="formpip d">D</span>
+            </span>{' '}
+            ·{' '}
+          </>
+        )}
         {wildcard && (
           <>
             <span className="cutkey bye" /> bye line (6th) ·{' '}
