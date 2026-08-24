@@ -242,7 +242,7 @@ as optional (`?: T | null`) so older committed snapshots keep working.
   the `fav` class. `isFavourite` is a plain function on a module-level store; subscribe
   once high in the tree with `useFavourite()` rather than threading a hook down.
 - Times are **AWST, 24-hour**, via `domain/format.ts` — never `toLocaleString` inline.
-- `localStorage` keys in use: `afl-favourite`, `afl-dismissed`. Every read/write is
+- `localStorage` keys in use: `afl-favourite`, `afl-dismissed`, `afl-ladder-view`. Every read/write is
   wrapped in `try/catch` (private mode / embedded webviews) with a working fallback.
   Nobody starts out following a club: an absent `afl-favourite` means "never asked", and
   the app asks once on first launch. Declining writes `none`, which is a real answer — so
@@ -254,7 +254,11 @@ as optional (`?: T | null`) so older committed snapshots keep working.
   the only copy.
 - Wide layouts that can't fit a phone (the bracket's five weeks, the ladder's ten columns)
   get a mobile form rather than a horizontal scrollbar: the bracket snaps one week per
-  screen with a pager, and the ladder swaps P/W/L/D for a single W–L column.
+  screen with a pager, and the ladder splits into three column sets — Summary / Extended /
+  Form — behind a small segmented control on the section heading's own line. Every view is
+  built to fit at 320px: Extended and Form drop the club name (the pinned crest still says
+  whose row it is), Form drops percentage, and Summary moves the status pill under the club
+  name. `.tablewrap`'s sideways scroll is the safety valve, never the design.
 - Motion is decorative throughout — `@media (prefers-reduced-motion: reduce)` disables it,
   and script-driven smooth scrolling checks `prefersReducedMotion()` from `domain/format`.
 - Mobile-first: bottom nav bar on phones, pill row on wide screens — both rendered, CSS

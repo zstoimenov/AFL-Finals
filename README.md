@@ -21,12 +21,14 @@ and you can browse past seasons:
   form and every previous meeting the archive holds.
 - 📅 **Fixtures** — upcoming games with win-probability bars from the in-app model,
   plus the Squiggle model-consensus tip where available.
-- 🪜 **Ladder** — live standings (played, record, points, percentage and a five-game form
-  guide) with the wildcard-bye (top 6) and finals (top 10) cut lines, and 🔒 badges when a
-  team's fate is **mathematically settled** (locked into a tier, locked to an exact
-  position, or eliminated). The locks engine uses conservative points bounds, so a badge
-  is always a true certainty. On a phone the status badge moves under the club name so the
-  table still fits without a sideways scroll.
+- 🪜 **Ladder** — live standings with the wildcard-bye (top 6) and finals (top 10) cut
+  lines, and 🔒 badges when a team's fate is **mathematically settled** (locked into a
+  tier, locked to an exact position, or eliminated). The locks engine uses conservative
+  points bounds, so a badge is always a true certainty. A switch on the heading picks the
+  columns — **Summary** (played, points, percentage and status), **Extended** (the full
+  record plus points for and against) or **Form** (each club's last five results with
+  margins) — so every number is reachable on a phone without a sideways scroll, and the
+  choice is remembered.
 - 🏆 **Odds** — premiership projections from a 10,000-run Monte Carlo simulation of the
   remaining season and the entire finals series, including wildcard games and
   re-seeding.
