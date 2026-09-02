@@ -1675,24 +1675,24 @@
   "gameid": 38722,
   "hteamid": 1,
   "ateamid": 18,
-  "hconfidence": 0.653,
-  "hmargin": 14.1,
+  "hconfidence": 0.654,
+  "hmargin": 14.2,
   "models": 25
  },
  {
   "gameid": 38723,
   "hteamid": 6,
   "ateamid": 10,
-  "hconfidence": 0.664,
-  "hmargin": 14.6,
+  "hconfidence": 0.669,
+  "hmargin": 14.9,
   "models": 26
  },
  {
   "gameid": 38721,
   "hteamid": 7,
   "ateamid": 3,
-  "hconfidence": 0.582,
-  "hmargin": 7.1,
+  "hconfidence": 0.583,
+  "hmargin": 7.2,
   "models": 25
  },
  {
