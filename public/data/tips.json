@@ -1675,8 +1675,8 @@
   "gameid": 38722,
   "hteamid": 1,
   "ateamid": 18,
-  "hconfidence": 0.686,
-  "hmargin": 16.6,
+  "hconfidence": 0.687,
+  "hmargin": 16.7,
   "models": 29
  },
  {
@@ -1691,7 +1691,7 @@
   "gameid": 38721,
   "hteamid": 7,
   "ateamid": 3,
-  "hconfidence": 0.624,
+  "hconfidence": 0.626,
   "hmargin": 10.7,
   "models": 29
  },
@@ -1699,8 +1699,16 @@
   "gameid": 38724,
   "hteamid": 16,
   "ateamid": 2,
-  "hconfidence": 0.501,
-  "hmargin": 0.4,
+  "hconfidence": 0.498,
+  "hmargin": -0.2,
   "models": 30
+ },
+ {
+  "gameid": 38725,
+  "hteamid": 6,
+  "ateamid": 7,
+  "hconfidence": 0.63,
+  "hmargin": 11.4,
+  "models": 2
  }
 ]
