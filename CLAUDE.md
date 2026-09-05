@@ -229,9 +229,14 @@ forecasts for upcoming fixtures) and `projected.json` (Squiggle's own projected 
 thing no fixture data can derive, and the third justified curated exception after
 `teams.ts` and `rivalries.ts`.
 
-`normaliseProjectedLadder` parses the `ladder` query tolerantly: it is the one Squiggle
-query the app had never called, so its field names are taken on trust until a real run
-confirms them, and an unreadable payload yields no projection rather than a broken screen.
+`normaliseProjectedLadder` reads the `ladder` query, whose rows carry `teamid`, an integer
+`rank` and a `mean_rank` that arrives as a **string** — the model's average finish across
+its own simulations, and the better signal, so it is preferred over the integer. An
+unreadable payload yields no projection rather than a broken screen, and `projected.json`
+is legitimately `[]` once the home & away season is over: there is no ladder left to
+project, so the models stop publishing one. Because "we could not read it" and "there is
+nothing to read" both normalise to empty, `describeLadderPayload` reports which one the
+run actually saw — never swallow that difference again.
 
 `scripts/squiggle.mjs` is the one normaliser for games/standings/tips, so a 2023 game and
 a 2026 game are the identical shape. New fields are added there, in `domain/types.ts`, and

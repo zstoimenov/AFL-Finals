@@ -173,22 +173,29 @@ export function normaliseTipsters(raw) {
  * the simulation is merely self-consistent or actually plausible. Where the two
  * disagree is more interesting than where they agree.
  *
- * Parsed tolerantly on purpose. This is the one Squiggle query the app had never
- * called, so the exact field names are taken on trust until a real run confirms
- * them: a row needs a team id and something rank-shaped, and anything else is
- * ignored. Several models publish a projection, so ranks are averaged across
- * whoever answered and the contributing count is kept — a projection from one
- * source is not the same claim as a projection from ten.
+ * The payload is `{ ladder: [...] }` with one row per club *per model*, carrying
+ * `teamid`, an integer `rank`, and a `mean_rank` that arrives as a **string**
+ * ("1.5") because it is the model's average finishing position across its own
+ * simulations. Prefer the mean: an integer rank throws away the difference
+ * between a club that is barely second and one that is comfortably second.
  *
- * Returns an empty array rather than throwing when the payload is not what we
- * expect, which the caller treats as "no projection deployed".
+ * Ranks are averaged across whichever models answered, and the contributing
+ * count is kept — a projection from one source is not the same claim as a
+ * projection from ten.
+ *
+ * Returns an empty array for a payload we cannot read *and* for a season with
+ * nothing left to project, which are different things. `describeLadderPayload`
+ * below exists to tell them apart in the run log, because the first is a bug and
+ * the second is just September.
  */
 export function normaliseProjectedLadder(raw) {
   const rows = Array.isArray(raw?.ladder) ? raw.ladder : [];
   const byTeam = new Map();
   for (const r of rows) {
     const id = Number(r.teamid ?? r.team_id ?? r.id ?? 0);
-    const rank = Number(r.rank ?? r.mean_rank ?? r.position ?? 0);
+    // mean_rank is a string; rank is the integer fallback for a source that
+    // publishes a placing without a distribution behind it
+    const rank = Number(r.mean_rank ?? r.rank ?? r.position ?? 0);
     if (!id || !Number.isFinite(rank) || rank <= 0) continue;
     const entry = byTeam.get(id) ?? { id, sum: 0, n: 0 };
     entry.sum += rank;
@@ -198,6 +205,37 @@ export function normaliseProjectedLadder(raw) {
   return [...byTeam.values()]
     .map(({ id, sum, n }) => ({ id, projectedRank: round(sum / n, 2), sources: n }))
     .sort((a, b) => a.projectedRank - b.projectedRank);
+}
+
+/**
+ * One line describing what the ladder query actually returned, for the run log.
+ *
+ * The first real run of this pipeline wrote an empty `projected.json` and left
+ * no way to tell why: a failed request, a payload shaped differently than
+ * expected, and a season with nothing left to project all normalise to the same
+ * empty array. Silently swallowing that difference is what made a one-line
+ * question into an investigation, so the fetch now says what it saw.
+ */
+export function describeLadderPayload(raw, err) {
+  if (err) return `request failed: ${err.message ?? err}`;
+  if (raw == null || typeof raw !== 'object') return `unexpected payload type: ${typeof raw}`;
+  if (!Array.isArray(raw.ladder)) {
+    const keys = Object.keys(raw).slice(0, 6).join(', ') || 'none';
+    return `no 'ladder' array in payload (top-level keys: ${keys})`;
+  }
+  if (raw.ladder.length === 0) {
+    // expected once the home & away season is done: there is no ladder left to
+    // project, so the models stop publishing one
+    return 'ladder array is empty — no model is projecting a ladder right now';
+  }
+  const first = raw.ladder[0];
+  const dummies = raw.ladder.filter((r) => Number(r.dummy) > 0).length;
+  const sources = new Set(raw.ladder.map((r) => r.sourceid)).size;
+  return (
+    `${raw.ladder.length} rows from ${sources} source(s); ` +
+    `first row keys: ${Object.keys(first ?? {}).join(', ')}` +
+    (dummies > 0 ? `; ${dummies} row(s) flagged dummy` : '')
+  );
 }
 
 /** Kickoff instant (epoch seconds) for a normalised game — unixtime or parsed date. */

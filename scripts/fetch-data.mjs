@@ -19,20 +19,26 @@ import {
   normaliseStandings,
   normaliseTips,
   normaliseTipsters,
-  normaliseProjectedLadder
+  normaliseProjectedLadder,
+  describeLadderPayload
 } from './squiggle.mjs';
 
 const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', 'public', 'data');
 const YEAR = Number(process.env.AFL_YEAR ?? new Date().getFullYear());
 
 try {
+  // the projected ladder is a benchmark, not something the app needs to render
+  // a screen, so a failure here must not cost us the snapshot — but it is
+  // reported rather than swallowed, so an empty projection can be explained
+  let ladderErr = null;
   const [gamesRaw, standingsRaw, tipsRaw, ladderRaw] = await Promise.all([
     squiggle('games', YEAR),
     squiggle('standings', YEAR),
     squiggle('tips', YEAR),
-    // the projected ladder is a benchmark, not something the app needs to
-    // render a screen, so a failure here must not cost us the snapshot
-    squiggle('ladder', YEAR).catch(() => ({}))
+    squiggle('ladder', YEAR).catch((e) => {
+      ladderErr = e;
+      return {};
+    })
   ]);
 
   const { games, totalRounds } = normaliseGames(gamesRaw);
@@ -40,6 +46,10 @@ try {
   const tips = normaliseTips(tipsRaw);
   const tipsters = normaliseTipsters(tipsRaw);
   const projected = normaliseProjectedLadder(ladderRaw);
+  // say what the ladder query returned whether or not it produced rows: an
+  // empty projection is expected once the home & away season is over, and a
+  // silent empty file is indistinguishable from a broken parser
+  console.log(`Projected ladder: ${describeLadderPayload(ladderErr ? null : ladderRaw, ladderErr)}`);
 
   if (games.length === 0 || standings.length === 0) {
     throw new Error('Squiggle returned an empty snapshot — keeping existing data');
