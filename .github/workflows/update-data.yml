@@ -2,8 +2,20 @@ name: Update AFL data
 
 on:
   schedule:
-    # daily at 21:00 AWST (13:00 UTC; AWST has no daylight saving) — picks up
-    # results and ladder moves through the season and finals
+    # AWST is UTC+8 and has no daylight saving, so these are fixed all year.
+    #
+    # Squiggle is not the constraint here — three requests a day against a
+    # courtesy limit of roughly one a second is a rounding error, and the data
+    # changes slowly. The real cost is on our side: every refresh that finds a
+    # change writes a commit to main and chains a full Pages deploy, so polling
+    # hourly would mean 24 commits and 24 builds a day to catch results that
+    # land in three predictable windows.
+    #
+    # So the schedule follows the football rather than the clock. Games finish
+    # through Thursday to Sunday evenings AWST; these three catch the overnight
+    # results, the afternoon's games and the evening's, and a game that ends
+    # after the last one is picked up by the first the next morning.
+    - cron: '0 2,7 * * 4,5,6,0'
     - cron: '0 13 * * *'
   workflow_dispatch:
 
