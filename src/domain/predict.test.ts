@@ -9,6 +9,8 @@ import {
   blendedHomeProb,
   fixtureHomeProb,
   SQUIGGLE_BLEND,
+  SQUIGGLE_AGREEMENT_TILT,
+  blendWeight,
   MARGIN_PROB_SCALE
 } from './predict';
 
@@ -161,5 +163,47 @@ describe('blendedHomeProb', () => {
     const expected = (1 - SQUIGGLE_BLEND) * model + SQUIGGLE_BLEND * 0.9;
     expect(blended).toBeCloseTo(expected, 6);
     expect(blended).toBeGreaterThan(model);
+  });
+});
+
+describe('blendWeight', () => {
+  const tip = (htips: number | null, atips: number | null): Tip => ({
+    gameid: 1,
+    hteamid: 1,
+    ateamid: 2,
+    hconfidence: 0.6,
+    models: (htips ?? 0) + (atips ?? 0) || 30,
+    htips,
+    atips
+  });
+
+  it('is the flat blend while the tilt ships at zero', () => {
+    // the term is implemented and inert: no snapshot has been fetched with the
+    // agreement figure yet, so there is nothing to justify a weight with
+    expect(SQUIGGLE_AGREEMENT_TILT).toBe(0);
+    expect(blendWeight(tip(29, 1))).toBe(SQUIGGLE_BLEND);
+    expect(blendWeight(tip(15, 15))).toBe(SQUIGGLE_BLEND);
+  });
+
+  it('leans further on Squiggle as the models converge, once enabled', () => {
+    expect(blendWeight(tip(30, 0), 0.2)).toBeGreaterThan(SQUIGGLE_BLEND);
+    expect(blendWeight(tip(15, 15), 0.2)).toBeLessThan(SQUIGGLE_BLEND);
+  });
+
+  it('leaves a typical field on the flat blend', () => {
+    // 0.75 agreement is the pivot — neither side gains influence there
+    expect(blendWeight(tip(30, 10), 0.2)).toBeCloseTo(SQUIGGLE_BLEND, 5);
+  });
+
+  it('never shuts either model out entirely', () => {
+    expect(blendWeight(tip(30, 0), 10)).toBeLessThanOrEqual(0.9);
+    expect(blendWeight(tip(15, 15), 10)).toBeGreaterThanOrEqual(0.1);
+  });
+
+  it('falls back to the flat blend when the tip carries no agreement figure', () => {
+    // archived seasons must stay byte-for-byte identical to what they produced
+    // before any of this existed
+    expect(blendWeight(tip(null, null), 0.2)).toBe(SQUIGGLE_BLEND);
+    expect(blendWeight(null, 0.2)).toBe(SQUIGGLE_BLEND);
   });
 });

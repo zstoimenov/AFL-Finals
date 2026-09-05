@@ -1,4 +1,4 @@
-import type { Game, Snapshot, Standing } from './types';
+import type { Game, Snapshot, Standing, Tip } from './types';
 import {
   gameStart,
   opponentAdjustedMargins,
@@ -7,6 +7,7 @@ import {
   restDays
 } from './features';
 import { homeVenuesByTeam, isAwayTravelling, isHostAtHome } from './venues';
+import { agreement, tipFor } from './consensus';
 
 /**
  * Transparent team rating: a readable blend of season win ratio, percentage
@@ -218,6 +219,41 @@ export const MARGIN_PROB_SCALE = 21;
 export const SQUIGGLE_BLEND = 0.5;
 
 /**
+ * How far the blend is allowed to tilt with the consensus's own confidence.
+ *
+ * The flat 0.5 above treats every consensus as equally trustworthy, which it is
+ * not: a field where every model agrees is a much stronger signal than one split
+ * down the middle, where the mean is an average of opinions rather than a shared
+ * conclusion. The tilt leans further on Squiggle as the models converge and
+ * further on the in-app model as they scatter, bounded so neither side can ever
+ * be shut out entirely.
+ *
+ * **Shipped at 0 — implemented and tested, deliberately inert.** Only snapshots
+ * fetched after the per-model detail was recorded carry the agreement figure, so
+ * the backtest harness has no history to fit this against yet. Turning it on
+ * without that evidence would be a guess dressed as a weight, and the one thing
+ * the model's weights are supposed to be is justified. Raise it once a season of
+ * spread-bearing snapshots exists and `backtest-years.mjs` says it helps.
+ */
+export const SQUIGGLE_AGREEMENT_TILT = 0;
+
+/**
+ * The blend weight for one fixture: the flat `SQUIGGLE_BLEND`, tilted by how
+ * much the tipping models agree. Falls back to the flat weight when the tip
+ * carries no agreement figure, which keeps every archived season byte-for-byte
+ * identical to what it produced before this existed.
+ */
+export function blendWeight(tip: Tip | null, tilt = SQUIGGLE_AGREEMENT_TILT): number {
+  const share = agreement(tip);
+  if (tilt === 0 || share == null) return SQUIGGLE_BLEND;
+  // share runs 0.5 (dead split) to 1 (unanimous); centred on 0.75 so a typical
+  // field neither gains nor loses influence, and scaled so the extremes reach
+  // the full tilt either way
+  const shift = (share - 0.75) * 4 * tilt;
+  return Math.min(0.9, Math.max(0.1, SQUIGGLE_BLEND + shift));
+}
+
+/**
  * Squiggle consensus P(home wins), preferring the predicted margin (richer) and
  * falling back to the consensus confidence. Null when the game isn't tipped.
  */
@@ -246,7 +282,8 @@ export function blendedHomeProb(
   const model = fixtureHomeProb(ratings, games, game);
   const consensus = squiggleConsensusProb(snapshot, game.hteamid, game.ateamid);
   if (consensus == null) return model;
-  const p = (1 - SQUIGGLE_BLEND) * model + SQUIGGLE_BLEND * consensus;
+  const w = blendWeight(tipFor(snapshot, game.hteamid, game.ateamid));
+  const p = (1 - w) * model + w * consensus;
   return Math.min(0.97, Math.max(0.03, p));
 }
 
