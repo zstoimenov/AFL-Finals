@@ -254,3 +254,103 @@ describe('rateGames', () => {
     expect(rated[0].score).toBeGreaterThan(0);
   });
 });
+
+describe('tipster disagreement', () => {
+  /** A fixture plus the aggregated tip describing how the field split on it. */
+  function withTips(htips: number | null, atips: number | null, over = {}) {
+    const g = game(1, 2, { round: 22 });
+    const s = snap([g]);
+    s.tips = [
+      {
+        gameid: g.id,
+        hteamid: 1,
+        ateamid: 2,
+        hconfidence: 0.55,
+        models: 30,
+        htips,
+        atips,
+        spread: 0.12,
+        low: 0.35,
+        high: 0.78,
+        ...over
+      }
+    ];
+    return { game: g, snapshot: s };
+  }
+
+  const reasonOn = (htips: number | null, atips: number | null, over = {}) => {
+    const { game: g, snapshot } = withTips(htips, atips, over);
+    const rated = rateGames(snapshot, [g], { stakes: false })[0];
+    return rated.reasons.find((r) => r.kind === 'consensus') ?? null;
+  };
+
+  it('scores a dead split at the full weight', () => {
+    const r = reasonOn(15, 15);
+    expect(r?.weight).toBeCloseTo(WEIGHTS.consensusSplit);
+    expect(r?.text).toContain('15–15');
+  });
+
+  it('scores a lean below a split', () => {
+    const even = reasonOn(15, 15)!;
+    const lean = reasonOn(22, 8)!;
+    expect(lean.weight).toBeGreaterThan(0);
+    expect(lean.weight).toBeLessThan(even.weight);
+  });
+
+  it('says nothing when the field broadly agrees', () => {
+    expect(reasonOn(28, 2)).toBeNull();
+  });
+
+  it('says nothing when the snapshot predates the per-model detail', () => {
+    // an absent signal must never be reported as a unanimous one
+    expect(reasonOn(null, null, { spread: null, low: null, high: null })).toBeNull();
+  });
+
+  it('says nothing for a game no model tipped', () => {
+    const g = game(1, 2, { round: 22 });
+    const rated = rateGames(snap([g]), [g], { stakes: false })[0];
+    expect(rated.reasons.some((r) => r.kind === 'consensus')).toBe(false);
+  });
+
+  it('keeps the score equal to the sum of the reasons shown', () => {
+    // the card's score is inspectable only if nothing is added invisibly
+    const { game: g, snapshot } = withTips(16, 14);
+    const rated = rateGames(snapshot, [g], { stakes: false })[0];
+    expect(rated.score).toBeCloseTo(rated.reasons.reduce((sum, r) => sum + r.weight, 0));
+  });
+});
+
+describe('conditions', () => {
+  const forecast = (over: Record<string, unknown>) => ({
+    fetchedAt: '2026-08-01T00:00:00.000Z',
+    games: { '1': { tempC: 15, rainMm: 0, rainChance: 5, windKph: 8, ...over } }
+  });
+
+  const reasonFor = (weather: Parameters<typeof rateGames>[2]['weather']) => {
+    const g = { ...game(1, 2, { round: 22 }), id: 1 };
+    const rated = rateGames(snap([g]), [g], { stakes: false, weather })[0];
+    return rated.reasons.find((r) => r.kind === 'weather') ?? null;
+  };
+
+  it('argues for a game played in the rain', () => {
+    expect(reasonFor(forecast({ rainMm: 3 }))?.text).toContain('Heavy rain');
+  });
+
+  it('argues for a game played in a gale', () => {
+    expect(reasonFor(forecast({ windKph: 45 }))?.text).toContain('Strong wind');
+  });
+
+  it('says nothing about a mild evening', () => {
+    expect(reasonFor(forecast({}))).toBeNull();
+  });
+
+  it('says nothing when no forecast is deployed', () => {
+    // an absent forecast is not a fine day
+    expect(reasonFor(null)).toBeNull();
+    expect(reasonFor(undefined)).toBeNull();
+  });
+
+  it('says nothing about a game the forecast does not cover', () => {
+    expect(reasonFor({ fetchedAt: '', games: {} })).toBeNull();
+  });
+});

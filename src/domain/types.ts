@@ -53,6 +53,75 @@ export interface Tip {
   hmargin?: number | null;
   /** number of models aggregated */
   models: number;
+  /**
+   * The shape of the disagreement behind the mean, absent on snapshots taken
+   * before it was recorded. `hconfidence` alone cannot tell a game every model
+   * calls the same way from one they split down the middle, and only the second
+   * is genuinely unpredictable — see `domain/consensus.ts`.
+   */
+  htips?: number | null;
+  atips?: number | null;
+  /** population standard deviation of the models' home-win probabilities */
+  spread?: number | null;
+  /** the least and most bullish model on the home side */
+  low?: number | null;
+  high?: number | null;
+}
+
+/**
+ * One club's projected finish in Squiggle's own end-of-season ladder
+ * (`public/data/projected.json`), averaged across the models that published one.
+ */
+export interface ProjectedLadderRow {
+  id: number;
+  projectedRank: number;
+  /** how many models contributed — a projection from one is a weaker claim */
+  sources: number;
+}
+
+/**
+ * The forecast at kickoff for one fixture, from Open-Meteo.
+ *
+ * Every field is nullable: a forecast can be partial, and a game outside the
+ * forecast horizon or at a ground with no known coordinates has no record at all.
+ */
+export interface GameWeather {
+  tempC: number | null;
+  rainMm: number | null;
+  /** chance of precipitation in that hour, 0-100 */
+  rainChance: number | null;
+  windKph: number | null;
+}
+
+/** `public/data/weather.json` — forecasts keyed by game id. */
+export interface WeatherSnapshot {
+  fetchedAt: string;
+  games: Record<string, GameWeather>;
+}
+
+/** One of the tipping models behind Squiggle's consensus. */
+export interface TipSource {
+  id: number;
+  name: string;
+}
+
+/**
+ * One model's tip on one game, as P(home wins).
+ *
+ * Stored under short keys because there is one of these per model per game —
+ * around seven thousand a season — and the file is fetched whole. `g` is the
+ * game id, `s` the source id, `p` the home-win probability.
+ */
+export interface SourceTip {
+  g: number;
+  s: number;
+  p: number;
+}
+
+/** The per-model tip corpus (`public/data/tipsters.json`). */
+export interface TipsterCorpus {
+  sources: TipSource[];
+  tips: SourceTip[];
 }
 
 /**

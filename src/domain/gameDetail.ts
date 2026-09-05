@@ -1,4 +1,4 @@
-import type { Game, Snapshot, Standing } from './types';
+import type { Game, Snapshot, Standing, WeatherSnapshot } from './types';
 import type { ClubResult } from './club';
 import type { InterestReason } from './interest';
 import type { Meeting } from './seasonStats';
@@ -68,12 +68,14 @@ const MEETINGS_SHOWN = 6;
 /**
  * Assemble a game's detail. `history` is the cross-season corpus; only earlier
  * seasons feed the model, and a completed game is scored on `preGameHomeProb` so
- * a result never leaks into its own forecast.
+ * a result never leaks into its own forecast. `weather` is the kickoff forecast,
+ * which reaches the sheet through the interest reasons.
  */
 export function buildGameDetail(
   snapshot: Snapshot,
   game: Game,
-  history: Game[] = []
+  history: Game[] = [],
+  weather: WeatherSnapshot | null = null
 ): GameDetail {
   const priorHistory = history.filter((g) => g.year < snapshot.meta.year);
   const complete = Boolean(game.complete);
@@ -91,7 +93,8 @@ export function buildGameDetail(
   // game's "what this would settle" has already been settled
   const reasons = complete
     ? []
-    : (rateGames(snapshot, [game], { history, stakes: game.is_final === 0 })[0]?.reasons ?? []);
+    : (rateGames(snapshot, [game], { history, weather, stakes: game.is_final === 0 })[0]?.reasons ??
+      []);
 
   // every meeting the archive holds, minus this fixture itself
   const corpus = [...history, ...completedGames(snapshot.games)];
@@ -122,8 +125,8 @@ export function buildGameDetail(
     home: side(game.hteamid, true),
     away: side(game.ateamid, false),
     modelHomeProb,
-    squiggleHomeProb: squiggleConsensusProb(snapshot, game.hteamid, game.ateamid),
-    squiggleMargin: squiggleMargin(snapshot, game.hteamid, game.ateamid),
+    squiggleHomeProb: squiggleConsensusProb(snapshot, game.hteamid, game.ateamid, game.id),
+    squiggleMargin: squiggleMargin(snapshot, game.hteamid, game.ateamid, game.id),
     reasons,
     meetings,
     record: {

@@ -21,7 +21,7 @@ export function seasonAccuracy(snap: Snapshot): SeasonAccuracy {
   // untipped game falls back to 0.5 (no opinion), matching how a coin-flip scores.
   const squiggleModel: PreGameModel = (_prior, game) => {
     const snapLike = { games: [], standings: [], tips: snap.tips } as unknown as Snapshot;
-    return squiggleConsensusProb(snapLike, game.hteamid, game.ateamid) ?? 0.5;
+    return squiggleConsensusProb(snapLike, game.hteamid, game.ateamid, game.id) ?? 0.5;
   };
   const squiggle = evaluate(snap.games, squiggleModel);
   return { model, squiggle };

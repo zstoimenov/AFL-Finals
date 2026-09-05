@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { Game, Snapshot } from '../domain/types';
+import type { Game, Snapshot, WeatherSnapshot } from '../domain/types';
 import type { InterestReason, RatedGame } from '../domain/interest';
 import { rateGames, upcomingGames } from '../domain/interest';
 import { squiggleProb } from '../domain/predict';
@@ -25,15 +25,18 @@ const MUST_WATCH = 3;
  */
 export default function ThisWeekView({
   snapshot,
-  history = []
+  history = [],
+  weather = null
 }: {
   snapshot: Snapshot;
   history?: Game[];
+  /** kickoff forecasts, so rain or wind can argue for a game */
+  weather?: WeatherSnapshot | null;
 }) {
   const week = useMemo(() => upcomingGames(snapshot), [snapshot]);
   const rated = useMemo(
-    () => rateGames(snapshot, week.games, { history, stakes: !week.finals }),
-    [snapshot, week, history]
+    () => rateGames(snapshot, week.games, { history, weather, stakes: !week.finals }),
+    [snapshot, week, history, weather]
   );
 
   // how much of this round is already in the books
@@ -218,7 +221,7 @@ function WeekCard({
   const hp = Math.round(homeProb * 100);
   const today = isGameToday(game.unixtime, game.date);
   const fav = gameHasFavourite(game);
-  const sq = squiggleProb(snapshot, game.hteamid, game.ateamid);
+  const sq = squiggleProb(snapshot, game.hteamid, game.ateamid, game.id);
   const chips = reasons.slice(1); // reasons[0] is the headline
 
   const cls = `fixturerow weekcard${fav ? ' fav-game' : ''}${today ? ' today' : ''}${

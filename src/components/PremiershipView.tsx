@@ -1,4 +1,4 @@
-import type { Snapshot } from '../domain/types';
+import type { ProjectedLadderRow, Snapshot } from '../domain/types';
 import type { SimOutput } from '../domain/simulate';
 import { TEAMS } from '../domain/teams';
 import { isFavourite } from '../domain/favourite';
@@ -6,6 +6,7 @@ import { sortedStandings } from '../domain/ladder';
 import TeamChip from './TeamChip';
 import InfoButton from './InfoButton';
 import { formatProbability } from '../domain/format';
+import { meanRankGap, projectionGaps } from '../domain/projection';
 
 /**
  * Premiership projection: simulated P(premier) per team as labeled horizontal
@@ -14,10 +15,13 @@ import { formatProbability } from '../domain/format';
  */
 export default function PremiershipView({
   snapshot,
-  sim
+  sim,
+  projected = []
 }: {
   snapshot: Snapshot;
   sim: SimOutput | null;
+  /** Squiggle's own projected ladder, when one is deployed */
+  projected?: ProjectedLadderRow[];
 }) {
   // The simulation reports as it runs, so this only shows before the first
   // partial arrives. It holds the real layout rather than a line of text, so
@@ -127,6 +131,85 @@ export default function PremiershipView({
           );
         })}
       </div>
+
+      <ProjectionCheck sim={sim} projected={projected} />
     </section>
   );
+}
+
+/**
+ * Where this app's simulation and Squiggle's disagree.
+ *
+ * Every other number on this screen is the app marking its own homework — a
+ * simulation is self-consistent by construction, and self-consistency is not
+ * accuracy. Squiggle's models publish their own projected ladder, which is the
+ * only outside check available on a forecast nobody can score until the season
+ * ends. The agreements are not worth a row; the clubs the two see differently
+ * are the whole point.
+ *
+ * Renders nothing at all when there is no projection to compare against, since
+ * an empty table would read as agreement.
+ */
+function ProjectionCheck({
+  sim,
+  projected
+}: {
+  sim: SimOutput;
+  projected: ProjectedLadderRow[];
+}) {
+  const gaps = projectionGaps(sim, projected, { minGap: MIN_RANK_GAP });
+  const compared = projected.filter((p) => sim.teams[p.id]).length;
+  const mean = meanRankGap(projectionGaps(sim, projected), compared);
+  if (compared === 0) return null;
+
+  return (
+    <div className="projcheck">
+      <div className="section-head">
+        <h3>Against Squiggle&apos;s projection</h3>
+        <InfoButton title="About the projection check">
+          <p>
+            Squiggle&apos;s models publish their own projected final ladder. It is the only
+            outside check on this app&apos;s simulation, which is otherwise marking its own
+            homework — nobody can score a projection until the season is over.
+          </p>
+          <p>
+            Only clubs the two projections place at least {MIN_RANK_GAP} places apart are listed:
+            a place or two either way is noise between two simulations. A club shown as
+            &ldquo;we&apos;re higher&rdquo; is one this app rates above the field.
+          </p>
+        </InfoButton>
+      </div>
+      {mean != null && (
+        <p className="simnote">
+          Across {compared} clubs the two projections differ by <strong>{mean}</strong> places on
+          average.
+          {gaps.length === 0 && ' Nothing is far enough apart to be worth calling out.'}
+        </p>
+      )}
+      {gaps.length > 0 && (
+        <ul className="projgaps">
+          {gaps.map((g) => (
+            <li key={g.teamId}>
+              <TeamChip teamId={g.teamId} compact />
+              <span className="projgap-detail">
+                {ordinalPlace(g.ourRank)} here, {ordinalPlace(g.theirRank)} at Squiggle
+              </span>
+              <span className={g.gap > 0 ? 'projgap-tag up' : 'projgap-tag down'}>
+                {g.gap > 0 ? `we're ${g.gap} higher` : `we're ${Math.abs(g.gap)} lower`}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/** A place or two apart is noise between two simulations, not a disagreement. */
+const MIN_RANK_GAP = 3;
+
+function ordinalPlace(n: number): string {
+  const rem100 = n % 100;
+  if (rem100 >= 11 && rem100 <= 13) return `${n}th`;
+  return `${n}${['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'}`;
 }

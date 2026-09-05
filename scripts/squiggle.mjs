@@ -71,7 +71,17 @@ export function normaliseStandings(raw) {
   }));
 }
 
-/** Average every model's home-win confidence (and margin) per game. */
+/**
+ * Aggregate the per-model tips for each game.
+ *
+ * Squiggle returns one row per model per game — roughly thirty independent
+ * predictions. Averaging them into a single consensus throws away the most
+ * interesting part: whether the models actually agree. A game every model calls
+ * the same way and a game they split 16-15 both average out near the same
+ * number, yet only one of them is genuinely unpredictable. So alongside the mean
+ * we keep the shape of the disagreement — how many tipped the home side, the
+ * spread of their probabilities, and the range they cover.
+ */
 export function normaliseTips(raw) {
   const byGame = new Map();
   for (const t of raw.tips ?? []) {
@@ -80,15 +90,14 @@ export function normaliseTips(raw) {
       gameid: gid,
       hteamid: Number(t.hteamid),
       ateamid: Number(t.ateamid),
-      sum: 0,
+      probs: [],
       marginSum: 0,
-      marginCount: 0,
-      models: 0
+      marginCount: 0
     };
     // Squiggle confidence is 0-100 for the TIPPED team; convert to home-win prob
     const conf = Number(t.confidence ?? 50) / 100;
     const homeSide = Number(t.tipteamid) === entry.hteamid;
-    entry.sum += homeSide ? conf : 1 - conf;
+    entry.probs.push(homeSide ? conf : 1 - conf);
     // Squiggle margin is the predicted winning margin for the tipped team;
     // fold to the home team's perspective (positive = home favoured).
     if (t.margin != null) {
@@ -96,15 +105,99 @@ export function normaliseTips(raw) {
       entry.marginSum += homeSide ? m : -m;
       entry.marginCount += 1;
     }
-    entry.models += 1;
     byGame.set(gid, entry);
   }
-  return [...byGame.values()].map(({ sum, marginSum, marginCount, models, ...rest }) => ({
-    ...rest,
-    hconfidence: Math.round((sum / Math.max(models, 1)) * 1000) / 1000,
-    hmargin: marginCount > 0 ? Math.round((marginSum / marginCount) * 10) / 10 : null,
-    models
-  }));
+  return [...byGame.values()].map(({ probs, marginSum, marginCount, ...rest }) => {
+    const models = probs.length;
+    const mean = models > 0 ? probs.reduce((a, b) => a + b, 0) / models : 0.5;
+    const variance =
+      models > 0 ? probs.reduce((a, p) => a + (p - mean) ** 2, 0) / models : 0;
+    return {
+      ...rest,
+      hconfidence: round(mean, 3),
+      hmargin: marginCount > 0 ? round(marginSum / marginCount, 1) : null,
+      models,
+      // a model "tips home" when it gives the home side better than even odds;
+      // exactly 0.5 is not a tip either way and counts for neither side
+      htips: probs.filter((p) => p > 0.5).length,
+      atips: probs.filter((p) => p < 0.5).length,
+      spread: models > 0 ? round(Math.sqrt(variance), 3) : null,
+      low: models > 0 ? round(Math.min(...probs), 3) : null,
+      high: models > 0 ? round(Math.max(...probs), 3) : null
+    };
+  });
+}
+
+const round = (n, dp) => Math.round(n * 10 ** dp) / 10 ** dp;
+
+/**
+ * Every model's individual tip, kept whole rather than averaged.
+ *
+ * `normaliseTips` above answers "what does the field think"; this answers "who
+ * was right". Grading each tipster separately is what turns the app's own
+ * scorecard from "we beat the average of thirty models" — a soft bar, since the
+ * average is dragged down by the weakest of them — into "we finished eighth of
+ * thirty-one". Squiggle publishes these before each game, so scoring them
+ * against the result afterwards involves no hindsight.
+ *
+ * Written with short keys (`g`ame, `s`ource, `p`robability) because this is one
+ * row per model per game — roughly seven thousand of them in a season — and the
+ * file is downloaded by anyone who opens the hub. The app-facing names are
+ * restored in `domain/types.ts`.
+ */
+export function normaliseTipsters(raw) {
+  const sources = new Map();
+  const tips = [];
+  for (const t of raw.tips ?? []) {
+    const id = Number(t.sourceid ?? 0);
+    const gameid = Number(t.gameid ?? 0);
+    if (!id || !gameid) continue;
+    if (!sources.has(id)) sources.set(id, { id, name: String(t.source ?? `Model ${id}`) });
+    // same fold as the consensus: confidence is for the tipped team, we store
+    // every probability from the home side's point of view
+    const conf = Number(t.confidence ?? 50) / 100;
+    const homeSide = Number(t.tipteamid) === Number(t.hteamid);
+    tips.push({ g: gameid, s: id, p: round(homeSide ? conf : 1 - conf, 3) });
+  }
+  return {
+    sources: [...sources.values()].sort((a, b) => a.name.localeCompare(b.name)),
+    tips
+  };
+}
+
+/**
+ * Squiggle's own projected end-of-season ladder.
+ *
+ * The app simulates the rest of the season itself; this is the same question
+ * answered by somebody else, which makes it the one benchmark that says whether
+ * the simulation is merely self-consistent or actually plausible. Where the two
+ * disagree is more interesting than where they agree.
+ *
+ * Parsed tolerantly on purpose. This is the one Squiggle query the app had never
+ * called, so the exact field names are taken on trust until a real run confirms
+ * them: a row needs a team id and something rank-shaped, and anything else is
+ * ignored. Several models publish a projection, so ranks are averaged across
+ * whoever answered and the contributing count is kept — a projection from one
+ * source is not the same claim as a projection from ten.
+ *
+ * Returns an empty array rather than throwing when the payload is not what we
+ * expect, which the caller treats as "no projection deployed".
+ */
+export function normaliseProjectedLadder(raw) {
+  const rows = Array.isArray(raw?.ladder) ? raw.ladder : [];
+  const byTeam = new Map();
+  for (const r of rows) {
+    const id = Number(r.teamid ?? r.team_id ?? r.id ?? 0);
+    const rank = Number(r.rank ?? r.mean_rank ?? r.position ?? 0);
+    if (!id || !Number.isFinite(rank) || rank <= 0) continue;
+    const entry = byTeam.get(id) ?? { id, sum: 0, n: 0 };
+    entry.sum += rank;
+    entry.n += 1;
+    byTeam.set(id, entry);
+  }
+  return [...byTeam.values()]
+    .map(({ id, sum, n }) => ({ id, projectedRank: round(sum / n, 2), sources: n }))
+    .sort((a, b) => a.projectedRank - b.projectedRank);
 }
 
 /** Kickoff instant (epoch seconds) for a normalised game — unixtime or parsed date. */

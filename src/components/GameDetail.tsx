@@ -1,10 +1,12 @@
 import { useMemo } from 'react';
-import type { Game, Snapshot } from '../domain/types';
+import type { Game, Snapshot, WeatherSnapshot } from '../domain/types';
 import type { GameSideDetail } from '../domain/gameDetail';
 import { buildGameDetail } from '../domain/gameDetail';
 import { formatGameDateTime } from '../domain/format';
 import { teamAbbrev, teamShortName } from '../domain/teams';
 import { isFavourite } from '../domain/favourite';
+import { consensusSummary, tipForGame } from '../domain/consensus';
+import { weatherFor, weatherNote, weatherSummary } from '../domain/weather';
 import { useDialog } from '../useDialog';
 import TeamChip from './TeamChip';
 import ProbBar from './ProbBar';
@@ -24,18 +26,25 @@ export default function GameDetail({
   game,
   snapshot,
   history = [],
+  weather = null,
   onClose
 }: {
   game: Game;
   snapshot: Snapshot;
   history?: Game[];
+  /** kickoff forecast for the season, or null when none is deployed */
+  weather?: WeatherSnapshot | null;
   onClose: () => void;
 }) {
   const sheet = useDialog<HTMLElement>(onClose);
   const detail = useMemo(
-    () => buildGameDetail(snapshot, game, history),
-    [snapshot, game, history]
+    () => buildGameDetail(snapshot, game, history, weather),
+    [snapshot, game, history, weather]
   );
+  const forecast = weatherFor(weather, game.id);
+  const conditions = weatherSummary(forecast);
+  const conditionsNote = weatherNote(forecast);
+  const split = consensusSummary(tipForGame(snapshot, game));
 
   const hp = Math.round(detail.modelHomeProb * 100);
   const sq = detail.squiggleHomeProb;
@@ -92,7 +101,11 @@ export default function GameDetail({
             : 'In-app model, blended with the Squiggle consensus where the game is tipped.'}
         </p>
 
-        {(sq != null || detail.neutralHost || detail.away.travelling) && (
+        {(sq != null ||
+          split != null ||
+          conditions != null ||
+          detail.neutralHost ||
+          detail.away.travelling) && (
           <ul className="gamesheet-notes">
             {sq != null && (
               <li>
@@ -102,6 +115,17 @@ export default function GameDetail({
                 {detail.squiggleMargin != null &&
                   ` — by about ${Math.round(Math.abs(detail.squiggleMargin))} points`}
                 .
+              </li>
+            )}
+            {split != null && (
+              <li>
+                <strong>The field</strong> — {split.charAt(0).toLowerCase() + split.slice(1)}.
+              </li>
+            )}
+            {conditions != null && (
+              <li>
+                <strong>{detail.complete ? 'Forecast was' : 'Forecast'}</strong> {conditions}
+                {conditionsNote && ` — ${conditionsNote.charAt(0).toLowerCase()}${conditionsNote.slice(1)}`}
               </li>
             )}
             {detail.away.travelling && (

@@ -116,7 +116,7 @@ export function blendedModel(tips: Tip[], blend = SQUIGGLE_BLEND): PreGameModel 
   return (prior, game) => {
     const model = enrichedModel(prior, game);
     const snap = { games: prior, standings: [], tips } as unknown as Snapshot;
-    const consensus = squiggleConsensusProb(snap, game.hteamid, game.ateamid);
+    const consensus = squiggleConsensusProb(snap, game.hteamid, game.ateamid, game.id);
     if (consensus == null) return model;
     return Math.min(0.97, Math.max(0.03, (1 - blend) * model + blend * consensus));
   };

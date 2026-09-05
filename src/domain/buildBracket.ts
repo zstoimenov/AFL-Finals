@@ -101,7 +101,10 @@ export function buildBracket(
       away: side(away, 'away'),
       game,
       homeWinProb: bothKnown && !decided ? winProb(ratings, home, away, key === 'GF') : null,
-      squiggleHomeProb: bothKnown && !decided ? squiggleProb(snapshot, home, away) : null,
+      // once the final is fixtured its own id disambiguates a third meeting;
+      // before that the pairing is hypothetical and the team pair is all we have
+      squiggleHomeProb:
+        bothKnown && !decided ? squiggleProb(snapshot, home, away, game?.id) : null,
       winnerTeamId: results[key] ?? null,
       locked
     } satisfies BracketMatch;

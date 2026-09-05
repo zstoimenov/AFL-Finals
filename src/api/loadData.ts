@@ -1,4 +1,11 @@
-import type { Game, HistoryIndexEntry, Snapshot } from '../domain/types';
+import type {
+  Game,
+  HistoryIndexEntry,
+  ProjectedLadderRow,
+  Snapshot,
+  TipsterCorpus,
+  WeatherSnapshot
+} from '../domain/types';
 
 /**
  * Loads the deployed data snapshots. These are static JSON files committed by
@@ -61,4 +68,35 @@ export function loadHistoryCorpus(): Promise<Game[]> {
  */
 export function loadSeason(year: number): Promise<Snapshot | null> {
   return getData<Snapshot | null>(`history/${year}.json`, null);
+}
+
+/**
+ * Every model's individual tip for the live season (`tipsters.json`), behind the
+ * consensus the app blends. Around 150KB and read by one screen, so it is
+ * fetched when the hub opens rather than at startup. Fail-soft: null on a
+ * deployment whose snapshot predates the file, and the hub simply shows no
+ * tipster leaderboard.
+ */
+export function loadTipsters(): Promise<TipsterCorpus | null> {
+  return getData<TipsterCorpus | null>('tipsters.json', null);
+}
+
+/**
+ * The kickoff forecast for upcoming fixtures (`weather.json`). Small, and read
+ * by the week screen and every game sheet, so it loads at startup. Fail-soft:
+ * null when the file isn't deployed, and the app shows no conditions anywhere —
+ * exactly as it did before weather existed.
+ */
+export function loadWeather(): Promise<WeatherSnapshot | null> {
+  return getData<WeatherSnapshot | null>('weather.json', null);
+}
+
+/**
+ * Squiggle's own projected end-of-season ladder (`projected.json`), the one
+ * external check on the app's simulation. Tiny, and read only by the odds
+ * screen. Fail-soft: an empty list means the comparison block is not rendered at
+ * all, which is the honest reading — no projection is not the same as agreement.
+ */
+export function loadProjectedLadder(): Promise<ProjectedLadderRow[]> {
+  return getData<ProjectedLadderRow[]>('projected.json', []);
 }
