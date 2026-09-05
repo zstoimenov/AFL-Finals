@@ -18,23 +18,28 @@ import {
   normaliseGames,
   normaliseStandings,
   normaliseTips,
-  normaliseTipsters
+  normaliseTipsters,
+  normaliseProjectedLadder
 } from './squiggle.mjs';
 
 const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', 'public', 'data');
 const YEAR = Number(process.env.AFL_YEAR ?? new Date().getFullYear());
 
 try {
-  const [gamesRaw, standingsRaw, tipsRaw] = await Promise.all([
+  const [gamesRaw, standingsRaw, tipsRaw, ladderRaw] = await Promise.all([
     squiggle('games', YEAR),
     squiggle('standings', YEAR),
-    squiggle('tips', YEAR)
+    squiggle('tips', YEAR),
+    // the projected ladder is a benchmark, not something the app needs to
+    // render a screen, so a failure here must not cost us the snapshot
+    squiggle('ladder', YEAR).catch(() => ({}))
   ]);
 
   const { games, totalRounds } = normaliseGames(gamesRaw);
   const standings = normaliseStandings(standingsRaw);
   const tips = normaliseTips(tipsRaw);
   const tipsters = normaliseTipsters(tipsRaw);
+  const projected = normaliseProjectedLadder(ladderRaw);
 
   if (games.length === 0 || standings.length === 0) {
     throw new Error('Squiggle returned an empty snapshot — keeping existing data');
@@ -60,11 +65,13 @@ try {
   // one row per model per game — big enough that the app fetches it only when
   // someone opens the hub, so it is written compact rather than indented
   writeFileSync(join(OUT, 'tipsters.json'), JSON.stringify(tipsters));
+  writeFileSync(join(OUT, 'projected.json'), JSON.stringify(projected, null, 1));
   writeFileSync(join(OUT, 'meta.json'), JSON.stringify(meta, null, 1));
   console.log(
     `Fetched ${YEAR}: ${games.length} games, ${standings.length} teams, ` +
       `${tips.length} tipped games from ${tipsters.sources.length} tipsters ` +
-      `(round ${currentRound}/${totalRounds})`
+      `(round ${currentRound}/${totalRounds}); ` +
+      `${projected.length} teams in Squiggle's projected ladder`
   );
 } catch (err) {
   console.error(`fetch-data failed: ${err.message ?? err}`);

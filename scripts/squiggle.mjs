@@ -165,6 +165,41 @@ export function normaliseTipsters(raw) {
   };
 }
 
+/**
+ * Squiggle's own projected end-of-season ladder.
+ *
+ * The app simulates the rest of the season itself; this is the same question
+ * answered by somebody else, which makes it the one benchmark that says whether
+ * the simulation is merely self-consistent or actually plausible. Where the two
+ * disagree is more interesting than where they agree.
+ *
+ * Parsed tolerantly on purpose. This is the one Squiggle query the app had never
+ * called, so the exact field names are taken on trust until a real run confirms
+ * them: a row needs a team id and something rank-shaped, and anything else is
+ * ignored. Several models publish a projection, so ranks are averaged across
+ * whoever answered and the contributing count is kept — a projection from one
+ * source is not the same claim as a projection from ten.
+ *
+ * Returns an empty array rather than throwing when the payload is not what we
+ * expect, which the caller treats as "no projection deployed".
+ */
+export function normaliseProjectedLadder(raw) {
+  const rows = Array.isArray(raw?.ladder) ? raw.ladder : [];
+  const byTeam = new Map();
+  for (const r of rows) {
+    const id = Number(r.teamid ?? r.team_id ?? r.id ?? 0);
+    const rank = Number(r.rank ?? r.mean_rank ?? r.position ?? 0);
+    if (!id || !Number.isFinite(rank) || rank <= 0) continue;
+    const entry = byTeam.get(id) ?? { id, sum: 0, n: 0 };
+    entry.sum += rank;
+    entry.n += 1;
+    byTeam.set(id, entry);
+  }
+  return [...byTeam.values()]
+    .map(({ id, sum, n }) => ({ id, projectedRank: round(sum / n, 2), sources: n }))
+    .sort((a, b) => a.projectedRank - b.projectedRank);
+}
+
 /** Kickoff instant (epoch seconds) for a normalised game — unixtime or parsed date. */
 export function gameStart(g) {
   if (g.unixtime && g.unixtime > 0) return g.unixtime;

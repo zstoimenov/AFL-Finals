@@ -69,6 +69,17 @@ export interface Tip {
 }
 
 /**
+ * One club's projected finish in Squiggle's own end-of-season ladder
+ * (`public/data/projected.json`), averaged across the models that published one.
+ */
+export interface ProjectedLadderRow {
+  id: number;
+  projectedRank: number;
+  /** how many models contributed — a projection from one is a weaker claim */
+  sources: number;
+}
+
+/**
  * The forecast at kickoff for one fixture, from Open-Meteo.
  *
  * Every field is nullable: a forecast can be partial, and a game outside the

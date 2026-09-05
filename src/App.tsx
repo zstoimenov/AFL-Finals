@@ -4,12 +4,14 @@ import {
   loadHistoryIndex,
   loadHistoryCorpus,
   loadSeason,
+  loadProjectedLadder,
   loadTipsters,
   loadWeather
 } from './api/loadData';
 import type {
   Game,
   HistoryIndexEntry,
+  ProjectedLadderRow,
   Snapshot,
   TipsterCorpus,
   WeatherSnapshot
@@ -52,6 +54,7 @@ export default function App() {
   const [historyCorpus, setHistoryCorpus] = useState<Game[]>([]);
   const [tipsters, setTipsters] = useState<TipsterCorpus | null>(null);
   const [weather, setWeather] = useState<WeatherSnapshot | null>(null);
+  const [projected, setProjected] = useState<ProjectedLadderRow[]>([]);
   const [seasons, setSeasons] = useState<Map<number, Snapshot>>(new Map());
   const [activeYear, setActiveYear] = useState<number | null>(null);
   const [seasonLoading, setSeasonLoading] = useState(false);
@@ -105,6 +108,7 @@ export default function App() {
     loadHistoryCorpus().then(setHistoryCorpus).catch(() => setHistoryCorpus([]));
     // small, and read by the week screen and every game sheet
     loadWeather().then(setWeather).catch(() => setWeather(null));
+    loadProjectedLadder().then(setProjected).catch(() => setProjected([]));
   }, []);
 
   // Two screens read the archived seasons in full: the hub scores every one of
@@ -550,7 +554,11 @@ export default function App() {
             )}
             {shownTab === 'odds' &&
               (isLive ? (
-                <PremiershipView snapshot={active} sim={sim} />
+                <PremiershipView
+                  snapshot={active}
+                  sim={sim}
+                  projected={isLive ? projected : []}
+                />
               ) : (
                 <SeasonSummary snapshot={active} />
               ))}

@@ -1,6 +1,7 @@
 import type {
   Game,
   HistoryIndexEntry,
+  ProjectedLadderRow,
   Snapshot,
   TipsterCorpus,
   WeatherSnapshot
@@ -88,4 +89,14 @@ export function loadTipsters(): Promise<TipsterCorpus | null> {
  */
 export function loadWeather(): Promise<WeatherSnapshot | null> {
   return getData<WeatherSnapshot | null>('weather.json', null);
+}
+
+/**
+ * Squiggle's own projected end-of-season ladder (`projected.json`), the one
+ * external check on the app's simulation. Tiny, and read only by the odds
+ * screen. Fail-soft: an empty list means the comparison block is not rendered at
+ * all, which is the honest reading — no projection is not the same as agreement.
+ */
+export function loadProjectedLadder(): Promise<ProjectedLadderRow[]> {
+  return getData<ProjectedLadderRow[]>('projected.json', []);
 }
