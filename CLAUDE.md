@@ -212,6 +212,9 @@ produces a deterministic placeholder *live* season (`meta.source: "seed"`, banne
 UI) and deliberately never fabricates past seasons — fake history would poison the model
 and the record book.
 
+Why the data lives in the repo at all rather than in a hosted database, and what
+would change that, is recorded in `docs/adr/0001-data-storage-v1.0.md`.
+
 **Do not hand-edit `public/data/**`.** It is generated output; regenerate with the
 scripts. Both fetch scripts fail soft (non-zero exit leaves the committed snapshot in
 place).
