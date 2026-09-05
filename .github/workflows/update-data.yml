@@ -2,21 +2,29 @@ name: Update AFL data
 
 on:
   schedule:
-    # AWST is UTC+8 and has no daylight saving, so these are fixed all year.
+    # AWST is UTC+8 and has no daylight saving, so these are fixed all year:
+    # 10:17, 15:17 and 21:43 AWST Thursday to Sunday, and the evening one alone
+    # from Monday to Wednesday.
     #
-    # Squiggle is not the constraint here — three requests a day against a
-    # courtesy limit of roughly one a second is a rounding error, and the data
+    # Squiggle is not the constraint here — a handful of requests a day against
+    # a courtesy limit of roughly one a second is a rounding error, and the data
     # changes slowly. The real cost is on our side: every refresh that finds a
     # change writes a commit to main and chains a full Pages deploy, so polling
     # hourly would mean 24 commits and 24 builds a day to catch results that
-    # land in three predictable windows.
+    # land in three predictable windows. So the schedule follows the football
+    # rather than the clock — the overnight results, the afternoon's games and
+    # the evening's, with anything finishing later picked up next morning.
     #
-    # So the schedule follows the football rather than the clock. Games finish
-    # through Thursday to Sunday evenings AWST; these three catch the overnight
-    # results, the afternoon's games and the evening's, and a game that ends
-    # after the last one is picked up by the first the next morning.
-    - cron: '0 2,7 * * 4,5,6,0'
-    - cron: '0 13 * * *'
+    # The odd minutes are deliberate. GitHub's cron is best effort and queues
+    # behind every other repository on the shared scheduler; slots on the exact
+    # hour are the most contended. Every run of the previous ':00' schedule
+    # started 3h41m to 6h21m late, every day for a week. Minutes away from the
+    # hour (and from :15/:30/:45) measurably shorten that queue. It does not
+    # make delivery punctual — nothing does, on a public runner — so treat these
+    # as "no earlier than", and never assume a run has happened because its
+    # time has passed.
+    - cron: '17 2,7 * * 4,5,6,0'
+    - cron: '43 13 * * *'
   workflow_dispatch:
 
 permissions:

@@ -55,8 +55,9 @@ an identifying User-Agent, adds kickoff forecasts from
 commit triggers the Pages deploy, so the published app refreshes automatically — no manual
 work during the season.
 
-It runs three times a day (10:00, 15:00 and 21:00 AWST) from Thursday to Sunday and once
-each evening the rest of the week. Squiggle is not the limiting factor — a handful of
+It runs three times a day (10:17, 15:17 and 21:43 AWST) from Thursday to Sunday and once
+each evening the rest of the week — scheduled times only, since GitHub's cron is best
+effort and queues behind every other repository on it. Squiggle is not the limiting factor — a handful of
 requests a day sits far inside its courtesy rate — but every refresh that finds a change
 writes a commit and rebuilds the site, so the schedule follows the football rather than
 the clock.

@@ -191,8 +191,11 @@ seasons must never be rendered as if they used the current format.
 
 ## Data pipeline
 
-- **`update-data.yml`** — 02:00/07:00 UTC Thu–Sun plus 13:00 UTC daily (10:00, 15:00 and
-  21:00 AWST through the football week). Runs `scripts/fetch-data.mjs`, then
+- **`update-data.yml`** — 02:17/07:17 UTC Thu–Sun plus 13:43 UTC daily (10:17, 15:17 and
+  21:43 AWST through the football week). The odd minutes are deliberate: GitHub's cron
+  queues behind the whole shared scheduler and slots on the exact hour are the most
+  contended — the previous `:00` schedule started 3h41m to 6h21m late every day for a
+  week. Treat every scheduled time as *no earlier than*, never as when the run happened. Runs `scripts/fetch-data.mjs`, then
   `scripts/fetch-weather.mjs` under `continue-on-error` (a bad day at Open-Meteo must not
   cost the football data already written), commits `public/data/` as
   `chore: refresh AFL data snapshot`, then explicitly `gh workflow run deploy.yml` (a
