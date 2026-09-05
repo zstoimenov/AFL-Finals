@@ -6,6 +6,7 @@ import { completedGames, gameStart } from './features';
 import { blendedHomeProb, computeRatings } from './predict';
 import { teamShortName } from './teams';
 import { rivalryFor, rivalryLabel } from './rivalries';
+import { agreement, consensusMood, probRange, tipFor } from './consensus';
 
 /**
  * What makes a game worth watching, scored.
@@ -25,6 +26,7 @@ import { rivalryFor, rivalryLabel } from './rivalries';
 
 export type ReasonKind =
   | 'close'
+  | 'consensus'
   | 'clinch'
   | 'elimination'
   | 'sixpointer'
@@ -66,6 +68,14 @@ export interface RatedGame {
 export const WEIGHTS = {
   /** closeness is scaled by how even the game is, up to this maximum */
   close: 30,
+  /**
+   * Scaled by how badly the tipping models split. Deliberately well under
+   * `close`: a model calling a game even is one opinion, but thirty models
+   * failing to agree is thirty opinions saying the game is genuinely open —
+   * related enough to the closeness signal that stacking them at equal weight
+   * would double-count the same fact.
+   */
+  consensusSplit: 14,
   clinch: 28,
   elimination: 26,
   sixPointer: 22,
@@ -164,6 +174,7 @@ export function rateGames(
     const homeProb = blendedHomeProb(snapshot, ratings, snapshot.games, game);
     const reasons: InterestReason[] = [
       closeness(game, homeProb),
+      divided(snapshot, game),
       ...stakes(snapshot, game, lockOf, withStakes),
       ...ladderPosition(game, rankOf, ptsOf, ladder, cuts),
       ...clubHistory(game, meetings, snapshot.meta.year),
@@ -193,6 +204,44 @@ function closeness(game: Game, homeProb: number): InterestReason {
         ? `Close on paper — ${teamShortName(leaderId)} ${top}–${100 - top}`
         : `${teamShortName(leaderId)} favoured ${top}–${100 - top}`;
   return { kind: 'close', weight: WEIGHTS.close * even, text };
+}
+
+/**
+ * How badly the tipping models disagree.
+ *
+ * Distinct from closeness, which is one model's opinion that a game is even.
+ * This is thirty independent models failing to reach the same conclusion, which
+ * is a stronger claim: not "the numbers are close" but "nobody knows". A game
+ * the field splits down the middle is the one to watch even when each
+ * individual model is quietly confident.
+ *
+ * Silent when the field broadly agrees, and silent again on a snapshot taken
+ * before the per-model detail was recorded — an absent signal must never read as
+ * a unanimous one.
+ */
+function divided(snapshot: Snapshot, game: Game): InterestReason | null {
+  const tip = tipFor(snapshot, game.hteamid, game.ateamid);
+  const mood = consensusMood(tip);
+  const share = agreement(tip);
+  if (tip == null || mood == null || share == null || mood === 'agreed') return null;
+
+  // a dead split (half the field each way) is the maximum; agreement past the
+  // 'agreed' cut has already returned above
+  const split = Math.max(0, Math.min(1, (1 - share) * 2));
+  const lead = Math.max(tip.htips ?? 0, tip.atips ?? 0);
+  const trail = Math.min(tip.htips ?? 0, tip.atips ?? 0);
+  const leaderId = (tip.htips ?? 0) >= (tip.atips ?? 0) ? game.hteamid : game.ateamid;
+  const range = probRange(tip);
+
+  const text =
+    mood === 'split'
+      ? `The tipsters can't split it — ${lead}–${trail} across ${tip.models} models`
+      : range != null && range >= 0.4
+        ? `Tipsters divided — they lean ${teamShortName(leaderId)}, but by anywhere from ` +
+          `${Math.round((tip.low ?? 0) * 100)} to ${Math.round((tip.high ?? 0) * 100)}%`
+        : `Tipsters divided — ${lead} of ${tip.models} lean ${teamShortName(leaderId)}`;
+
+  return { kind: 'consensus', weight: WEIGHTS.consensusSplit * split, text };
 }
 
 /**
