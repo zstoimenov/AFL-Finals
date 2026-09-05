@@ -68,6 +68,26 @@ export interface Tip {
   high?: number | null;
 }
 
+/**
+ * The forecast at kickoff for one fixture, from Open-Meteo.
+ *
+ * Every field is nullable: a forecast can be partial, and a game outside the
+ * forecast horizon or at a ground with no known coordinates has no record at all.
+ */
+export interface GameWeather {
+  tempC: number | null;
+  rainMm: number | null;
+  /** chance of precipitation in that hour, 0-100 */
+  rainChance: number | null;
+  windKph: number | null;
+}
+
+/** `public/data/weather.json` — forecasts keyed by game id. */
+export interface WeatherSnapshot {
+  fetchedAt: string;
+  games: Record<string, GameWeather>;
+}
+
 /** One of the tipping models behind Squiggle's consensus. */
 export interface TipSource {
   id: number;

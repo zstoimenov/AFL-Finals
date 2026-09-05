@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "fetch-data": "node scripts/fetch-data.mjs",
+    "fetch-weather": "node scripts/fetch-weather.mjs",
     "fetch-history": "node scripts/fetch-history.mjs"
   },
   "dependencies": {

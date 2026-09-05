@@ -1,4 +1,10 @@
-import type { Game, HistoryIndexEntry, Snapshot, TipsterCorpus } from '../domain/types';
+import type {
+  Game,
+  HistoryIndexEntry,
+  Snapshot,
+  TipsterCorpus,
+  WeatherSnapshot
+} from '../domain/types';
 
 /**
  * Loads the deployed data snapshots. These are static JSON files committed by
@@ -72,4 +78,14 @@ export function loadSeason(year: number): Promise<Snapshot | null> {
  */
 export function loadTipsters(): Promise<TipsterCorpus | null> {
   return getData<TipsterCorpus | null>('tipsters.json', null);
+}
+
+/**
+ * The kickoff forecast for upcoming fixtures (`weather.json`). Small, and read
+ * by the week screen and every game sheet, so it loads at startup. Fail-soft:
+ * null when the file isn't deployed, and the app shows no conditions anywhere —
+ * exactly as it did before weather existed.
+ */
+export function loadWeather(): Promise<WeatherSnapshot | null> {
+  return getData<WeatherSnapshot | null>('weather.json', null);
 }

@@ -319,3 +319,38 @@ describe('tipster disagreement', () => {
     expect(rated.score).toBeCloseTo(rated.reasons.reduce((sum, r) => sum + r.weight, 0));
   });
 });
+
+describe('conditions', () => {
+  const forecast = (over: Record<string, unknown>) => ({
+    fetchedAt: '2026-08-01T00:00:00.000Z',
+    games: { '1': { tempC: 15, rainMm: 0, rainChance: 5, windKph: 8, ...over } }
+  });
+
+  const reasonFor = (weather: Parameters<typeof rateGames>[2]['weather']) => {
+    const g = { ...game(1, 2, { round: 22 }), id: 1 };
+    const rated = rateGames(snap([g]), [g], { stakes: false, weather })[0];
+    return rated.reasons.find((r) => r.kind === 'weather') ?? null;
+  };
+
+  it('argues for a game played in the rain', () => {
+    expect(reasonFor(forecast({ rainMm: 3 }))?.text).toContain('Heavy rain');
+  });
+
+  it('argues for a game played in a gale', () => {
+    expect(reasonFor(forecast({ windKph: 45 }))?.text).toContain('Strong wind');
+  });
+
+  it('says nothing about a mild evening', () => {
+    expect(reasonFor(forecast({}))).toBeNull();
+  });
+
+  it('says nothing when no forecast is deployed', () => {
+    // an absent forecast is not a fine day
+    expect(reasonFor(null)).toBeNull();
+    expect(reasonFor(undefined)).toBeNull();
+  });
+
+  it('says nothing about a game the forecast does not cover', () => {
+    expect(reasonFor({ fetchedAt: '', games: {} })).toBeNull();
+  });
+});

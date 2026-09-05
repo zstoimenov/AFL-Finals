@@ -21,6 +21,11 @@ jobs:
           node-version: 22
       - name: Fetch Squiggle snapshot
         run: node scripts/fetch-data.mjs
+      # Weather is a separate provider, so a bad day at Open-Meteo must not cost
+      # us the football data that has already been written.
+      - name: Fetch kickoff forecasts
+        continue-on-error: true
+        run: node scripts/fetch-weather.mjs
       - name: Commit updated data
         id: commit
         run: |

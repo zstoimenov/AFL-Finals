@@ -4,9 +4,16 @@ import {
   loadHistoryIndex,
   loadHistoryCorpus,
   loadSeason,
-  loadTipsters
+  loadTipsters,
+  loadWeather
 } from './api/loadData';
-import type { Game, HistoryIndexEntry, Snapshot, TipsterCorpus } from './domain/types';
+import type {
+  Game,
+  HistoryIndexEntry,
+  Snapshot,
+  TipsterCorpus,
+  WeatherSnapshot
+} from './domain/types';
 import type { SimOutput } from './domain/simulate';
 import { computeLocks } from './domain/locks';
 import { buildBracket } from './domain/buildBracket';
@@ -44,6 +51,7 @@ export default function App() {
   const [historyIndex, setHistoryIndex] = useState<HistoryIndexEntry[]>([]);
   const [historyCorpus, setHistoryCorpus] = useState<Game[]>([]);
   const [tipsters, setTipsters] = useState<TipsterCorpus | null>(null);
+  const [weather, setWeather] = useState<WeatherSnapshot | null>(null);
   const [seasons, setSeasons] = useState<Map<number, Snapshot>>(new Map());
   const [activeYear, setActiveYear] = useState<number | null>(null);
   const [seasonLoading, setSeasonLoading] = useState(false);
@@ -95,6 +103,8 @@ export default function App() {
       .catch((e) => setError(String(e)));
     loadHistoryIndex().then(setHistoryIndex).catch(() => setHistoryIndex([]));
     loadHistoryCorpus().then(setHistoryCorpus).catch(() => setHistoryCorpus([]));
+    // small, and read by the week screen and every game sheet
+    loadWeather().then(setWeather).catch(() => setWeather(null));
   }, []);
 
   // Two screens read the archived seasons in full: the hub scores every one of
@@ -496,7 +506,9 @@ export default function App() {
           </div>
         ) : (
           <>
-            {shownTab === 'week' && <ThisWeekView snapshot={active} history={historyCorpus} />}
+            {shownTab === 'week' && (
+              <ThisWeekView snapshot={active} history={historyCorpus} weather={weather} />
+            )}
             {shownTab === 'club' && (
               <MyClubView
                 teamId={favouriteId}
@@ -568,6 +580,8 @@ export default function App() {
           game={openGame}
           snapshot={active}
           history={historyCorpus}
+          // the forecast is for the live season only; an archived game shows none
+          weather={isLive ? weather : null}
           onClose={() => setOpenGameId(null)}
         />
       )}

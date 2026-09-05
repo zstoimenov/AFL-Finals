@@ -1,4 +1,4 @@
-import type { Game, Snapshot, Standing, TeamLocks } from './types';
+import type { Game, Snapshot, Standing, TeamLocks, WeatherSnapshot } from './types';
 import { computeLocks } from './locks';
 import { sortedStandings } from './ladder';
 import { ladderCutLines } from './season';
@@ -7,6 +7,7 @@ import { blendedHomeProb, computeRatings } from './predict';
 import { teamShortName } from './teams';
 import { rivalryFor, rivalryLabel } from './rivalries';
 import { agreement, consensusMood, probRange, tipFor } from './consensus';
+import { isTough, weatherFor, weatherLabel } from './weather';
 
 /**
  * What makes a game worth watching, scored.
@@ -27,6 +28,7 @@ import { agreement, consensusMood, probRange, tipFor } from './consensus';
 export type ReasonKind =
   | 'close'
   | 'consensus'
+  | 'weather'
   | 'clinch'
   | 'elimination'
   | 'sixpointer'
@@ -76,6 +78,12 @@ export const WEIGHTS = {
    * would double-count the same fact.
    */
   consensusSplit: 14,
+  /**
+   * Rain or wind at the bounce. Modest on purpose: conditions change how a game
+   * is played, not how much is at stake, and a wet Tuesday-night dead rubber is
+   * still a dead rubber.
+   */
+  weather: 8,
   clinch: 28,
   elimination: 26,
   sixPointer: 22,
@@ -137,6 +145,11 @@ export interface RateOptions {
    */
   history?: Game[];
   /**
+   * The kickoff forecast, when one is deployed. Absent simply means no weather
+   * reason — never a claim that the day is fine.
+   */
+  weather?: WeatherSnapshot | null;
+  /**
    * Whether to work out what each result would settle. Home & away only: the
    * locks engine bounds a team's *ladder* finish, which finals week doesn't have.
    * Defaults to true.
@@ -175,6 +188,7 @@ export function rateGames(
     const reasons: InterestReason[] = [
       closeness(game, homeProb),
       divided(snapshot, game),
+      conditions(game, opts.weather ?? null),
       ...stakes(snapshot, game, lockOf, withStakes),
       ...ladderPosition(game, rankOf, ptsOf, ladder, cuts),
       ...clubHistory(game, meetings, snapshot.meta.year),
@@ -204,6 +218,30 @@ function closeness(game: Game, homeProb: number): InterestReason {
         ? `Close on paper — ${teamShortName(leaderId)} ${top}–${100 - top}`
         : `${teamShortName(leaderId)} favoured ${top}–${100 - top}`;
   return { kind: 'close', weight: WEIGHTS.close * even, text };
+}
+
+/**
+ * Rain or wind at the bounce.
+ *
+ * Weather is the one signal here that comes from outside the football data, and
+ * the only one that changes how the game will be *played* rather than what it is
+ * worth. A wet night turns a shootout into an arm-wrestle, which is worth
+ * knowing before you choose what to watch — and worth knowing afterwards, when
+ * the score makes no sense against the form.
+ *
+ * Silent on a fine day and silent when no forecast is deployed, because an
+ * absent forecast is not a fine day.
+ */
+function conditions(game: Game, weather: WeatherSnapshot | null): InterestReason | null {
+  const w = weatherFor(weather, game.id);
+  if (!isTough(w)) return null;
+  const label = weatherLabel(w);
+  if (!label) return null;
+  return {
+    kind: 'weather',
+    weight: WEIGHTS.weather,
+    text: `${label} forecast — a different game in those conditions`
+  };
 }
 
 /**
