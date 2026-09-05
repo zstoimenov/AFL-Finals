@@ -2720,12 +2720,12 @@
   "gameid": 38722,
   "hteamid": 1,
   "ateamid": 18,
-  "hconfidence": 0.688,
-  "hmargin": 16.8,
+  "hconfidence": 0.687,
+  "hmargin": 16.6,
   "models": 29,
   "htips": 29,
   "atips": 0,
-  "spread": 0.062,
+  "spread": 0.06,
   "low": 0.515,
   "high": 0.787
  },
@@ -2769,16 +2769,29 @@
   "high": 0.658
  },
  {
-  "gameid": 38725,
-  "hteamid": 6,
-  "ateamid": 7,
-  "hconfidence": 0.6,
-  "hmargin": 8.1,
+  "gameid": 38726,
+  "hteamid": 2,
+  "ateamid": 1,
+  "hconfidence": 0.679,
+  "hmargin": 15.3,
   "models": 5,
   "htips": 5,
   "atips": 0,
-  "spread": 0.02,
-  "low": 0.578,
+  "spread": 0.048,
+  "low": 0.589,
+  "high": 0.716
+ },
+ {
+  "gameid": 38725,
+  "hteamid": 6,
+  "ateamid": 7,
+  "hconfidence": 0.521,
+  "hmargin": 1.7,
+  "models": 8,
+  "htips": 6,
+  "atips": 2,
+  "spread": 0.096,
+  "low": 0.323,
   "high": 0.63
  }
 ]
