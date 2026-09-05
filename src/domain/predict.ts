@@ -7,7 +7,7 @@ import {
   restDays
 } from './features';
 import { homeVenuesByTeam, isAwayTravelling, isHostAtHome } from './venues';
-import { agreement, tipFor } from './consensus';
+import { agreement, tipForGame } from './consensus';
 
 /**
  * Transparent team rating: a readable blend of season win ratio, percentage
@@ -178,17 +178,43 @@ export function fixtureHomeProb(
   return winProb(ratings, game.hteamid, game.ateamid, false, fixtureAdjustment(games, game));
 }
 
+/**
+ * The tip for a matchup, preferring the one for *this fixture*.
+ *
+ * Two clubs meet at least twice a season and can meet a third time in finals, so
+ * matching on the team pair alone returns whichever meeting sits first in the
+ * file — typically a round-robin game from months earlier, carrying a consensus
+ * about a completely different match. The game id disambiguates, and every real
+ * fixture has one; the pair remains the fallback for the bracket, which asks
+ * about pairings that have not been scheduled yet.
+ */
+function findTip(
+  snapshot: Snapshot,
+  homeId: number,
+  awayId: number,
+  gameId?: number
+): Tip | null {
+  if (gameId != null) {
+    const exact = snapshot.tips.find((t) => t.gameid === gameId);
+    if (exact) return exact;
+  }
+  return (
+    snapshot.tips.find(
+      (t) =>
+        (t.hteamid === homeId && t.ateamid === awayId) ||
+        (t.hteamid === awayId && t.ateamid === homeId)
+    ) ?? null
+  );
+}
+
 /** Squiggle consensus P(home wins) for a fixture, if models have tipped it. */
 export function squiggleProb(
   snapshot: Snapshot,
   homeId: number,
-  awayId: number
+  awayId: number,
+  gameId?: number
 ): number | null {
-  const tip = snapshot.tips.find(
-    (t) =>
-      (t.hteamid === homeId && t.ateamid === awayId) ||
-      (t.hteamid === awayId && t.ateamid === homeId)
-  );
+  const tip = findTip(snapshot, homeId, awayId, gameId);
   if (!tip) return null;
   return tip.hteamid === homeId ? tip.hconfidence : 1 - tip.hconfidence;
 }
@@ -197,13 +223,10 @@ export function squiggleProb(
 export function squiggleMargin(
   snapshot: Snapshot,
   homeId: number,
-  awayId: number
+  awayId: number,
+  gameId?: number
 ): number | null {
-  const tip = snapshot.tips.find(
-    (t) =>
-      (t.hteamid === homeId && t.ateamid === awayId) ||
-      (t.hteamid === awayId && t.ateamid === homeId)
-  );
+  const tip = findTip(snapshot, homeId, awayId, gameId);
   if (!tip || tip.hmargin == null) return null;
   return tip.hteamid === homeId ? tip.hmargin : -tip.hmargin;
 }
@@ -260,11 +283,12 @@ export function blendWeight(tip: Tip | null, tilt = SQUIGGLE_AGREEMENT_TILT): nu
 export function squiggleConsensusProb(
   snapshot: Snapshot,
   homeId: number,
-  awayId: number
+  awayId: number,
+  gameId?: number
 ): number | null {
-  const margin = squiggleMargin(snapshot, homeId, awayId);
+  const margin = squiggleMargin(snapshot, homeId, awayId, gameId);
   if (margin != null) return 1 / (1 + Math.exp(-margin / MARGIN_PROB_SCALE));
-  return squiggleProb(snapshot, homeId, awayId);
+  return squiggleProb(snapshot, homeId, awayId, gameId);
 }
 
 /**
@@ -280,9 +304,9 @@ export function blendedHomeProb(
   game: Game
 ): number {
   const model = fixtureHomeProb(ratings, games, game);
-  const consensus = squiggleConsensusProb(snapshot, game.hteamid, game.ateamid);
+  const consensus = squiggleConsensusProb(snapshot, game.hteamid, game.ateamid, game.id);
   if (consensus == null) return model;
-  const w = blendWeight(tipFor(snapshot, game.hteamid, game.ateamid));
+  const w = blendWeight(tipForGame(snapshot, game));
   const p = (1 - w) * model + w * consensus;
   return Math.min(0.97, Math.max(0.03, p));
 }

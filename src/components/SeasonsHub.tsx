@@ -229,10 +229,7 @@ function TipsterBoard({
             {rows.map((r, i) => (
               <tr key={r.key} className={r.us ? 'us' : undefined}>
                 <td className="num">{i + 1}</td>
-                <td>
-                  {r.name}
-                  {r.us && <span className="us-tag"> (this app)</span>}
-                </td>
+                <td>{r.name}</td>
                 <td className="num">{r.n}</td>
                 <td className="num">{(r.hitRate * 100).toFixed(0)}%</td>
                 <td className="num">{r.brier.toFixed(3)}</td>

@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
   agreement,
+  tipForGame,
   consensusMood,
   consensusSummary,
   probRange,
   spread,
   tipFor
 } from './consensus';
-import type { Snapshot, Tip } from './types';
+import type { Game, Snapshot, Tip } from './types';
 
 const tip = (over: Partial<Tip> = {}): Tip => ({
   gameid: 1,
@@ -102,5 +103,37 @@ describe('tipFor', () => {
   it('is null for a fixture nobody tipped, and does not match a reversed pair', () => {
     expect(tipFor(snapshot, 2, 1)).toBeNull();
     expect(tipFor(snapshot, 99, 98)).toBeNull();
+  });
+});
+
+describe('tipForGame', () => {
+  // two clubs meet twice in the home & away season and can meet a third time in
+  // finals; every meeting is a different game with a different tip
+  const meetings: Tip[] = [
+    tip({ gameid: 100, hteamid: 1, ateamid: 18, hconfidence: 0.47, htips: 14, atips: 16 }),
+    tip({ gameid: 200, hteamid: 18, ateamid: 1, hconfidence: 0.56, htips: 17, atips: 13 }),
+    tip({ gameid: 300, hteamid: 1, ateamid: 18, hconfidence: 0.69, htips: 26, atips: 4 })
+  ];
+  const snapshot = { tips: meetings } as Snapshot;
+  const fixture = (id: number, h: number, a: number) => ({ id, hteamid: h, ateamid: a }) as Game;
+
+  it('reads the tip for this fixture, not the first meeting in the file', () => {
+    // the bug this exists to prevent: a September final scored on the consensus
+    // from a round 4 game between the same two clubs
+    expect(tipForGame(snapshot, fixture(300, 1, 18))?.hconfidence).toBe(0.69);
+    expect(tipForGame(snapshot, fixture(100, 1, 18))?.hconfidence).toBe(0.47);
+  });
+
+  it('reads the right meeting even when the clubs swap ends', () => {
+    expect(tipForGame(snapshot, fixture(200, 18, 1))?.hconfidence).toBe(0.56);
+  });
+
+  it('falls back to the club pair for a fixture with no tip of its own', () => {
+    // the bracket asks about pairings that have not been scheduled yet
+    expect(tipForGame(snapshot, fixture(999, 1, 18))?.gameid).toBe(100);
+  });
+
+  it('is null when neither the fixture nor the pairing is tipped', () => {
+    expect(tipForGame(snapshot, fixture(999, 4, 5))).toBeNull();
   });
 });

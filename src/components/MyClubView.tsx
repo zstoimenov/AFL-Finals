@@ -439,7 +439,7 @@ function NextGame({
   const opponentId = isHome ? game.ateamid : game.hteamid;
   const pHome = blendedHomeProb(snapshot, ratings, snapshot.games, game);
   const mine = Math.round((isHome ? pHome : 1 - pHome) * 100);
-  const sq = squiggleProb(snapshot, game.hteamid, game.ateamid);
+  const sq = squiggleProb(snapshot, game.hteamid, game.ateamid, game.id);
   const sqMine = sq != null ? Math.round((isHome ? sq : 1 - sq) * 100) : null;
 
   return (

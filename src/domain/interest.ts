@@ -6,7 +6,7 @@ import { completedGames, gameStart } from './features';
 import { blendedHomeProb, computeRatings } from './predict';
 import { teamShortName } from './teams';
 import { rivalryFor, rivalryLabel } from './rivalries';
-import { agreement, consensusMood, probRange, tipFor } from './consensus';
+import { agreement, consensusMood, probRange, tipForGame } from './consensus';
 import { isTough, weatherFor, weatherLabel } from './weather';
 
 /**
@@ -258,7 +258,7 @@ function conditions(game: Game, weather: WeatherSnapshot | null): InterestReason
  * a unanimous one.
  */
 function divided(snapshot: Snapshot, game: Game): InterestReason | null {
-  const tip = tipFor(snapshot, game.hteamid, game.ateamid);
+  const tip = tipForGame(snapshot, game);
   const mood = consensusMood(tip);
   const share = agreement(tip);
   if (tip == null || mood == null || share == null || mood === 'agreed') return null;

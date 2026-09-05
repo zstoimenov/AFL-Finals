@@ -139,7 +139,7 @@ export function RunHome({
         const oppId = isHome ? g.ateamid : g.hteamid;
         const pHome = blendedHomeProb(snapshot, ratings, snapshot.games, g);
         const p = isHome ? pHome : 1 - pHome;
-        const sq = squiggleProb(snapshot, g.hteamid, g.ateamid);
+        const sq = squiggleProb(snapshot, g.hteamid, g.ateamid, g.id);
         const sqTeam = sq != null ? (isHome ? sq : 1 - sq) : null;
         return (
           <li key={g.id} className="runhome-row">

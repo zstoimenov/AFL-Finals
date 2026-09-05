@@ -125,8 +125,8 @@ export function buildGameDetail(
     home: side(game.hteamid, true),
     away: side(game.ateamid, false),
     modelHomeProb,
-    squiggleHomeProb: squiggleConsensusProb(snapshot, game.hteamid, game.ateamid),
-    squiggleMargin: squiggleMargin(snapshot, game.hteamid, game.ateamid),
+    squiggleHomeProb: squiggleConsensusProb(snapshot, game.hteamid, game.ateamid, game.id),
+    squiggleMargin: squiggleMargin(snapshot, game.hteamid, game.ateamid, game.id),
     reasons,
     meetings,
     record: {

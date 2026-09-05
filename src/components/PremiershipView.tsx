@@ -7,7 +7,6 @@ import TeamChip from './TeamChip';
 import InfoButton from './InfoButton';
 import { formatProbability } from '../domain/format';
 import { meanRankGap, projectionGaps } from '../domain/projection';
-import { teamShortName } from '../domain/teams';
 
 /**
  * Premiership projection: simulated P(premier) per team as labeled horizontal
@@ -193,8 +192,7 @@ function ProjectionCheck({
             <li key={g.teamId}>
               <TeamChip teamId={g.teamId} compact />
               <span className="projgap-detail">
-                we have {teamShortName(g.teamId)} {ordinalPlace(g.ourRank)}, Squiggle{' '}
-                {ordinalPlace(g.theirRank)}
+                {ordinalPlace(g.ourRank)} here, {ordinalPlace(g.theirRank)} at Squiggle
               </span>
               <span className={g.gap > 0 ? 'projgap-tag up' : 'projgap-tag down'}>
                 {g.gap > 0 ? `we're ${g.gap} higher` : `we're ${Math.abs(g.gap)} lower`}

@@ -267,7 +267,7 @@ function ResultRow({
   // grade each tip against the actual winner: the model on its pre-game rating
   // (no hindsight, carry-over prior included), Squiggle on its stored consensus
   const model = tipVerdict(preGameHomeProb(snapshot, game, history), game);
-  const squiggle = tipVerdict(squiggleProb(snapshot, game.hteamid, game.ateamid), game);
+  const squiggle = tipVerdict(squiggleProb(snapshot, game.hteamid, game.ateamid, game.id), game);
   return (
     <article className={fav ? 'fixturerow done fav-game' : 'fixturerow done'}>
       <CardOpen game={game} />
@@ -306,8 +306,8 @@ function FixtureRow({
 }) {
   const p = blendedHomeProb(snapshot, ratings, snapshot.games, game);
   const hp = Math.round(p * 100);
-  const sq = squiggleProb(snapshot, game.hteamid, game.ateamid);
-  const sqMargin = squiggleMargin(snapshot, game.hteamid, game.ateamid);
+  const sq = squiggleProb(snapshot, game.hteamid, game.ateamid, game.id);
+  const sqMargin = squiggleMargin(snapshot, game.hteamid, game.ateamid, game.id);
   const fav = gameHasFavourite(game);
   const today = isGameToday(game.unixtime, game.date);
   const cls = `fixturerow${fav ? ' fav-game' : ''}${today ? ' today' : ''}`;

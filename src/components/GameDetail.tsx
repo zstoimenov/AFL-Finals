@@ -5,7 +5,7 @@ import { buildGameDetail } from '../domain/gameDetail';
 import { formatGameDateTime } from '../domain/format';
 import { teamAbbrev, teamShortName } from '../domain/teams';
 import { isFavourite } from '../domain/favourite';
-import { consensusSummary, tipFor } from '../domain/consensus';
+import { consensusSummary, tipForGame } from '../domain/consensus';
 import { weatherFor, weatherNote, weatherSummary } from '../domain/weather';
 import { useDialog } from '../useDialog';
 import TeamChip from './TeamChip';
@@ -44,7 +44,7 @@ export default function GameDetail({
   const forecast = weatherFor(weather, game.id);
   const conditions = weatherSummary(forecast);
   const conditionsNote = weatherNote(forecast);
-  const split = consensusSummary(tipFor(snapshot, game.hteamid, game.ateamid));
+  const split = consensusSummary(tipForGame(snapshot, game));
 
   const hp = Math.round(detail.modelHomeProb * 100);
   const sq = detail.squiggleHomeProb;

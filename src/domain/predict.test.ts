@@ -5,6 +5,7 @@ import {
   computeRatings,
   carryoverPrior,
   squiggleMargin,
+  squiggleProb,
   squiggleConsensusProb,
   blendedHomeProb,
   fixtureHomeProb,
@@ -205,5 +206,32 @@ describe('blendWeight', () => {
     // before any of this existed
     expect(blendWeight(tip(null, null), 0.2)).toBe(SQUIGGLE_BLEND);
     expect(blendWeight(null, 0.2)).toBe(SQUIGGLE_BLEND);
+  });
+});
+
+describe('which meeting a tip belongs to', () => {
+  // the same two clubs, three times in a season, three different consensuses
+  const tips: Tip[] = [
+    { gameid: 100, hteamid: 1, ateamid: 18, hconfidence: 0.4, hmargin: -12, models: 30 },
+    { gameid: 200, hteamid: 18, ateamid: 1, hconfidence: 0.55, hmargin: 4, models: 30 },
+    { gameid: 300, hteamid: 1, ateamid: 18, hconfidence: 0.7, hmargin: 18, models: 30 }
+  ];
+  const s = snap([], tips);
+
+  it('reads the fixture asked about, not the earliest meeting', () => {
+    expect(squiggleMargin(s, 1, 18, 300)).toBe(18);
+    expect(squiggleProb(s, 1, 18, 300)).toBeCloseTo(0.7);
+  });
+
+  it('folds a reversed fixture to the home side asked about', () => {
+    expect(squiggleMargin(s, 1, 18, 200)).toBe(-4);
+  });
+
+  it('falls back to the club pair when no id is given, as the bracket needs', () => {
+    expect(squiggleMargin(s, 1, 18)).toBe(-12);
+  });
+
+  it('falls back to the pair when the fixture itself is untipped', () => {
+    expect(squiggleMargin(s, 1, 18, 999)).toBe(-12);
   });
 });

@@ -221,7 +221,7 @@ function WeekCard({
   const hp = Math.round(homeProb * 100);
   const today = isGameToday(game.unixtime, game.date);
   const fav = gameHasFavourite(game);
-  const sq = squiggleProb(snapshot, game.hteamid, game.ateamid);
+  const sq = squiggleProb(snapshot, game.hteamid, game.ateamid, game.id);
   const chips = reasons.slice(1); // reasons[0] is the headline
 
   const cls = `fixturerow weekcard${fav ? ' fav-game' : ''}${today ? ' today' : ''}${

@@ -1,4 +1,4 @@
-import type { Snapshot, Tip } from './types';
+import type { Game, Snapshot, Tip } from './types';
 
 /**
  * How much the tipping models disagree about a game.
@@ -16,11 +16,34 @@ import type { Snapshot, Tip } from './types';
  * "unknown", never as "the models agreed".
  */
 
-/** The aggregated tip for a fixture, or null when the game isn't tipped. */
-export function tipFor(snapshot: Snapshot, homeId: number, awayId: number): Tip | null {
+/**
+ * The tip for a *specific fixture*, matched on the game's own id.
+ *
+ * Two clubs meet more than once a season, and in finals they may meet again a
+ * third time — so a lookup by team pair finds whichever meeting happens to sit
+ * first in the file, which is usually a round-robin game months old. The game id
+ * is in both records; use it.
+ *
+ * Falls back to the team pair only when no row carries the id, which is what a
+ * hypothetical matchup needs: the bracket asks about pairings that have no
+ * fixture yet, and there the pair is all there is.
+ */
+export function tipForGame(snapshot: Snapshot, game: Game): Tip | null {
   return (
-    snapshot.tips.find((t) => t.hteamid === homeId && t.ateamid === awayId) ?? null
+    snapshot.tips.find((t) => t.gameid === game.id) ??
+    tipFor(snapshot, game.hteamid, game.ateamid)
   );
+}
+
+/**
+ * The tip for a matchup named only by its two clubs, either way round.
+ *
+ * For a fixture that exists, prefer `tipForGame` — this cannot tell one meeting
+ * from another. It is here for the bracket, which reasons about pairings that
+ * have not been scheduled.
+ */
+export function tipFor(snapshot: Snapshot, homeId: number, awayId: number): Tip | null {
+  return snapshot.tips.find((t) => t.hteamid === homeId && t.ateamid === awayId) ?? null;
 }
 
 /**
