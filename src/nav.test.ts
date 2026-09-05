@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_TAB, hashFor, isLiveOnly, routeFromHash, tabFromHash } from './nav';
+import { DEFAULT_TAB, hashFor, isLiveOnly, navTabs, routeFromHash, tabFromHash } from './nav';
 
 describe('routeFromHash', () => {
   it('reads a plain screen route', () => {
@@ -55,5 +55,48 @@ describe('screens', () => {
     expect(isLiveOnly('club')).toBe(true);
     expect(isLiveOnly('ladder')).toBe(false);
     expect(isLiveOnly(DEFAULT_TAB)).toBe(true);
+  });
+});
+
+describe('navTabs', () => {
+  it('leads with the ladder while the home & away season is running', () => {
+    // four destinations reach the phone's bottom bar, so the ladder being
+    // fourth is the difference between one tap and two
+    expect(navTabs({ live: true, finalsStarted: false })).toEqual([
+      'week',
+      'club',
+      'fixtures',
+      'ladder',
+      'finals',
+      'odds'
+    ]);
+  });
+
+  it('gives the ladder\'s slot to the finals once the finals start', () => {
+    expect(navTabs({ live: true, finalsStarted: true })).toEqual([
+      'week',
+      'club',
+      'fixtures',
+      'finals',
+      'ladder',
+      'odds'
+    ]);
+  });
+
+  it('never drops a screen, only reorders them', () => {
+    const before = navTabs({ live: true, finalsStarted: false });
+    const after = navTabs({ live: true, finalsStarted: true });
+    expect([...after].sort()).toEqual([...before].sort());
+  });
+
+  it('drops the live-only screens for an archived season, ladder first', () => {
+    // all four fit on the bar, and a finished season reads as the final table
+    // and then what came of it — so the swap is a live-season thing only
+    expect(navTabs({ live: false, finalsStarted: true })).toEqual([
+      'fixtures',
+      'ladder',
+      'finals',
+      'odds'
+    ]);
   });
 });

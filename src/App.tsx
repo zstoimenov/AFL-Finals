@@ -27,7 +27,7 @@ import MyClubView from './components/MyClubView';
 import PrimaryNav, { type NavItem } from './components/PrimaryNav';
 import InfoButton from './components/InfoButton';
 import { hasChosenFavourite, setFavourite, useFavourite } from './domain/favourite';
-import { DEFAULT_TAB, hashFor, isLiveOnly, routeFromHash, type Tab } from './nav';
+import { DEFAULT_TAB, hashFor, isLiveOnly, navTabs, routeFromHash, type Tab } from './nav';
 import { TeamSelectContext } from './teamSelect';
 import { useOnline } from './useOnline';
 import { usePullToRefresh } from './usePullToRefresh';
@@ -262,18 +262,23 @@ export default function App() {
   // "This week" and "My club" are live-season screens; an archived year falls
   // back to its results rather than rendering a week that has already happened.
   const shownTab: Tab = !isLive && isLiveOnly(tab) ? 'fixtures' : tab;
-  const navItems: NavItem[] = [
-    ...(isLive
-      ? ([
-          { key: 'week', label: 'This week' },
-          { key: 'club', label: 'My club' }
-        ] as NavItem[])
-      : []),
-    { key: 'fixtures', label: isLive ? 'Fixtures' : 'Results' },
-    { key: 'ladder', label: 'Ladder' },
-    { key: 'finals', label: 'Finals' },
-    { key: 'odds', label: isLive ? 'Odds' : 'Summary' }
-  ];
+  // nav.ts decides which screens appear and in what order — once the finals
+  // are on, the bracket takes the ladder's slot on the phone's bottom bar. Here
+  // we only put a name to each of them; two read differently once a season is
+  // in the archive, where there is nothing left to fixture or price.
+  const navLabels: Record<Tab, string> = {
+    week: 'This week',
+    club: 'My club',
+    fixtures: isLive ? 'Fixtures' : 'Results',
+    ladder: 'Ladder',
+    finals: 'Finals',
+    odds: isLive ? 'Odds' : 'Summary',
+    seasons: 'All seasons'
+  };
+  const navItems: NavItem[] = navTabs({
+    live: isLive,
+    finalsStarted: liveFinalsStarted
+  }).map((key) => ({ key, label: navLabels[key] }));
 
   return (
     <TeamSelectContext.Provider value={setSelectedTeam}>

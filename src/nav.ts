@@ -64,3 +64,25 @@ export function routeFromHash(hash: string): Route | null {
   const id = /^g\d+$/.test(game ?? '') ? Number(game.slice(1)) : null;
   return { tab, gameId: id };
 }
+
+/**
+ * The screens in navigation order, given what the season is doing.
+ *
+ * Order is not cosmetic: only the first four destinations reach a phone's
+ * bottom bar, and the rest sit behind **More**. So this is a choice about what
+ * deserves a thumb tap right now, and it changes once a season. While the home
+ * & away rounds are running the ladder is the live document — it moves every
+ * week and the finals screen is only a projection of it. The moment real finals
+ * fixtures exist that reverses: the bracket is the thing being watched and the
+ * ladder is a settled record, so the two swap places. The ladder is never gone,
+ * just one tap further away under More.
+ *
+ * An archived season is left in ladder-then-finals order. It has four screens,
+ * they all fit on the bar, and a finished season reads naturally as the final
+ * table first and then what came of it.
+ */
+export function navTabs({ live, finalsStarted }: { live: boolean; finalsStarted: boolean }): Tab[] {
+  const liveScreens: Tab[] = live ? ['week', 'club'] : [];
+  const standings: Tab[] = live && finalsStarted ? ['finals', 'ladder'] : ['ladder', 'finals'];
+  return [...liveScreens, 'fixtures', ...standings, 'odds'];
+}
