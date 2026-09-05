@@ -31,23 +31,35 @@ and you can browse past seasons:
   choice is remembered.
 - 🏆 **Odds** — premiership projections from a 10,000-run Monte Carlo simulation of the
   remaining season and the entire finals series, including wildcard games and
-  re-seeding.
+  re-seeding. Underneath, the simulation is checked against **Squiggle's own projected
+  ladder** — the one outside opinion on a forecast nobody can score until September — and
+  the clubs the two see differently are listed.
 - 🗄 **Seasons** — a multi-season hub, opened from **All seasons…** in the header's season
   switcher (it's a season control, so it sits with the years rather than in the nav row,
   which stays for the screens you move between during a round). The switcher browses past seasons' ladders,
   results and finals (rendered under each era's own format — past finals show as
   results, not a 2026-style bracket). Per-season scorecards grade how the in-app model
   and the Squiggle consensus actually tipped each year, and a cross-season **head-to-head**
-  explorer shows any two clubs' all-time record.
+  explorer shows any two clubs' all-time record. A **tipster board** grades all thirty-odd
+  Squiggle models separately for the live season and slots this app's own row into the
+  field by its score — because beating a consensus (an average that carries the weakest
+  models along with the best) is a much easier test than beating the models themselves.
 
 ## How data updates
 
 The app never hits the Squiggle API from the browser (per Squiggle's usage policy).
-Instead, the **Update AFL data** workflow (`.github/workflows/update-data.yml`) runs
-daily, fetches games / standings / tips from [Squiggle](https://squiggle.com.au) with an
-identifying User-Agent, and commits the snapshots to `public/data/`. That commit
-triggers the Pages deploy, so the published app refreshes automatically — no manual
+Instead, the **Update AFL data** workflow (`.github/workflows/update-data.yml`) fetches
+games / standings / tips / projected ladder from [Squiggle](https://squiggle.com.au) with
+an identifying User-Agent, adds kickoff forecasts from
+[Open-Meteo](https://open-meteo.com), and commits the snapshots to `public/data/`. That
+commit triggers the Pages deploy, so the published app refreshes automatically — no manual
 work during the season.
+
+It runs three times a day (10:00, 15:00 and 21:00 AWST) from Thursday to Sunday and once
+each evening the rest of the week. Squiggle is not the limiting factor — a handful of
+requests a day sits far inside its courtesy rate — but every refresh that finds a change
+writes a commit and rebuilds the site, so the schedule follows the football rather than
+the clock.
 
 The repo ships with **generated sample data** (`meta.source = "seed"`, produced by
 `scripts/generate-seed.mjs`) so the app renders before the first real fetch. The first
@@ -98,13 +110,22 @@ history the app can't show you.
 `src/domain/interest.ts` decides what's worth watching. The app updates itself daily with
 nobody at the wheel, so "the interesting games this week" has to be **computed** rather than
 curated. Every game still to be played in the current round is scored by independent signals —
-how evenly the model splits it, what the result would settle on the ladder, where the clubs
-sit relative to the finals cut lines, standing rivalries, recent head-to-head and current
-streaks — and each signal states its own case in plain English. **The score is exactly the sum
+how evenly the model splits it, **how badly Squiggle's thirty-odd models disagree about
+it**, what the result would settle on the ladder, where the clubs sit relative to the
+finals cut lines, standing rivalries, recent head-to-head, current streaks, and rain or
+wind in the forecast — and each signal states its own case in plain English. **The score is exactly the sum
 of the reasons shown on the card**, so a ranking can always be argued with on the evidence.
 The weights are editorial, not fitted: there is no ground truth for "interesting" to backtest
 against, so they only encode an ordering — what a game *decides* outranks how close it is,
 which outranks who is playing.
+
+Model disagreement is its own signal because a consensus is a mean, and a mean hides its
+own confidence: thirty models all saying 62% and thirty models split between 30% and 85%
+average to nearly the same number while describing completely different games. Weather
+earns a place here for the same reason it is kept *out* of the win-probability model — it
+changes how a game will be played, but a term in the prediction model has to be justified
+by the backtest harness, and the harness cannot score weather until the archive carries
+forecasts for games already played.
 
 The stakes signals are **mathematical, not projected**. "Win and they're in" re-runs the same
 conservative locks engine as the ladder badges over the season as it *would* stand after each

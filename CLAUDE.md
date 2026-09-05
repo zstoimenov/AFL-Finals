@@ -27,6 +27,7 @@ npm test               # vitest run — 18 files / 165 tests, all domain-level
 npm run build          # tsc -b && vite build  → dist/
 npm run preview        # serve the production build
 npm run fetch-data     # live Squiggle snapshot → public/data/
+npm run fetch-weather  # Open-Meteo kickoff forecasts → public/data/weather.json
 npm run fetch-history  # past-season archive  → public/data/history/
 node scripts/render-icons.mjs   # rasterize icon.svg → icon-192/512.png (Playwright)
 ```
@@ -72,6 +73,10 @@ scripts/              Node ESM data + build scripts (squiggle.mjs is shared)
 | `backtest.ts` | Hindsight-free evaluation harness (hit-rate, Brier, log-loss) with one exported model per generation. |
 | `seasonStats.ts` | Per-season model-vs-Squiggle scorecards, cross-season head-to-head. |
 | `interest.ts` | Scores "what's worth watching this round" as a sum of explained reasons. |
+| `consensus.ts` | How much the tipping models disagree — agreement, mood, plain-English summary. Every reader is null-when-unknown. |
+| `sourceStats.ts` | Each Squiggle model graded separately, and where this app places in that field. |
+| `weather.ts` | What the kickoff forecast means for the game. Descriptive only — deliberately outside the model. |
+| `projection.ts` | This app's simulated finishing order against Squiggle's projected ladder. |
 | `gameDetail.ts` | Assembles everything known about one fixture for the game sheet (hindsight-free). |
 | `finalsContext.ts` | The same idea for a bracket *slot* rather than a fixture: head-to-head, form and travel for a matchup that may not be scheduled yet, plus `nextFinal` / `finalsProgress`. |
 | `rivalries.ts` | Curated standing rivalries (Squiggle has no rivalry field). |
@@ -121,6 +126,13 @@ component mounts and unmounts with the dialog — hence the split-out `InfoModal
 `scripts/*.mjs` fetch it, with an identifying `User-Agent` from `scripts/squiggle.mjs`.
 Never add a runtime fetch to `api.squiggle.com.au`.
 
+**New data files are optional everywhere.** `tips.json`'s per-model spread,
+`tipsters.json`, `weather.json` and `projected.json` were all added after the archive was
+written, so every field is `?: T | null`, every reader returns null rather than a default,
+and no absent file is ever read as a *value*: an unknown tipster split is not agreement, a
+missing forecast is not a fine day, and no projection is not "we agree with Squiggle".
+Snapshots taken before these existed must render exactly as they did before.
+
 **All fetch paths go through `import.meta.env.BASE_URL`** — the app is served from the
 `/AFL-Finals/` sub-path, so absolute `/data/...` URLs break in production.
 
@@ -148,6 +160,13 @@ points (min = lose out, max = win out) and treats a points tie as "can pass me",
 percentage isn't bounded. Anything that shows a 🔒, "win and they're in", or
 `winsToGuarantee` must route through this engine — a badge is a mathematical guarantee.
 
+**Weather is not in the model, on purpose.** `weather.ts` describes conditions and
+`interest.ts` lets rain or wind argue for a game — interest weights are editorial and need
+no backtest. A term in the *win-probability* model is a different standard: it has to be
+justified by the harness, and the harness cannot score weather until the archive carries
+forecasts for games already played. Forecasts only accumulate from the first fetch, so
+that evidence is a season away. Same reasoning shipped `SQUIGGLE_AGREEMENT_TILT` at 0.
+
 **Weights are named exported constants with a rationale comment.** `RATING_WEIGHTS`,
 `HOME_ADVANTAGE`, `CONTEXT`, `SQUIGGLE_BLEND`, `PRIOR_EQUIV_GAMES`, `SHOT_WEIGHT`,
 `WEIGHTS` (interest). Model weights are justified by the backtest harness; disabled
@@ -172,10 +191,15 @@ seasons must never be rendered as if they used the current format.
 
 ## Data pipeline
 
-- **`update-data.yml`** — daily 13:00 UTC (21:00 AWST). Runs `scripts/fetch-data.mjs`,
-  commits `public/data/` as `chore: refresh AFL data snapshot`, then explicitly
-  `gh workflow run deploy.yml` (a `GITHUB_TOKEN` push does not trigger `on: push`), only
-  from `main`.
+- **`update-data.yml`** — 02:00/07:00 UTC Thu–Sun plus 13:00 UTC daily (10:00, 15:00 and
+  21:00 AWST through the football week). Runs `scripts/fetch-data.mjs`, then
+  `scripts/fetch-weather.mjs` under `continue-on-error` (a bad day at Open-Meteo must not
+  cost the football data already written), commits `public/data/` as
+  `chore: refresh AFL data snapshot`, then explicitly `gh workflow run deploy.yml` (a
+  `GITHUB_TOKEN` push does not trigger `on: push`), only from `main`.
+  The cadence is bounded by *our* cost, not Squiggle's: each refresh that finds a change
+  writes a commit and chains a full Pages deploy. Squiggle asks only for an identifying
+  `User-Agent` and no browser traffic; a handful of requests a day is far inside that.
 - **`fetch-history.yml`** — yearly (mid-January) + `workflow_dispatch` with a years input.
   Runs `scripts/fetch-history.mjs`, writing `history/<year>.json`, `history/games.json`
   (completed-game corpus for the prior) and `history/index.json` (manifest).
@@ -191,6 +215,17 @@ and the record book.
 **Do not hand-edit `public/data/**`.** It is generated output; regenerate with the
 scripts. Both fetch scripts fail soft (non-zero exit leaves the committed snapshot in
 place).
+
+Files written by the pipeline: `games/standings/tips/meta`, plus `tipsters.json` (every
+model's individual tip, ~150KB, loaded on arrival at the hub), `weather.json` (kickoff
+forecasts for upcoming fixtures) and `projected.json` (Squiggle's own projected ladder).
+`scripts/venues.mjs` is the curated venue→coordinates map the weather fetch needs — the one
+thing no fixture data can derive, and the third justified curated exception after
+`teams.ts` and `rivalries.ts`.
+
+`normaliseProjectedLadder` parses the `ladder` query tolerantly: it is the one Squiggle
+query the app had never called, so its field names are taken on trust until a real run
+confirms them, and an unreadable payload yields no projection rather than a broken screen.
 
 `scripts/squiggle.mjs` is the one normaliser for games/standings/tips, so a 2023 game and
 a 2026 game are the identical shape. New fields are added there, in `domain/types.ts`, and
