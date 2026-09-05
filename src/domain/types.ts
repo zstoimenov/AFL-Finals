@@ -53,6 +53,19 @@ export interface Tip {
   hmargin?: number | null;
   /** number of models aggregated */
   models: number;
+  /**
+   * The shape of the disagreement behind the mean, absent on snapshots taken
+   * before it was recorded. `hconfidence` alone cannot tell a game every model
+   * calls the same way from one they split down the middle, and only the second
+   * is genuinely unpredictable — see `domain/consensus.ts`.
+   */
+  htips?: number | null;
+  atips?: number | null;
+  /** population standard deviation of the models' home-win probabilities */
+  spread?: number | null;
+  /** the least and most bullish model on the home side */
+  low?: number | null;
+  high?: number | null;
 }
 
 /**

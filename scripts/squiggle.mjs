@@ -71,7 +71,17 @@ export function normaliseStandings(raw) {
   }));
 }
 
-/** Average every model's home-win confidence (and margin) per game. */
+/**
+ * Aggregate the per-model tips for each game.
+ *
+ * Squiggle returns one row per model per game — roughly thirty independent
+ * predictions. Averaging them into a single consensus throws away the most
+ * interesting part: whether the models actually agree. A game every model calls
+ * the same way and a game they split 16-15 both average out near the same
+ * number, yet only one of them is genuinely unpredictable. So alongside the mean
+ * we keep the shape of the disagreement — how many tipped the home side, the
+ * spread of their probabilities, and the range they cover.
+ */
 export function normaliseTips(raw) {
   const byGame = new Map();
   for (const t of raw.tips ?? []) {
@@ -80,15 +90,14 @@ export function normaliseTips(raw) {
       gameid: gid,
       hteamid: Number(t.hteamid),
       ateamid: Number(t.ateamid),
-      sum: 0,
+      probs: [],
       marginSum: 0,
-      marginCount: 0,
-      models: 0
+      marginCount: 0
     };
     // Squiggle confidence is 0-100 for the TIPPED team; convert to home-win prob
     const conf = Number(t.confidence ?? 50) / 100;
     const homeSide = Number(t.tipteamid) === entry.hteamid;
-    entry.sum += homeSide ? conf : 1 - conf;
+    entry.probs.push(homeSide ? conf : 1 - conf);
     // Squiggle margin is the predicted winning margin for the tipped team;
     // fold to the home team's perspective (positive = home favoured).
     if (t.margin != null) {
@@ -96,16 +105,30 @@ export function normaliseTips(raw) {
       entry.marginSum += homeSide ? m : -m;
       entry.marginCount += 1;
     }
-    entry.models += 1;
     byGame.set(gid, entry);
   }
-  return [...byGame.values()].map(({ sum, marginSum, marginCount, models, ...rest }) => ({
-    ...rest,
-    hconfidence: Math.round((sum / Math.max(models, 1)) * 1000) / 1000,
-    hmargin: marginCount > 0 ? Math.round((marginSum / marginCount) * 10) / 10 : null,
-    models
-  }));
+  return [...byGame.values()].map(({ probs, marginSum, marginCount, ...rest }) => {
+    const models = probs.length;
+    const mean = models > 0 ? probs.reduce((a, b) => a + b, 0) / models : 0.5;
+    const variance =
+      models > 0 ? probs.reduce((a, p) => a + (p - mean) ** 2, 0) / models : 0;
+    return {
+      ...rest,
+      hconfidence: round(mean, 3),
+      hmargin: marginCount > 0 ? round(marginSum / marginCount, 1) : null,
+      models,
+      // a model "tips home" when it gives the home side better than even odds;
+      // exactly 0.5 is not a tip either way and counts for neither side
+      htips: probs.filter((p) => p > 0.5).length,
+      atips: probs.filter((p) => p < 0.5).length,
+      spread: models > 0 ? round(Math.sqrt(variance), 3) : null,
+      low: models > 0 ? round(Math.min(...probs), 3) : null,
+      high: models > 0 ? round(Math.max(...probs), 3) : null
+    };
+  });
 }
+
+const round = (n, dp) => Math.round(n * 10 ** dp) / 10 ** dp;
 
 /** Kickoff instant (epoch seconds) for a normalised game — unixtime or parsed date. */
 export function gameStart(g) {
