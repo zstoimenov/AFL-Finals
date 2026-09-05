@@ -59,8 +59,22 @@ export default function FixturesView({
   useEffect(() => setRound(current), [current]);
 
   if (finalsStarted) {
-    const upcoming = bracket.filter((m) => m.winnerTeamId == null);
-    const played = bracket.filter((m) => m.winnerTeamId != null);
+    // kickoff order, not bracket order: nothing here is a ranking, so the next
+    // final belongs at the top where it is easy to find, and the most recent
+    // result at the top of what has been played. A slot whose fixture does not
+    // exist yet has no kickoff to sort by, so it keeps bracket order at the end.
+    const kickoff = (m: BracketMatch) => m.game?.unixtime ?? null;
+    const upcoming = bracket
+      .filter((m) => m.winnerTeamId == null)
+      .sort((a, b) => {
+        const ka = kickoff(a);
+        const kb = kickoff(b);
+        if (ka == null || kb == null) return ka == null ? (kb == null ? 0 : 1) : -1;
+        return ka - kb;
+      });
+    const played = bracket
+      .filter((m) => m.winnerTeamId != null)
+      .sort((a, b) => (kickoff(b) ?? 0) - (kickoff(a) ?? 0));
     return (
       <section className="fixtures">
         <h2>Finals fixtures</h2>

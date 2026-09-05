@@ -28,7 +28,10 @@ export default function FinalsResults({ snapshot }: { snapshot: Snapshot }) {
     );
   }
   const maxWeek = Math.max(...finals.map((g) => g.is_final));
-  const weeks = [...new Set(finals.map((g) => g.is_final))].sort((a, b) => a - b);
+  // newest week first: the banner above already names the premier, so the Grand
+  // Final that decided it reads directly under it rather than at the foot of the
+  // section, with each earlier week below the one it fed
+  const weeks = [...new Set(finals.map((g) => g.is_final))].sort((a, b) => b - a);
   const label = (week: number) =>
     week === maxWeek ? 'Grand Final' : WEEK_LABELS[week] ?? `Finals Week ${week}`;
 

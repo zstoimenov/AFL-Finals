@@ -34,7 +34,15 @@ export default function SeasonSwitcher({
   onChange: (year: number) => void;
   onOpenHub: () => void;
 }) {
-  const years = [liveYear, ...history.map((h) => h.year).filter((y) => y !== liveYear)];
+  // the manifest is written oldest-first, but a menu that grows a year at a time
+  // should never bury the season you are most likely to want at the bottom of it
+  const years = [
+    liveYear,
+    ...history
+      .map((h) => h.year)
+      .filter((y) => y !== liveYear)
+      .sort((a, b) => b - a)
+  ];
   return (
     <label className="season-switch">
       <span className="visually-hidden">Season</span>
