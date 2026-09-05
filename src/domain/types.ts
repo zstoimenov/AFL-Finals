@@ -68,6 +68,31 @@ export interface Tip {
   high?: number | null;
 }
 
+/** One of the tipping models behind Squiggle's consensus. */
+export interface TipSource {
+  id: number;
+  name: string;
+}
+
+/**
+ * One model's tip on one game, as P(home wins).
+ *
+ * Stored under short keys because there is one of these per model per game —
+ * around seven thousand a season — and the file is fetched whole. `g` is the
+ * game id, `s` the source id, `p` the home-win probability.
+ */
+export interface SourceTip {
+  g: number;
+  s: number;
+  p: number;
+}
+
+/** The per-model tip corpus (`public/data/tipsters.json`). */
+export interface TipsterCorpus {
+  sources: TipSource[];
+  tips: SourceTip[];
+}
+
 /**
  * The finals system a season was played under. The AFL used the top-eight
  * McIntyre / current system through 2025 and introduced the ten-team wildcard

@@ -130,6 +130,41 @@ export function normaliseTips(raw) {
 
 const round = (n, dp) => Math.round(n * 10 ** dp) / 10 ** dp;
 
+/**
+ * Every model's individual tip, kept whole rather than averaged.
+ *
+ * `normaliseTips` above answers "what does the field think"; this answers "who
+ * was right". Grading each tipster separately is what turns the app's own
+ * scorecard from "we beat the average of thirty models" — a soft bar, since the
+ * average is dragged down by the weakest of them — into "we finished eighth of
+ * thirty-one". Squiggle publishes these before each game, so scoring them
+ * against the result afterwards involves no hindsight.
+ *
+ * Written with short keys (`g`ame, `s`ource, `p`robability) because this is one
+ * row per model per game — roughly seven thousand of them in a season — and the
+ * file is downloaded by anyone who opens the hub. The app-facing names are
+ * restored in `domain/types.ts`.
+ */
+export function normaliseTipsters(raw) {
+  const sources = new Map();
+  const tips = [];
+  for (const t of raw.tips ?? []) {
+    const id = Number(t.sourceid ?? 0);
+    const gameid = Number(t.gameid ?? 0);
+    if (!id || !gameid) continue;
+    if (!sources.has(id)) sources.set(id, { id, name: String(t.source ?? `Model ${id}`) });
+    // same fold as the consensus: confidence is for the tipped team, we store
+    // every probability from the home side's point of view
+    const conf = Number(t.confidence ?? 50) / 100;
+    const homeSide = Number(t.tipteamid) === Number(t.hteamid);
+    tips.push({ g: gameid, s: id, p: round(homeSide ? conf : 1 - conf, 3) });
+  }
+  return {
+    sources: [...sources.values()].sort((a, b) => a.name.localeCompare(b.name)),
+    tips
+  };
+}
+
 /** Kickoff instant (epoch seconds) for a normalised game — unixtime or parsed date. */
 export function gameStart(g) {
   if (g.unixtime && g.unixtime > 0) return g.unixtime;

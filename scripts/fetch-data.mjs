@@ -17,7 +17,8 @@ import {
   squiggle,
   normaliseGames,
   normaliseStandings,
-  normaliseTips
+  normaliseTips,
+  normaliseTipsters
 } from './squiggle.mjs';
 
 const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', 'public', 'data');
@@ -33,6 +34,7 @@ try {
   const { games, totalRounds } = normaliseGames(gamesRaw);
   const standings = normaliseStandings(standingsRaw);
   const tips = normaliseTips(tipsRaw);
+  const tipsters = normaliseTipsters(tipsRaw);
 
   if (games.length === 0 || standings.length === 0) {
     throw new Error('Squiggle returned an empty snapshot — keeping existing data');
@@ -55,9 +57,14 @@ try {
   writeFileSync(join(OUT, 'games.json'), JSON.stringify(games, null, 1));
   writeFileSync(join(OUT, 'standings.json'), JSON.stringify(standings, null, 1));
   writeFileSync(join(OUT, 'tips.json'), JSON.stringify(tips, null, 1));
+  // one row per model per game — big enough that the app fetches it only when
+  // someone opens the hub, so it is written compact rather than indented
+  writeFileSync(join(OUT, 'tipsters.json'), JSON.stringify(tipsters));
   writeFileSync(join(OUT, 'meta.json'), JSON.stringify(meta, null, 1));
   console.log(
-    `Fetched ${YEAR}: ${games.length} games, ${standings.length} teams, ${tips.length} tipped games (round ${currentRound}/${totalRounds})`
+    `Fetched ${YEAR}: ${games.length} games, ${standings.length} teams, ` +
+      `${tips.length} tipped games from ${tipsters.sources.length} tipsters ` +
+      `(round ${currentRound}/${totalRounds})`
   );
 } catch (err) {
   console.error(`fetch-data failed: ${err.message ?? err}`);

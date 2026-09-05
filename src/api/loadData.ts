@@ -1,4 +1,4 @@
-import type { Game, HistoryIndexEntry, Snapshot } from '../domain/types';
+import type { Game, HistoryIndexEntry, Snapshot, TipsterCorpus } from '../domain/types';
 
 /**
  * Loads the deployed data snapshots. These are static JSON files committed by
@@ -61,4 +61,15 @@ export function loadHistoryCorpus(): Promise<Game[]> {
  */
 export function loadSeason(year: number): Promise<Snapshot | null> {
   return getData<Snapshot | null>(`history/${year}.json`, null);
+}
+
+/**
+ * Every model's individual tip for the live season (`tipsters.json`), behind the
+ * consensus the app blends. Around 150KB and read by one screen, so it is
+ * fetched when the hub opens rather than at startup. Fail-soft: null on a
+ * deployment whose snapshot predates the file, and the hub simply shows no
+ * tipster leaderboard.
+ */
+export function loadTipsters(): Promise<TipsterCorpus | null> {
+  return getData<TipsterCorpus | null>('tipsters.json', null);
 }

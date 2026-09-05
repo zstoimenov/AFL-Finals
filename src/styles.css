@@ -2978,6 +2978,70 @@ button.teamchip:focus-visible {
   }
 }
 
+/* ---------- tipster leaderboard (hub) ---------- */
+
+.tipsters {
+  margin-top: 22px;
+}
+
+.tipster-count {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+.tipster-lede {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0 0 10px;
+}
+
+.tipster-lede strong {
+  color: var(--text);
+}
+
+.tipster-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.tipster-table th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 4px 8px 4px 0;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+}
+
+.tipster-table td {
+  padding: 5px 8px 5px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.tipster-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* the app's own row, so it is findable in a field of thirty without relying
+   on colour alone — the label says "this app" as well */
+.tipster-table tr.us td {
+  color: var(--accent);
+  font-weight: 700;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.us-tag {
+  font-weight: 600;
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
 /* ---------- this week ---------- */
 
 .week-sub {

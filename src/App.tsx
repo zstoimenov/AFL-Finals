@@ -3,9 +3,10 @@ import {
   loadSnapshot,
   loadHistoryIndex,
   loadHistoryCorpus,
-  loadSeason
+  loadSeason,
+  loadTipsters
 } from './api/loadData';
-import type { Game, HistoryIndexEntry, Snapshot } from './domain/types';
+import type { Game, HistoryIndexEntry, Snapshot, TipsterCorpus } from './domain/types';
 import type { SimOutput } from './domain/simulate';
 import { computeLocks } from './domain/locks';
 import { buildBracket } from './domain/buildBracket';
@@ -42,6 +43,7 @@ export default function App() {
   const [live, setLive] = useState<Snapshot | null>(null);
   const [historyIndex, setHistoryIndex] = useState<HistoryIndexEntry[]>([]);
   const [historyCorpus, setHistoryCorpus] = useState<Game[]>([]);
+  const [tipsters, setTipsters] = useState<TipsterCorpus | null>(null);
   const [seasons, setSeasons] = useState<Map<number, Snapshot>>(new Map());
   const [activeYear, setActiveYear] = useState<number | null>(null);
   const [seasonLoading, setSeasonLoading] = useState(false);
@@ -104,6 +106,13 @@ export default function App() {
   useEffect(() => {
     if (tab !== 'seasons' && tab !== 'club') return;
     let cancelled = false;
+    // the per-tipster corpus is ~150KB and only the hub's leaderboard reads it,
+    // so it arrives with the archive rather than at startup
+    if (tab === 'seasons' && tipsters == null) {
+      loadTipsters().then((t) => {
+        if (!cancelled && t) setTipsters(t);
+      });
+    }
     for (const { year } of historyIndex) {
       if (seasons.has(year)) continue;
       loadSeason(year).then((snap) => {
@@ -115,6 +124,7 @@ export default function App() {
     };
     // seasons is deliberately not a dependency: it is what this effect fills in
     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // tipsters is deliberately not a dependency either, for the same reason
   }, [historyIndex, tab]);
 
   // Screens are hash routes, so back/forward step between them instead of
@@ -475,6 +485,8 @@ export default function App() {
             seasons={seasons}
             liveYear={liveYear!}
             allGames={allGames}
+            live={live}
+            tipsters={tipsters}
             onOpenSeason={openSeason}
           />
         ) : active == null ? (
