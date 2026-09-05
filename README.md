@@ -61,6 +61,12 @@ requests a day sits far inside its courtesy rate — but every refresh that find
 writes a commit and rebuilds the site, so the schedule follows the football rather than
 the clock.
 
+There is deliberately no database: the dataset is small, read-only and written by
+one bot, which is the shape static files are best at — and committing it keeps the
+app working offline and leaves a byte-exact record of what it showed on any given
+day. The reasoning, and the four things that would change it, are in
+[`docs/adr/0001-data-storage-v1.0.md`](docs/adr/0001-data-storage-v1.0.md).
+
 The repo ships with **generated sample data** (`meta.source = "seed"`, produced by
 `scripts/generate-seed.mjs`) so the app renders before the first real fetch. The first
 run of the update workflow replaces it with live data.
