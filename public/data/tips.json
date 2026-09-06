@@ -2772,26 +2772,26 @@
   "gameid": 38726,
   "hteamid": 2,
   "ateamid": 1,
-  "hconfidence": 0.679,
-  "hmargin": 15.3,
-  "models": 5,
-  "htips": 5,
+  "hconfidence": 0.704,
+  "hmargin": 19.2,
+  "models": 12,
+  "htips": 12,
   "atips": 0,
-  "spread": 0.048,
-  "low": 0.589,
-  "high": 0.716
+  "spread": 0.084,
+  "low": 0.57,
+  "high": 0.893
  },
  {
   "gameid": 38725,
   "hteamid": 6,
   "ateamid": 7,
-  "hconfidence": 0.521,
-  "hmargin": 1.7,
-  "models": 8,
-  "htips": 6,
-  "atips": 2,
-  "spread": 0.096,
+  "hconfidence": 0.574,
+  "hmargin": 6.4,
+  "models": 14,
+  "htips": 11,
+  "atips": 3,
+  "spread": 0.105,
   "low": 0.323,
-  "high": 0.63
+  "high": 0.71
  }
 ]
