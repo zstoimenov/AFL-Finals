@@ -2793,5 +2793,18 @@
   "spread": 0.067,
   "low": 0.463,
   "high": 0.693
+ },
+ {
+  "gameid": 38728,
+  "hteamid": 16,
+  "ateamid": 6,
+  "hconfidence": 0.568,
+  "hmargin": 6,
+  "models": 3,
+  "htips": 3,
+  "atips": 0,
+  "spread": 0.048,
+  "low": 0.51,
+  "high": 0.626
  }
 ]
