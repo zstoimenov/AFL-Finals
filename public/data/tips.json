@@ -2795,16 +2795,29 @@
   "high": 0.693
  },
  {
+  "gameid": 38727,
+  "hteamid": 10,
+  "ateamid": 2,
+  "hconfidence": 0.541,
+  "hmargin": 3.3,
+  "models": 6,
+  "htips": 5,
+  "atips": 1,
+  "spread": 0.095,
+  "low": 0.35,
+  "high": 0.657
+ },
+ {
   "gameid": 38728,
   "hteamid": 16,
   "ateamid": 6,
-  "hconfidence": 0.475,
-  "hmargin": -2.4,
-  "models": 7,
-  "htips": 2,
-  "atips": 5,
-  "spread": 0.076,
+  "hconfidence": 0.513,
+  "hmargin": 0.8,
+  "models": 9,
+  "htips": 5,
+  "atips": 4,
+  "spread": 0.091,
   "low": 0.38,
-  "high": 0.626
+  "high": 0.631
  }
 ]
