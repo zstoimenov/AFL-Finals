@@ -1,17 +1,17 @@
 {
- "fetchedAt": "2026-09-12T16:28:56.563Z",
+ "fetchedAt": "2026-09-13T07:15:12.855Z",
  "games": {
   "38727": {
-   "tempC": 22.4,
+   "tempC": 22.7,
    "rainMm": 0,
    "rainChance": 2,
-   "windKph": 22.8
+   "windKph": 22.2
   },
   "38728": {
-   "tempC": 15.2,
+   "tempC": 14.8,
    "rainMm": 0,
-   "rainChance": 1,
-   "windKph": 7.3
+   "rainChance": 0,
+   "windKph": 6
   }
  }
 }
