@@ -2798,8 +2798,8 @@
   "gameid": 38727,
   "hteamid": 10,
   "ateamid": 2,
-  "hconfidence": 0.549,
-  "hmargin": 4.3,
+  "hconfidence": 0.548,
+  "hmargin": 4.2,
   "models": 30,
   "htips": 22,
   "atips": 7,
@@ -2811,13 +2811,13 @@
   "gameid": 38728,
   "hteamid": 16,
   "ateamid": 6,
-  "hconfidence": 0.596,
-  "hmargin": 8.2,
+  "hconfidence": 0.589,
+  "hmargin": 7.6,
   "models": 30,
-  "htips": 24,
-  "atips": 6,
-  "spread": 0.087,
-  "low": 0.384,
-  "high": 0.743
+  "htips": 25,
+  "atips": 5,
+  "spread": 0.083,
+  "low": 0.381,
+  "high": 0.705
  }
 ]
