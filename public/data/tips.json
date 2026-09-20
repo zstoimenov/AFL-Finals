@@ -2822,28 +2822,15 @@
  },
  {
   "gameid": 38729,
-  "hteamid": 2,
-  "ateamid": 6,
-  "hconfidence": 0.572,
-  "hmargin": 5.6,
-  "models": 5,
-  "htips": 5,
-  "atips": 0,
-  "spread": 0.004,
-  "low": 0.565,
-  "high": 0.577
- },
- {
-  "gameid": 39880,
   "hteamid": 6,
   "ateamid": 2,
-  "hconfidence": 0.472,
-  "hmargin": -2.3,
-  "models": 8,
-  "htips": 2,
-  "atips": 6,
-  "spread": 0.06,
-  "low": 0.399,
+  "hconfidence": 0.462,
+  "hmargin": -3.1,
+  "models": 14,
+  "htips": 3,
+  "atips": 11,
+  "spread": 0.081,
+  "low": 0.257,
   "high": 0.602
  }
 ]

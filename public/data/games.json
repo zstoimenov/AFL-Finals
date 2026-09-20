@@ -4123,7 +4123,7 @@
   "winnerteamid": 2
  },
  {
-  "id": 39880,
+  "id": 38729,
   "round": 29,
   "year": 2026,
   "complete": 0,
@@ -4137,25 +4137,6 @@
   "abehinds": null,
   "date": "2026-09-26 14:30:00",
   "unixtime": 1790397000,
-  "venue": "M.C.G.",
-  "is_final": 5,
-  "winnerteamid": null
- },
- {
-  "id": 38729,
-  "round": 29,
-  "year": 2026,
-  "complete": 0,
-  "hteamid": 2,
-  "ateamid": 6,
-  "hscore": 0,
-  "ascore": 0,
-  "hgoals": null,
-  "hbehinds": null,
-  "agoals": null,
-  "abehinds": null,
-  "date": "2026-09-26 19:20:00",
-  "unixtime": 1790414400,
   "venue": "M.C.G.",
   "is_final": 5,
   "winnerteamid": null
