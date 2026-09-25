@@ -2824,13 +2824,13 @@
   "gameid": 38729,
   "hteamid": 6,
   "ateamid": 2,
-  "hconfidence": 0.483,
-  "hmargin": -2,
-  "models": 25,
-  "htips": 7,
+  "hconfidence": 0.485,
+  "hmargin": -1.8,
+  "models": 26,
+  "htips": 8,
   "atips": 18,
-  "spread": 0.057,
-  "low": 0.392,
+  "spread": 0.06,
+  "low": 0.383,
   "high": 0.602
  }
 ]
