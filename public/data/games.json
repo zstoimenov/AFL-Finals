@@ -4126,19 +4126,19 @@
   "id": 38729,
   "round": 29,
   "year": 2026,
-  "complete": 0,
+  "complete": 100,
   "hteamid": 6,
   "ateamid": 2,
-  "hscore": 0,
-  "ascore": 0,
-  "hgoals": null,
-  "hbehinds": null,
-  "agoals": null,
-  "abehinds": null,
+  "hscore": 89,
+  "ascore": 96,
+  "hgoals": 12,
+  "hbehinds": 17,
+  "agoals": 14,
+  "abehinds": 12,
   "date": "2026-09-26 14:30:00",
   "unixtime": 1790397000,
   "venue": "M.C.G.",
   "is_final": 5,
-  "winnerteamid": null
+  "winnerteamid": 2
  }
 ]
