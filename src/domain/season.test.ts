@@ -5,7 +5,8 @@ import {
   ladderCutLines,
   formatLabel,
   premierOf,
-  seasonComplete
+  seasonComplete,
+  archivedBefore
 } from './season';
 import type { Game } from './types';
 
@@ -95,5 +96,21 @@ describe('seasonComplete', () => {
 
   it('is false for a fixture we do not have', () => {
     expect(seasonComplete([])).toBe(false);
+  });
+});
+
+describe('archivedBefore', () => {
+  const rows = [{ year: 2024 }, { year: 2025 }, { year: 2026 }];
+
+  it('keeps only seasons before the live one, so a finished live season is not doubled', () => {
+    expect(archivedBefore(rows, 2026).map((r) => r.year)).toEqual([2024, 2025]);
+  });
+
+  it('lets the whole archive through once the live season has moved on', () => {
+    expect(archivedBefore(rows, 2027).map((r) => r.year)).toEqual([2024, 2025, 2026]);
+  });
+
+  it('lets nothing through until the live year is known', () => {
+    expect(archivedBefore(rows, null)).toEqual([]);
   });
 });

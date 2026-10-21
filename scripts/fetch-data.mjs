@@ -24,7 +24,8 @@ import {
 } from './squiggle.mjs';
 
 const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', 'public', 'data');
-const YEAR = Number(process.env.AFL_YEAR ?? new Date().getFullYear());
+// || rather than ??: a manual run with the year input left blank passes an empty string
+const YEAR = Number(process.env.AFL_YEAR || new Date().getFullYear());
 
 try {
   // the projected ladder is a benchmark, not something the app needs to render

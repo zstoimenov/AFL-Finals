@@ -203,7 +203,7 @@ seasons must never be rendered as if they used the current format.
   The cadence is bounded by *our* cost, not Squiggle's: each refresh that finds a change
   writes a commit and chains a full Pages deploy. Squiggle asks only for an identifying
   `User-Agent` and no browser traffic; a handful of requests a day is far inside that.
-- **`fetch-history.yml`** — yearly (mid-January) + `workflow_dispatch` with a years input.
+- **`fetch-history.yml`** — yearly (1 January, the day the live season rolls over) + `workflow_dispatch` with a years input.
   Runs `scripts/fetch-history.mjs`, writing `history/<year>.json`, `history/games.json`
   (completed-game corpus for the prior) and `history/index.json` (manifest).
 - **`deploy.yml`** — on push to `main`: `npm ci`, `npm test`, `npm run build`, publish

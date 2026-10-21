@@ -2,9 +2,13 @@ name: Update AFL history
 
 on:
   schedule:
-    # once a year, early January (after the previous season is fully archived by
-    # Squiggle) — folds the just-finished season into the multi-season archive
-    - cron: '0 13 15 1 *'
+    # once a year, on the day the live snapshot rolls over to the new season
+    # (fetch-data takes its year from the calendar), so the season that just left
+    # the live slot lands in the archive the same day rather than going missing
+    # for a fortnight. 00:23 UTC is 08:23 AWST, after the year has turned in UTC;
+    # the odd minute keeps clear of GitHub's contended top-of-hour slots. Archiving
+    # earlier by hand is safe — the app reads the archive through archivedBefore.
+    - cron: '23 0 1 1 *'
   workflow_dispatch:
     inputs:
       years:

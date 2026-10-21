@@ -21,7 +21,7 @@ import { computeLocks } from './domain/locks';
 import { buildBracket } from './domain/buildBracket';
 import { finalsGames } from './domain/ladder';
 import { completedGames } from './domain/features';
-import { supportsProjectedBracket } from './domain/season';
+import { archivedBefore, supportsProjectedBracket } from './domain/season';
 import { formatUpdatedAt, formatUpdatedShort } from './domain/format';
 import FinalsView from './components/FinalsView';
 import FixturesView from './components/FixturesView';
@@ -50,8 +50,18 @@ const SIM_ITERATIONS = 10000;
 
 export default function App() {
   const [live, setLive] = useState<Snapshot | null>(null);
-  const [historyIndex, setHistoryIndex] = useState<HistoryIndexEntry[]>([]);
-  const [historyCorpus, setHistoryCorpus] = useState<Game[]>([]);
+  const [archiveIndex, setArchiveIndex] = useState<HistoryIndexEntry[]>([]);
+  const [archiveCorpus, setArchiveCorpus] = useState<Game[]>([]);
+  // the archive may already hold the live season once it is over, so every screen
+  // reads it through archivedBefore rather than as fetched
+  const historyIndex = useMemo(
+    () => archivedBefore(archiveIndex, live?.meta.year ?? null),
+    [archiveIndex, live]
+  );
+  const historyCorpus = useMemo(
+    () => archivedBefore(archiveCorpus, live?.meta.year ?? null),
+    [archiveCorpus, live]
+  );
   const [tipsters, setTipsters] = useState<TipsterCorpus | null>(null);
   const [weather, setWeather] = useState<WeatherSnapshot | null>(null);
   const [projected, setProjected] = useState<ProjectedLadderRow[]>([]);
@@ -104,8 +114,8 @@ export default function App() {
         setSeasons((prev) => new Map(prev).set(snap.meta.year, snap));
       })
       .catch((e) => setError(String(e)));
-    loadHistoryIndex().then(setHistoryIndex).catch(() => setHistoryIndex([]));
-    loadHistoryCorpus().then(setHistoryCorpus).catch(() => setHistoryCorpus([]));
+    loadHistoryIndex().then(setArchiveIndex).catch(() => setArchiveIndex([]));
+    loadHistoryCorpus().then(setArchiveCorpus).catch(() => setArchiveCorpus([]));
     // small, and read by the week screen and every game sheet
     loadWeather().then(setWeather).catch(() => setWeather(null));
     loadProjectedLadder().then(setProjected).catch(() => setProjected([]));

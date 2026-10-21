@@ -65,6 +65,25 @@ export function premierOf(games: Game[]): number | null {
 }
 
 /**
+ * The archive as the app may read it: only seasons before the live one. A season is
+ * archived once it is over, which can be months before the calendar moves the live
+ * snapshot on to the next year — and in that window the same season would exist
+ * twice, listed twice in the season switcher and the hub, its games counted twice in
+ * the head-to-head explorer. Most readers already filter `year < meta.year`; this is
+ * the one seam that makes the rest safe, so archiving early is never a hazard.
+ *
+ * Until the live year is known nothing is let through, so an archived copy of the
+ * live season can never be loaded in place of the live snapshot itself.
+ */
+export function archivedBefore<T extends { year: number }>(
+  rows: T[],
+  liveYear: number | null
+): T[] {
+  if (liveYear == null) return [];
+  return rows.filter((r) => r.year < liveYear);
+}
+
+/**
  * Whether a season has run its course — no game left anywhere in the fixture.
  * The screens built around "what's next" have nothing to show once this is true,
  * which is four months of every year, so they check rather than emptying out.
