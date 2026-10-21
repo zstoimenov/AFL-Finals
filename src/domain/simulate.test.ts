@@ -51,13 +51,23 @@ describe('simulateSeason', () => {
   });
 
   it('the ladder leader is a stronger premiership chance than the last-placed team', () => {
-    // data-agnostic: works for any committed snapshot, seed or live
+    // data-agnostic: works for any committed snapshot, seed or live, at any point in
+    // the season. The finals are stripped first because once they are played the sim
+    // reports the real result, not a rating — a minor premier who lost the Grand
+    // Final has a premiership chance of 0, the same as the wooden spooner's, and the
+    // claim under test (the model rates the leader above the bottom) would read false
+    // through the whole off-season.
+    const preFinals = simulateSeason(
+      { ...snap, games: snap.games.filter((g) => g.is_final === 0) },
+      3000,
+      42
+    );
     const ladder = [...snap.standings].sort((a, b) => b.pts - a.pts || b.percentage - a.percentage);
     const top = ladder[0].id;
     const bottom = ladder[ladder.length - 1].id;
-    expect(sim.teams[top].premier).toBeGreaterThan(sim.teams[bottom].premier);
-    expect(sim.teams[bottom].premier).toBeLessThan(0.05);
-    expect(sim.teams[top].makeFinals).toBeGreaterThan(0.9);
+    expect(preFinals.teams[top].premier).toBeGreaterThan(preFinals.teams[bottom].premier);
+    expect(preFinals.teams[bottom].premier).toBeLessThan(0.05);
+    expect(preFinals.teams[top].makeFinals).toBeGreaterThan(0.9);
   });
 
   it('is deterministic for a fixed seed', () => {
