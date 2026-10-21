@@ -11,12 +11,51 @@
 export const UA =
   'AFL-Finals-Tracker/1.0 (github.com/zstoimenov/AFL-Finals; zdravko.stoimenov@gmail.com)';
 
-/** Fetch one Squiggle query for a given year as JSON. */
+/**
+ * Waits before each retry of a transient failure. Squiggle sits behind Cloudflare,
+ * and a 52x from it means the origin briefly could not be reached — a single 521
+ * on 21 Oct 2026 failed a scheduled refresh outright, after a long run of clean
+ * ones. A few minutes of backoff rides out a blip like that; it deliberately does
+ * not ride out a real outage. Once these are spent the error still propagates, the
+ * script still exits non-zero and the run still goes red, so a Squiggle that stays
+ * down is reported rather than left to look like a quiet week.
+ */
+const RETRY_DELAYS_MS = [30_000, 60_000, 120_000];
+
+/**
+ * Worth asking again: rate limiting and anything server-side. A 4xx otherwise means
+ * the request itself is wrong, and repeating it would only delay the same answer.
+ */
+function isTransient(status) {
+  return status === 429 || status >= 500;
+}
+
+/**
+ * Fetch one Squiggle query for a given year as JSON. Network errors and transient
+ * HTTP statuses are retried on `RETRY_DELAYS_MS`; a payload that is not JSON is
+ * not, since asking again would get the same body back.
+ */
 export async function squiggle(query, year) {
   const url = `https://api.squiggle.com.au/?q=${query};year=${year};format=json`;
-  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } });
-  if (!res.ok) throw new Error(`Squiggle ${query} ${year} -> HTTP ${res.status}`);
-  return res.json();
+  for (let attempt = 0; ; attempt++) {
+    let res = null;
+    let error;
+    try {
+      res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } });
+    } catch (e) {
+      // DNS, reset or refused connection: no status to judge by, so treat it as a blip
+      error = new Error(`Squiggle ${query} ${year} -> ${e.message ?? e}`);
+    }
+    if (res?.ok) return res.json();
+    if (res) error = new Error(`Squiggle ${query} ${year} -> HTTP ${res.status}`);
+    if ((res && !isTransient(res.status)) || attempt >= RETRY_DELAYS_MS.length) throw error;
+    const wait = RETRY_DELAYS_MS[attempt];
+    console.warn(
+      `${error.message}; retrying in ${wait / 1000}s ` +
+        `(${attempt + 1}/${RETRY_DELAYS_MS.length})`
+    );
+    await new Promise((resolve) => setTimeout(resolve, wait));
+  }
 }
 
 /**
