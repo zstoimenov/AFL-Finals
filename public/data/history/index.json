@@ -26,5 +26,12 @@
   "format": "top8",
   "teams": 18,
   "games": 216
+ },
+ {
+  "year": 2026,
+  "premier": 2,
+  "format": "top10-wildcard",
+  "teams": 18,
+  "games": 218
  }
 ]
