@@ -9,8 +9,15 @@
  * by User-Agent.
  *
  * Fails soft: any error leaves the previously committed snapshots in place.
+ *
+ * One empty answer is not an error: a season Squiggle has not published yet. The
+ * year comes from the calendar, so from 1 January it asks for a season whose
+ * fixture or ladder may not exist for weeks. If the season asked for is newer than
+ * the one already committed, an empty snapshot means "not out yet": the finished
+ * season stays live and the run succeeds. An empty answer for the season already
+ * being tracked is still a failure, because that one should never go blank.
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -26,6 +33,16 @@ import {
 const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', 'public', 'data');
 // || rather than ??: a manual run with the year input left blank passes an empty string
 const YEAR = Number(process.env.AFL_YEAR || new Date().getFullYear());
+
+/** The season the committed snapshot tracks, or null when there is none to read. */
+function committedYear() {
+  try {
+    const year = JSON.parse(readFileSync(join(OUT, 'meta.json'), 'utf8')).year;
+    return Number.isFinite(year) ? year : null;
+  } catch {
+    return null;
+  }
+}
 
 try {
   // the projected ladder is a benchmark, not something the app needs to render
@@ -53,6 +70,15 @@ try {
   console.log(`Projected ladder: ${describeLadderPayload(ladderErr ? null : ladderRaw, ladderErr)}`);
 
   if (games.length === 0 || standings.length === 0) {
+    const tracked = committedYear();
+    if (tracked != null && YEAR > tracked) {
+      const missing = games.length === 0 ? 'fixture' : 'ladder';
+      // a GitHub notice annotation: visible on the run, but no failure email
+      console.log(
+        `::notice::Squiggle has no ${YEAR} ${missing} yet — keeping ${tracked} live`
+      );
+      process.exit(0);
+    }
     throw new Error('Squiggle returned an empty snapshot — keeping existing data');
   }
 

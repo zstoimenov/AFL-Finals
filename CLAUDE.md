@@ -220,7 +220,10 @@ would change that, is recorded in `docs/adr/0001-data-storage-v1.0.md`.
 
 **Do not hand-edit `public/data/**`.** It is generated output; regenerate with the
 scripts. Both fetch scripts fail soft (non-zero exit leaves the committed snapshot in
-place).
+place). `squiggle()` retries network errors, 429 and 5xx three times (30s/60s/120s) before
+failing. A season newer than the committed one that Squiggle hasn't published yet (every
+January, when the calendar year rolls over) is not a failure: `fetch-data` keeps the
+finished season live and exits 0 with a notice.
 
 Files written by the pipeline: `games/standings/tips/meta`, plus `tipsters.json` (every
 model's individual tip, ~150KB, loaded on arrival at the hub), `weather.json` (kickoff
