@@ -1,1 +1,92 @@
-[]
+[
+ {
+  "id": 18,
+  "projectedRank": 4.15,
+  "sources": 17
+ },
+ {
+  "id": 2,
+  "projectedRank": 5.17,
+  "sources": 17
+ },
+ {
+  "id": 7,
+  "projectedRank": 5.84,
+  "sources": 17
+ },
+ {
+  "id": 8,
+  "projectedRank": 6.02,
+  "sources": 17
+ },
+ {
+  "id": 1,
+  "projectedRank": 6.44,
+  "sources": 17
+ },
+ {
+  "id": 9,
+  "projectedRank": 6.56,
+  "sources": 17
+ },
+ {
+  "id": 4,
+  "projectedRank": 6.63,
+  "sources": 17
+ },
+ {
+  "id": 10,
+  "projectedRank": 6.64,
+  "sources": 17
+ },
+ {
+  "id": 16,
+  "projectedRank": 8.31,
+  "sources": 17
+ },
+ {
+  "id": 6,
+  "projectedRank": 8.41,
+  "sources": 17
+ },
+ {
+  "id": 11,
+  "projectedRank": 10.66,
+  "sources": 17
+ },
+ {
+  "id": 15,
+  "projectedRank": 11.58,
+  "sources": 17
+ },
+ {
+  "id": 13,
+  "projectedRank": 12.2,
+  "sources": 17
+ },
+ {
+  "id": 3,
+  "projectedRank": 12.62,
+  "sources": 17
+ },
+ {
+  "id": 12,
+  "projectedRank": 13.66,
+  "sources": 17
+ },
+ {
+  "id": 5,
+  "projectedRank": 14.81,
+  "sources": 17
+ },
+ {
+  "id": 14,
+  "projectedRank": 15.25,
+  "sources": 17
+ },
+ {
+  "id": 17,
+  "projectedRank": 16.05,
+  "sources": 17
+ }
+]
